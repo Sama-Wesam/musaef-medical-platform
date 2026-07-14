@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\LocationTrait;
 use Illuminate\Database\Eloquent\Model;
 
 class Hospital extends Model
 {
+    use LocationTrait;
+
     protected $fillable = [
         'user_id',
         'license_number',

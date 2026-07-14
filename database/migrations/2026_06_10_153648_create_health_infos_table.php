@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('health_infos', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('donor_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('donor_id')->constrained('donors')->cascadeOnDelete();
             $table->decimal('weight', 5, 2)->nullable();
             $table->decimal('height', 5, 2)->nullable();
             $table->boolean('has_chronic_diseases')->default(false);

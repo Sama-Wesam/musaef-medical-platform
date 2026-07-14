@@ -2,42 +2,40 @@
 
 namespace App\AI;
 
-use App\Models\BloodRequest;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
+use Symfony\Component\Process\Process;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class BloodDemandForecast
 {
     /**
-     * التنبؤ باحتياج فصيلة معينة لمستشفى معين خلال الأيام الـ 7 القادمة
+     * تشغيل خوارزمية التنبؤ بنقص مخزون فصيلة دم محددة
      */
-    public function forecastDemand(int $hospitalId, int $bloodTypeId)
+    public function predictShortage(string $bloodType, int $currentStock, int $dailyConsumption, int $pendingRequests, bool $isEmergency, int $season = 1)
     {
-        // جلب استهلاك الدم في آخر 30 يوماً
-        $historicalData = BloodRequest::where('hospital_id', $hospitalId)
-            ->where('blood_type_id', $bloodTypeId)
-            ->where('created_at', '>=', Carbon::now()->subDays(30))
-            ->select(DB::raw('DATE(created_at) as date'), DB::raw('SUM(units_required) as total_units'))
-            ->groupBy('date')
-            ->orderBy('date', 'asc')
-            ->get();
+        $payload = [
+            'blood_type'        => $bloodType,
+            'current_stock'     => $currentStock,
+            'daily_consumption' => $dailyConsumption,
+            'pending_requests'  => $pendingRequests,
+            'is_emergency'      => $isEmergency ? 1 : 0,
+            'season'            => $season // 1 الشتاء، 2 الربيع، 3 الصيف، 4 الخريف
+        ];
 
-        if ($historicalData->count() < 5) {
-            return ['status' => 'insufficient_data', 'forecast_units' => 0];
+        // استدعاء ملف البايثون
+        $process = new Process([
+            'python',
+            base_path('scripts/python/blood_prediction.py'),
+            json_encode($payload)
+        ]);
+
+        $process->run();
+
+        if (!$process->isSuccessful()) {
+            throw new ProcessFailedException($process);
         }
 
-        // حساب المتوسط المتحرك (Moving Average) البسيط
-        $totalUnits = $historicalData->sum('total_units');
-        $averagePerDay = $totalUnits / 30;
-
-        // توقع الاحتياج للأيام السبعة القادمة مع إضافة هامش طوارئ (15%)
-        $expectedNext7Days = ceil($averagePerDay * 7 * 1.15);
-
-        return [
-            'status' => 'success',
-            'historical_average_per_day' => round($averagePerDay, 2),
-            'forecast_next_7_days' => $expectedNext7Days,
-            'risk_level' => $expectedNext7Days > 20 ? 'High' : 'Normal'
-        ];
+        // إرجاع مخرجات الذكاء الاصطناعي
+        $output = $process->getOutput();
+        return json_decode($output, true);
     }
 }

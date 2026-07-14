@@ -20,8 +20,11 @@ class DonorController extends Controller
 
     public function profile(Request $request)
     {
-        $donor = $request->user()->donor()->with('bloodType', 'healthInfo')->first();
+        $donor = $request->user()->donor;
+
         if (!$donor) return $this->notFoundResponse('بيانات المتبرع غير مكتملة');
+
+        $donor->load(['bloodType', 'healthInfo']);
 
         return $this->successResponse($donor);
     }

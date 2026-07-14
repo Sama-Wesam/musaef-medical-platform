@@ -2,21 +2,16 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\ContactMessage; // النموذج الخاص بالرسائل
+use App\Models\ContactMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Routing\Controller;
 
 class MessageController extends Controller
 {
-    /**
-     * عرض جميع الرسائل والمحادثات لمدير النظام (القائمة الجانبية في صفحة التواصل).
-     */
     public function index()
     {
-        // جلب الرسائل مع بيانات المرسل وترتيبها من الأحدث للأقدم
-        $messages = ContactMessage::with('sender')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $messages = ContactMessage::orderBy('created_at', 'desc')->get();
 
         return response()->json([
             'status' => 'success',
@@ -24,14 +19,10 @@ class MessageController extends Controller
         ], 200);
     }
 
-    /**
-     * عرض محادثة أو رسالة محددة بكامل تفاصيلها.
-     */
     public function show($id)
     {
-        $message = ContactMessage::with('sender')->findOrFail($id);
+        $message = ContactMessage::findOrFail($id);
 
-        // تحديث حالة الرسالة لتصبح "مقروءة" بمجرد فتحها من قبل المدير
         if (!$message->is_read) {
             $message->update(['is_read' => true]);
         }
@@ -42,9 +33,6 @@ class MessageController extends Controller
         ], 200);
     }
 
-    /**
-     * إرسال رد على رسالة محددة للمستخدم أو المستشفى.
-     */
     public function reply(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
@@ -60,8 +48,6 @@ class MessageController extends Controller
 
         $message = ContactMessage::findOrFail($id);
 
-        // هنا يتم حفظ الرد في قاعدة البيانات أو إرساله عبر البريد/الإشعارات حسب منطق النظام
-        // كمثال: حفظ الرد وتحديث حالة الرسالة إلى "تم الرد"
         $message->update([
             'reply_content' => $request->reply_content,
             'replied_at' => now(),
@@ -75,9 +61,6 @@ class MessageController extends Controller
         ], 200);
     }
 
-    /**
-     * حذف رسالة أو محادثة.
-     */
     public function destroy($id)
     {
         $message = ContactMessage::findOrFail($id);

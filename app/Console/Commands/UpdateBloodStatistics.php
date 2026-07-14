@@ -36,7 +36,7 @@ class UpdateBloodStatistics extends Command
 
             // إذا كان المخزون أقل من الحد الآمن، أرسل إشعاراً للمستشفى
             if ($inventory->units_available <= $criticalThreshold) {
-                
+
                 $hospitalUserId = $inventory->hospital->user_id;
                 $bloodTypeName = $inventory->bloodType->name;
 

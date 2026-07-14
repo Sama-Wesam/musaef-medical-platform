@@ -9,21 +9,44 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use App\AI\BloodDemandForecast;
 use App\Models\Hospital;
+use App\Models\BloodInventory; // استيراد الموديل مباشرة في الأعلى
+use Illuminate\Support\Facades\Log;
 
 class GenerateAIReportJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    /**
+     * تنفيذ مهمة توليد تقارير التنبؤ بالطلب في الخلفية
+     */
     public function handle(BloodDemandForecast $forecastEngine): void
     {
-        $hospitals = Hospital::where('is_verified', true)->get();
+        $hospitals = Hospital::query()->where('is_verified', true)->get();
 
         foreach ($hospitals as $hospital) {
-            // توليد توقع لاحتياج فصيلة O- (كمثال) للأسبوع القادم
-            $report = $forecastEngine->forecastDemand($hospital->id, 1); // 1 = ID for O-
 
-            // هنا يمكن حفظ التقرير في قاعدة البيانات أو إرساله للمستشفى
-            \Log::info("AI Report for Hospital {$hospital->id}: Expected Demand = {$report['forecast_next_7_days']} units.");
+            $inventories = BloodInventory::query()
+                ->where('hospital_id', '=', $hospital->id)
+                ->with('bloodType')
+                ->get();
+
+            foreach ($inventories as $inventory) {
+
+                // استدعاء الدالة بالمعاملات الستة الصحيحة والمطابقة للمحرك الذكي
+                $report = $forecastEngine->predictShortage(
+                    $inventory->bloodType->name,    // فصيلة الدم (string)
+                    $inventory->units_available,   // المخزون الحالي (int)
+                    15,                            // متوسط الاستهلاك اليومي الافتراضي (int)
+                    2,                             // الطلبات المعلقة الحالية (int)
+                    false,                         // هل توجد حالة طوارئ نشطة حالياً (bool)
+                    1                              // الموسم الحالي: 1 للشتاء (int)
+                );
+
+                // تسجيل مخرجات الذكاء الاصطناعي بنجاح
+                Log::info("AI Report for Hospital ID {$hospital->id}:");
+                Log::info("Blood Type: " . $report['blood_type'] . " | Status: " . $report['status']);
+                Log::info("Prediction Result: " . $report['message']);
+            }
         }
     }
 }

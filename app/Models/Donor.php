@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\LocationTrait;
 use Illuminate\Database\Eloquent\Model;
 
 class Donor extends Model
 {
+    use LocationTrait;
+
     protected $table = 'donors';
 
     protected $fillable = [

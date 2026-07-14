@@ -13,8 +13,8 @@ class AIService
     protected $responsePrediction;
 
     public function __construct(
-        BloodDemandForecast $demandForecast, 
-        HeatMapAnalysis $heatMap, 
+        BloodDemandForecast $demandForecast,
+        HeatMapAnalysis $heatMap,
         ResponsePrediction $responsePrediction
     ) {
         $this->demandForecast = $demandForecast;
@@ -24,7 +24,8 @@ class AIService
 
     public function getHospitalDemandForecast(int $hospitalId, int $bloodTypeId)
     {
-        return $this->demandForecast->forecastDemand($hospitalId, $bloodTypeId);
+        // تم التعديل إلى predictShortage لتتطابق مع دالة محرك الذكاء الاصطناعي الفعلي
+        return $this->demandForecast->predictShortage($hospitalId, $bloodTypeId);
     }
 
     public function getLiveHeatMapData()

@@ -29,10 +29,11 @@ class AIRepository
         }
         return false;
     }
-    
+
     public function clearOldResults(int $requestId): bool
     {
         // مسح النتائج القديمة لنفس الطلب في حال تم إعادة تشغيل الخوارزمية
-        return MatchingResult::where('blood_request_id', $requestId)->delete() > 0;
+        MatchingResult::where('blood_request_id', $requestId)->delete();
+        return true;
     }
 }

@@ -2,23 +2,23 @@
 
 namespace Database\Factories;
 
-use App\Models\Model;
+use App\Models\BloodRequest;
+use App\Models\Hospital;
+use App\Models\BloodType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends Factory<Model>
- */
 class BloodRequestFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
+    protected $model = BloodRequest::class;
+
     public function definition(): array
     {
         return [
-            //
+            'hospital_id' => Hospital::factory(),
+            'blood_type_id' => fake()->randomElement([1, 2, 3, 4, 5, 6, 7, 8]),
+            'units_required' => fake()->numberBetween(1, 15), // متوافق مع قيود الـ Validation والحد الأقصى
+            'emergency_level' => fake()->randomElement(['normal', 'high', 'critical']),
+            'status' => fake()->randomElement(['pending', 'searching', 'accepted']),
         ];
     }
 }

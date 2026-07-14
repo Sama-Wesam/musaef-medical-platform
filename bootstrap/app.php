@@ -13,7 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // تسجيل الـ Middleware بأسماء مستعارة لتسهيل استخدامها في ملفات routes/api.php
+        // 1. تسجيل الـ Middleware بأسماء مستعارة لتسهيل استخدامها في ملفات مسارات الأدوار
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRoleMiddleware::class,
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
@@ -21,14 +21,15 @@ return Application::configure(basePath: dirname(__DIR__))
             'donor' => \App\Http\Middleware\DonorMiddleware::class,
             'emergency.mode' => \App\Http\Middleware\EmergencyModeMiddleware::class,
         ]);
-        
-        // إعدادات الـ API (اختياري: إجبار استجابة JSON دائماً للأخطاء)
+
+        // 2. تفعيل الـ Middleware الجديد على مسارات الـ API بالكامل وبشكل تلقائي
         $middleware->api(prepend: [
+            \App\Http\Middleware\SetLanguageMiddleware::class, // إضافة متحكم اللغة هنا ليعمل في المقدمة
             \Illuminate\Http\Middleware\HandleCors::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        // يمكنك لاحقاً هنا تخصيص شكل رسائل الخطأ لتكون JSON منسقة للـ API
+        // تخصيص شكل رسائل الخطأ لتكون JSON منسقة للـ API
         $exceptions->shouldRenderJsonWhen(function (\Illuminate\Http\Request $request, \Throwable $e) {
             if ($request->is('api/*')) {
                 return true;

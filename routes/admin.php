@@ -10,28 +10,32 @@ use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\RewardsController;
 use App\Http\Controllers\Admin\RolesController;
 use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\MedicalGuidelineController;
 
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
-    
+
     Route::get('/dashboard', [DashboardController::class, 'index']);
-    
+
     // إدارة المتبرعين
     Route::apiResource('donors', DonorManagementController::class)->only(['index', 'show', 'destroy']);
-    
+
     // إدارة المستشفيات
     Route::apiResource('hospitals', HospitalManagementController::class)->only(['index', 'show', 'destroy']);
     Route::post('/hospitals/{id}/verify', [HospitalManagementController::class, 'verifyHospital']);
-    
+
     // إدارة الطوارئ
     Route::get('/requests', [RequestManagementController::class, 'index']);
     Route::get('/requests/{id}', [RequestManagementController::class, 'show']);
     Route::post('/requests/{id}/cancel', [RequestManagementController::class, 'cancelRequest']);
-    
+
     // الذكاء الاصطناعي وكشف الاحتيال
     Route::post('/fraud/analyze', [FraudDetectionController::class, 'analyzeHospital']);
     Route::get('/analytics/heatmap', [AnalyticsController::class, 'heatMapData']);
     Route::post('/analytics/forecast', [AnalyticsController::class, 'demandForecast']);
-    
+
+    // مسار إدارة "مركز التبرع والإرشادات الطبية" (تمت إضافته وتأمينه للـ CRUD بالكامل)
+    Route::apiResource('medical-guidelines', MedicalGuidelineController::class);
+
     // المكافآت والإعدادات
     Route::apiResource('rewards', RewardsController::class)->only(['index', 'store', 'destroy']);
     Route::apiResource('roles', RolesController::class)->only(['index', 'store']);

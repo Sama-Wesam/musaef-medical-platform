@@ -2,39 +2,24 @@
 
 namespace App\AI;
 
-use App\Models\BloodRequest;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
+use Symfony\Component\Process\Process;
 
 class HeatMapAnalysis
 {
-    /**
-     * استخراج إحداثيات المناطق التي تعاني من طوارئ حالياً لتمثيلها في الخريطة الحرارية
-     */
-    public function generateEmergencyHotspots()
+    public function generateHeatMap(array $requests, array $donors)
     {
-        // جلب الطلبات الحرجة والنشطة خلال آخر 48 ساعة
-        $activeRequests = BloodRequest::join('hospitals', 'blood_requests.hospital_id', '=', 'hospitals.id')
-            ->whereIn('blood_requests.status', ['pending', 'searching'])
-            ->where('blood_requests.emergency_level', 'critical')
-            ->where('blood_requests.created_at', '>=', Carbon::now()->subHours(48))
-            ->select(
-                'hospitals.latitude',
-                'hospitals.longitude',
-                DB::raw('SUM(blood_requests.units_required) as weight')
-            )
-            ->groupBy('hospitals.latitude', 'hospitals.longitude')
-            ->get();
+        $payload = [
+            'requests' => $requests, // تحتوي على lat و lon
+            'donors'   => $donors   // تحتوي على lat و lon
+        ];
 
-        // تجهيز الداتا للواجهة الأمامية (Google Maps Heatmap Layer)
-        $hotspots = $activeRequests->map(function ($point) {
-            return [
-                'lat' => (float) $point->latitude,
-                'lng' => (float) $point->longitude,
-                'weight' => (int) $point->weight * 2 // مضاعفة الوزن للحالات الحرجة ليظهر اللون الأحمر بشكل أقوى
-            ];
-        });
+        $process = new Process(['python', base_path('scripts/python/heatmap_analysis.py'), json_encode($payload)]);
+        $process->run();
 
-        return $hotspots;
+        if (!$process->isSuccessful()) {
+            throw new \Symfony\Component\Process\Exception\ProcessFailedException($process);
+        }
+
+        return json_decode($process->getOutput(), true);
     }
 }
