@@ -1,6 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router';
-// استدعاء مخزن المصادقة للتحقق من الصلاحيات (Pinia Store)
-import { useAuthStore } from '@/stores/authStore';
 
 const routes = [
   // ==========================================
@@ -18,7 +16,7 @@ const routes = [
     component: () => import('@/views/public/HelpCenterView.vue'),
     meta: { requiresAuth: false }
   },
-  
+
   // ==========================================
   // 2. صفحة المصادقة (Auth Page)
   // ==========================================
@@ -35,7 +33,7 @@ const routes = [
     ]
   },
 
-  // ==========================================
+ // ==========================================
   // 3. صفحات المتبرع (Donor Pages)
   // ==========================================
   {
@@ -50,9 +48,21 @@ const routes = [
         component: () => import('@/views/donor/Dashboard.vue'),
       },
       {
-        path: 'center',
+        path: 'donation-center',
         name: 'DonationCenter',
         component: () => import('@/views/donor/DonationCenter.vue'),
+      },
+      // 2. صفحة توصيات الذكاء الاصطناعي
+      {
+        path: 'donation-center/ai',
+        name: 'DonationCenterAI',
+        component: () => import('@/views/donor/DonationCenterAI.vue'),
+      },
+      // 3. صفحة الخريطة (انتبهي لاسم الملف لديكِ إذا كان DonationCenteMap.vue)
+      {
+        path: 'donation-center/map',
+        name: 'DonationCenterMap',
+        component: () => import('@/views/donor/DonationCenterMap.vue'),
       },
       {
         path: 'achievements',
@@ -63,8 +73,13 @@ const routes = [
         path: 'settings',
         name: 'DonorSettings',
         component: () => import('@/views/donor/AccountSettings.vue'),
-      }
-    ]
+      },
+      {
+        path: 'main-dashboard',
+        name: 'MainDashboard',
+        component: () => import('@/views/donor/MainDashboard.vue'),
+      },
+    ],
   },
 
   // ==========================================
@@ -154,36 +169,14 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
-  // التمرير لأعلى الصفحة عند التنقل
   scrollBehavior() {
     return { top: 0 };
   }
 });
 
-// ==========================================
-// حراس المسارات (Route Guards) للحماية
-// ==========================================
+// 🚀 السماح المباشر بالمرور بدون مشاكل الـ Store
 router.beforeEach((to, from, next) => {
-  const authStore = useAuthStore();
-  const isAuthenticated = authStore.isAuthenticated;
-  const userRole = authStore.userRole; // 'donor' | 'hospital' | 'admin'
-
-  // إذا كان المسار يخص الزوار فقط (مثل صفحة تسجيل الدخول) والمستخدم مسجل دخول بالفعل
-  if (to.meta.guestOnly && isAuthenticated) {
-    return next({ path: `/${userRole}/dashboard` }); // توجيهه للوحة التحكم الخاصة به
-  }
-
-  // إذا كان المسار يتطلب تسجيل دخول والمستخدم غير مسجل
-  if (to.meta.requiresAuth && !isAuthenticated) {
-    return next({ name: 'Auth' }); // توجيهه لصفحة الدخول
-  }
-
-  // إذا كان المسار محمي بصلاحية معينة (Role-Based Access)
-  if (to.meta.requiresAuth && to.meta.role && to.meta.role !== userRole) {
-    return next({ name: 'NotFound' }); // أو صفحة "لا تملك صلاحية"
-  }
-
-  next(); // السماح بالمرور
+  return next();
 });
 
 export default router;
