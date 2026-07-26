@@ -1,0 +1,1584 @@
+/* =========================================================
+   Global Styles
+========================================================= */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-family-main);
+}
+
+
+/* =========================================================
+   HospitalLayout.vue
+========================================================= */
+
+.hospital-layout {
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-family-main);
+}
+
+
+/* =========================
+   Header
+========================= */
+
+.hospital-layout .topbar {
+  position: relative;
+  z-index: 1100;
+
+  width: 100%;
+  height: var(--header-height);
+  min-height: var(--header-height);
+  padding: 0 24px;
+
+  display: flex;
+  align-items: center;
+  gap: 18px;
+
+  background-color: var(--color-white);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+
+/* زر القائمة */
+
+.hospital-layout .menu-toggle {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-medium);
+
+  background-color: var(--color-white);
+  color: var(--color-text);
+
+  font-size: 23px;
+  cursor: pointer;
+}
+
+.hospital-layout .menu-toggle:hover {
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+  border-color: var(--color-primary-border);
+}
+
+
+/* معلومات الطبيب */
+
+.hospital-layout .header-doctor {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.hospital-layout .header-doctor-image {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+
+  border: 2px solid var(--color-border);
+  border-radius: 50%;
+
+  object-fit: cover;
+  background-color: var(--color-soft);
+}
+
+.hospital-layout .header-doctor-info {
+  min-width: 100px;
+  text-align: right;
+}
+
+.hospital-layout .header-doctor-info h5 {
+  margin: 0 0 4px;
+
+  color: var(--color-text);
+
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.hospital-layout .header-doctor-info p {
+  margin: 0;
+
+  color: var(--color-muted);
+
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+
+/* البحث */
+
+.hospital-layout .search-box {
+  width: 340px;
+  position: relative;
+  margin-right: auto;
+}
+
+.hospital-layout .search-box input {
+  width: 100%;
+  height: 38px;
+  padding: 0 40px 0 14px;
+
+  border: 0;
+  outline: none;
+  border-radius: 11px;
+
+  background-color: var(--color-background);
+  color: var(--color-text);
+
+  font-size: 11px;
+}
+
+.hospital-layout .search-box input::placeholder {
+  color: var(--color-light-muted);
+}
+
+.hospital-layout .search-box input:focus {
+  background-color: var(--color-white);
+  box-shadow: 0 0 0 2px rgb(220 38 38 / 10%);
+}
+
+.hospital-layout .search-box i {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+
+  transform: translateY(-50%);
+
+  color: var(--color-light-muted);
+  font-size: 13px;
+
+  pointer-events: none;
+}
+
+
+/* الإشعارات */
+
+.hospital-layout .notification-button {
+  width: 38px;
+  height: 38px;
+  position: relative;
+  padding: 0;
+
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+
+  border: 0;
+  background-color: transparent;
+  color: var(--color-text);
+
+  font-size: 17px;
+  cursor: pointer;
+}
+
+.hospital-layout .notification-button span {
+  width: 17px;
+  height: 17px;
+
+  position: absolute;
+  top: 0;
+  right: 0;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+
+  background-color: var(--color-primary);
+  color: var(--color-white);
+
+  font-size: 9px;
+}
+
+
+/* حالة الدم */
+
+.hospital-layout .blood-status {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.hospital-layout .blood-status span {
+  min-width: 104px;
+  min-height: 32px;
+  padding: 7px 17px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 20px;
+
+  background-color: var(--color-primary);
+  color: var(--color-white);
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+
+/* =========================
+   المنطقة تحت الهيدر
+========================= */
+
+.hospital-layout .layout-body {
+  width: 100%;
+  min-height: calc(100vh - var(--header-height));
+
+  display: flex;
+  align-items: stretch;
+}
+
+
+/* =========================
+   Sidebar
+========================= */
+
+.hospital-layout .sidebar {
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  min-height: calc(100vh - var(--header-height));
+  padding: 20px 22px 16px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  background-color: var(--color-white);
+  border-left: 1px solid #f0f0f0;
+}
+
+.hospital-layout .sidebar-menu {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+
+/* روابط القائمة */
+
+.hospital-layout .menu-link {
+  width: 100%;
+  height: 39px;
+  min-height: 39px;
+  padding: 0 15px;
+
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #e8e8e8;
+  border-radius: 22px;
+
+  background-color: var(--color-white);
+  color: #111111;
+  text-decoration: none;
+
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1;
+
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.hospital-layout .menu-link i {
+  width: 18px;
+  height: 18px;
+
+  position: absolute;
+  right: 20px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: currentColor;
+
+  font-size: 16px;
+  line-height: 1;
+}
+
+.hospital-layout .menu-link span {
+  width: 100%;
+  padding: 0 23px;
+
+  display: block;
+
+  text-align: center;
+  white-space: nowrap;
+}
+
+.hospital-layout .menu-link:hover {
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+  border-color: var(--color-primary-border);
+}
+
+.hospital-layout .menu-link.router-link-exact-active {
+  color: var(--color-primary);
+  background-color: #fdeced;
+  border-color: transparent;
+
+  font-weight: 700;
+}
+
+.hospital-layout .menu-link.router-link-exact-active i {
+  font-size: 16px;
+}
+
+
+/* المساعدة */
+
+.hospital-layout .quick-help {
+  margin-top: 22px;
+  padding: 18px 13px;
+
+  border: 1px solid var(--color-primary-border);
+  border-radius: 9px;
+
+  background-color: var(--color-white);
+  text-align: center;
+}
+
+.hospital-layout .quick-help h6 {
+  margin: 0 0 9px;
+
+  color: var(--color-text);
+
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.hospital-layout .quick-help p {
+  margin: 0 0 13px;
+
+  color: var(--color-muted);
+
+  font-size: 9px;
+  line-height: 1.8;
+}
+
+.hospital-layout .quick-help button {
+  width: 100%;
+  padding: 9px 8px;
+
+  border: 0;
+  border-radius: 3px;
+
+  background-color: var(--color-primary);
+  color: var(--color-white);
+
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.hospital-layout .quick-help button:hover {
+  background-color: #b91c1c;
+}
+
+
+/* تسجيل الخروج */
+
+.hospital-layout .logout-button {
+  width: 100%;
+  min-height: 42px;
+  margin-top: 30px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 22px;
+
+  background-color: var(--color-white);
+  color: var(--color-text);
+
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.hospital-layout .logout-button:hover {
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+  border-color: var(--color-primary-border);
+}
+
+
+/* =========================
+   المحتوى الرئيسي
+========================= */
+
+.hospital-layout .main-area {
+  flex: 1;
+  min-width: 0;
+
+  background-color: var(--color-background);
+}
+
+.hospital-layout .page-wrapper {
+  width: 100%;
+  min-height: calc(100vh - var(--header-height));
+  padding: 22px 24px;
+
+  overflow-x: hidden;
+}
+
+
+/* طبقة خلف القائمة */
+
+.hospital-layout .sidebar-overlay {
+  display: none;
+}
+
+
+/* حركة ظهور طبقة القائمة */
+
+.overlay-enter-active,
+.overlay-leave-active {
+  transition: opacity 0.25s ease;
+}
+
+.overlay-enter-from,
+.overlay-leave-to {
+  opacity: 0;
+}
+
+
+/* =========================================================
+   Dashboard.vue
+========================================================= */
+
+.dashboard-page {
+  width: 100%;
+
+  direction: rtl;
+  color: var(--color-text);
+}
+
+
+/* =========================
+   شبكات الصفحة
+========================= */
+
+.dashboard-page .charts-grid {
+  margin-top: 16px;
+  margin-bottom: 18px;
+
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1.45fr)
+    minmax(280px, 0.8fr);
+  grid-template-areas: "monthly distribution";
+  gap: 16px;
+
+  direction: ltr;
+}
+
+.dashboard-page .bottom-grid {
+  margin-bottom: 18px;
+
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1.1fr)
+    minmax(0, 1fr);
+  grid-template-areas: "ai alerts";
+  gap: 16px;
+
+  direction: ltr;
+}
+
+.dashboard-page .monthly-card {
+  grid-area: monthly;
+}
+
+.dashboard-page .distribution-card {
+  grid-area: distribution;
+}
+
+.dashboard-page .ai-card {
+  grid-area: ai;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-page .alerts-card {
+  grid-area: alerts;
+}
+
+
+/* =========================
+   البطاقات العامة
+========================= */
+
+.dashboard-page .dashboard-card {
+  min-width: 0;
+  padding: 18px;
+
+  overflow: hidden;
+
+  direction: rtl;
+
+  border: 1px solid #f1f2f4;
+  border-radius: var(--radius-large);
+
+  background-color: var(--color-white);
+  box-shadow: 0 3px 12px rgb(15 23 42 / 3.5%);
+}
+
+
+/* =========================
+   عناوين البطاقات
+========================= */
+
+.dashboard-page .card-title-row {
+  min-height: 30px;
+  margin-bottom: 17px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dashboard-page .card-title-row h3 {
+  margin: 0;
+
+  color: var(--color-text);
+
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.dashboard-page .period-select {
+  min-width: 92px;
+  height: 31px;
+  padding: 4px 10px;
+
+  border: 0;
+  border-radius: 8px;
+  outline: none;
+
+  background-color: var(--color-soft);
+  color: #4b5563;
+
+  font-size: 9px;
+  cursor: pointer;
+}
+
+
+/* =========================
+   الطلبات الشهرية
+========================= */
+
+.dashboard-page .monthly-chart-wrapper {
+  width: 100%;
+  height: 235px;
+  min-height: 235px;
+
+  position: relative;
+}
+
+.dashboard-page .monthly-chart-wrapper canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+
+/* =========================
+   توزيع فصائل الدم
+========================= */
+
+.dashboard-page .blood-distribution {
+  min-height: 235px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+}
+
+.dashboard-page .distribution-chart-wrapper {
+  width: 150px;
+  height: 150px;
+
+  position: relative;
+  flex-shrink: 0;
+}
+
+.dashboard-page .distribution-chart-wrapper canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.dashboard-page .legend {
+  min-width: 104px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.dashboard-page .legend-item {
+  display: grid;
+  grid-template-columns: 8px 32px 48px;
+  align-items: center;
+  gap: 6px;
+
+  direction: ltr;
+
+  color: var(--color-text-secondary);
+  font-size: 10px;
+}
+
+.dashboard-page .legend-item strong {
+  color: var(--color-text);
+
+  font-weight: 800;
+}
+
+.dashboard-page .legend-percent {
+  color: var(--color-muted);
+
+  font-weight: 600;
+}
+
+.dashboard-page .legend-dot {
+  width: 7px;
+  height: 7px;
+
+  display: inline-block;
+
+  border-radius: 50%;
+}
+
+
+/* =========================
+   توقعات الذكاء الاصطناعي
+========================= */
+
+.dashboard-page .ai-content {
+  min-height: 126px;
+
+  display: grid;
+  grid-template-columns:
+    minmax(180px, 1fr)
+    minmax(180px, 1.1fr);
+  align-items: center;
+  gap: 25px;
+
+  direction: ltr;
+}
+
+.dashboard-page .mini-chart,
+.dashboard-page .ai-text {
+  direction: rtl;
+}
+
+.dashboard-page .mini-chart {
+  width: 100%;
+  height: 130px;
+  padding: 8px 8px 20px 29px;
+
+  position: relative;
+
+  overflow: hidden;
+}
+
+.dashboard-page .chart-percentage {
+  position: absolute;
+  left: 0;
+
+  color: var(--color-light-muted);
+  font-size: 7px;
+}
+
+.dashboard-page .percentage-100 {
+  top: 5px;
+}
+
+.dashboard-page .percentage-75 {
+  top: 29px;
+}
+
+.dashboard-page .percentage-50 {
+  top: 54px;
+}
+
+.dashboard-page .percentage-25 {
+  top: 79px;
+}
+
+.dashboard-page .percentage-0 {
+  top: 104px;
+}
+
+.dashboard-page .chart-horizontal-line {
+  height: 1px;
+
+  position: absolute;
+  right: 7px;
+  left: 28px;
+
+  background-color: #f1f2f4;
+}
+
+.dashboard-page .line-1 {
+  top: 17px;
+}
+
+.dashboard-page .line-2 {
+  top: 43px;
+}
+
+.dashboard-page .line-3 {
+  top: 69px;
+}
+
+.dashboard-page .line-4 {
+  top: 95px;
+}
+
+.dashboard-page .prediction-line {
+  position: absolute;
+  top: 5px;
+  right: 8px;
+  bottom: 22px;
+  left: 29px;
+
+  width: calc(100% - 37px);
+  height: calc(100% - 27px);
+}
+
+.dashboard-page .prediction-area {
+  fill: url("#predictionFill");
+}
+
+.dashboard-page .prediction-path {
+  fill: none;
+  stroke: var(--color-danger);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.dashboard-page .prediction-arrow {
+  position: absolute;
+  top: 11px;
+  right: 12px;
+
+  color: var(--color-danger);
+  font-size: 22px;
+}
+
+.dashboard-page .chart-times {
+  position: absolute;
+  right: 8px;
+  bottom: 0;
+  left: 29px;
+
+  display: flex;
+  justify-content: space-between;
+
+  color: var(--color-light-muted);
+  font-size: 7px;
+}
+
+.dashboard-page .ai-text {
+  text-align: right;
+}
+
+.dashboard-page .ai-text p {
+  margin: 0 0 13px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 2;
+}
+
+.dashboard-page .ai-text strong {
+  color: var(--color-text);
+
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.dashboard-page .ai-text small {
+  display: block;
+
+  color: var(--color-light-muted);
+
+  font-size: 9px;
+  line-height: 1.8;
+}
+
+.dashboard-page .soft-action-btn {
+  width: 100%;
+  height: 36px;
+  margin-top: auto;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 8px;
+
+  background-color: #fff1f2;
+  color: var(--color-danger);
+
+  font-size: 11px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+
+/* =========================
+   تنبيهات المخزون
+========================= */
+
+.dashboard-page .alerts-card {
+  min-width: 0;
+  min-height: 184px;
+  padding: 15px 18px 14px;
+
+  display: flex;
+  flex-direction: column;
+
+  direction: rtl;
+}
+
+.dashboard-page .alerts-header {
+  width: 100%;
+  min-height: 26px;
+  margin-bottom: 8px;
+
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dashboard-page .alerts-header h3 {
+  margin: 0;
+
+  color: var(--color-text);
+
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.dashboard-page .alert-header-icon {
+  position: absolute;
+  top: 50%;
+  right: 0;
+
+  transform:
+    translateY(-50%)
+    scaleX(-1);
+
+  color: var(--color-danger);
+
+  font-size: 15px;
+  line-height: 1;
+}
+
+.dashboard-page .alerts-list {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-page .alert-row {
+  width: 100%;
+  min-height: 30px;
+
+  display: grid;
+  grid-template-columns:
+    54px
+    54px
+    70px
+    minmax(72px, 1fr)
+    90px;
+  align-items: center;
+  gap: 7px;
+
+  direction: ltr;
+
+  border-bottom: 1px solid #f1f2f4;
+}
+
+.dashboard-page .alert-row:last-child {
+  border-bottom: 0;
+}
+
+.dashboard-page .alert-blood-type {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 5px;
+
+  direction: ltr;
+}
+
+.dashboard-page .alert-blood-type i {
+  width: 15px;
+  height: 15px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 13px;
+  line-height: 1;
+}
+
+.dashboard-page .alert-blood-type strong {
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.dashboard-page .alert-badge {
+  min-width: 42px;
+  min-height: 17px;
+  padding: 2px 6px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  direction: rtl;
+
+  border-radius: 10px;
+
+  background-color: #fff1e7;
+  color: var(--color-orange);
+
+  white-space: nowrap;
+
+  font-size: 6.5px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.dashboard-page .alert-units {
+  direction: rtl;
+
+  color: var(--color-text);
+  text-align: center;
+  white-space: nowrap;
+
+  font-size: 7px;
+  font-weight: 700;
+}
+
+.dashboard-page .alert-progress {
+  width: 100%;
+  height: 3px;
+
+  overflow: hidden;
+
+  direction: ltr;
+
+  border-radius: 20px;
+  background-color: var(--color-border);
+}
+
+.dashboard-page .alert-progress-fill {
+  height: 100%;
+
+  border-radius: 20px;
+}
+
+.dashboard-page .alert-message {
+  direction: rtl;
+
+  color: var(--color-text-secondary);
+  text-align: right;
+  white-space: nowrap;
+
+  font-size: 7px;
+}
+
+.dashboard-page .alerts-button {
+  width: 100%;
+  height: 28px;
+  min-height: 28px;
+  margin-top: auto;
+  padding: 0 10px;
+
+  border: 0;
+  border-radius: 6px;
+
+  background-color: #fff0f1;
+  color: var(--color-danger);
+
+  font-size: 9px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.dashboard-page .alerts-button:hover {
+  background-color: #fee2e2;
+}
+
+.dashboard-page .alerts-button:active {
+  transform: scale(0.99);
+}
+
+
+/* =========================================================
+   BloodInventory.vue
+========================================================= */
+
+.blood-inventory-page {
+  width: 100%;
+
+  color: var(--color-text);
+}
+
+.blood-inventory-page .inventory-layout {
+  width: 100%;
+
+  display: grid;
+  grid-template-columns:
+    190px
+    minmax(0, 1fr);
+  grid-template-areas: "side main";
+  gap: 16px;
+
+  direction: ltr;
+}
+
+.blood-inventory-page .inventory-main {
+  grid-area: main;
+  min-width: 0;
+
+  direction: rtl;
+}
+
+.blood-inventory-page .inventory-sidebar {
+  grid-area: side;
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  direction: rtl;
+}
+
+.blood-inventory-page .forms-grid {
+  margin-top: 17px;
+
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+
+/* =========================================================
+   EmergencyRequestsManagement.vue
+========================================================= */
+
+.emergency-page {
+  width: 100%;
+
+  color: var(--color-text);
+}
+
+
+/* عنوان الصفحة */
+
+.emergency-page .page-heading {
+  margin-bottom: 18px;
+}
+
+.emergency-page .heading-text {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.emergency-page .heading-icon {
+  width: 42px;
+  height: 42px;
+
+  display: grid;
+  place-items: center;
+
+  border: 1px solid var(--color-primary-border);
+  border-radius: 8px;
+
+  background-color: var(--color-primary-light);
+  color: var(--color-danger);
+
+  font-size: 16px;
+}
+
+.emergency-page .heading-text h1 {
+  margin: 0 0 7px;
+
+  font-size: 27px;
+  font-weight: 800;
+}
+
+.emergency-page .heading-text p {
+  margin: 0;
+
+  color: var(--color-light-muted);
+  font-size: 15px;
+}
+
+
+/* الفلاتر */
+
+.emergency-page .toolbar {
+  margin-bottom: 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.emergency-page .filter-tabs {
+  display: flex;
+  gap: 12px;
+}
+
+.emergency-page .filter-button {
+  min-width: 115px;
+  height: 40px;
+  padding: 0 13px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+
+  background-color: var(--color-white);
+  color: var(--color-text-secondary);
+
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.emergency-page .filter-button strong {
+  min-width: 25px;
+  height: 25px;
+
+  display: inline-grid;
+  place-items: center;
+
+  border-radius: 50%;
+
+  background-color: var(--color-soft);
+
+  font-size: 20px;
+}
+
+.emergency-page .filter-button.active {
+  color: var(--color-primary);
+
+  border-color: var(--color-danger);
+  background-color: #fffafa;
+}
+
+.emergency-page .filter-button.active strong {
+  color: var(--color-white);
+  background-color: var(--color-danger);
+}
+
+.emergency-page .export-button {
+  height: 39px;
+  padding: 0 17px;
+
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+
+  background-color: var(--color-white);
+  color: var(--color-text);
+
+  font-size: 9px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+
+/* شبكة الصفحة */
+
+.emergency-page .requests-layout {
+  width: 100%;
+
+  display: grid;
+  grid-template-columns:
+    190px
+    minmax(0, 1fr);
+  grid-template-areas: "details table";
+  gap: 16px;
+
+  direction: ltr;
+}
+
+.emergency-page .main-requests-card {
+  grid-area: table;
+  min-width: 0;
+
+  overflow: hidden;
+
+  direction: rtl;
+
+  border: 1px solid var(--color-border-light);
+  border-radius: 11px;
+
+  background-color: var(--color-white);
+}
+
+.emergency-page .details-column {
+  grid-area: details;
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  direction: rtl;
+}
+
+
+/* =========================================================
+   FacilitySettings.vue
+========================================================= */
+
+.facility-settings-page {
+  width: 100%;
+
+  color: var(--color-text);
+}
+
+
+/* عنوان الصفحة */
+
+.facility-settings-page .page-heading {
+  margin-bottom: 20px;
+}
+
+.facility-settings-page .page-heading h1 {
+  margin: 0 0 9px;
+
+  color: var(--color-text);
+
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.facility-settings-page .page-heading p {
+  margin: 0;
+
+  color: var(--color-light-muted);
+
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+
+/* محتوى الملف التعريفي */
+
+.facility-settings-page .profile-layout {
+  width: 100%;
+min-height: 400px;
+  display: grid;
+  grid-template-columns: 1fr 4fr;
+  grid-template-areas: "map information";
+  gap: 16px;
+
+  direction: ltr;
+}
+
+.facility-settings-page .profile-layout > :first-child {
+  grid-area: map;
+
+  direction: rtl;
+}
+
+.facility-settings-page .profile-layout > :last-child {
+  grid-area: information;
+
+  direction: rtl;
+}
+
+
+/* البطاقات المؤقتة */
+
+.facility-settings-page .placeholder-card {
+  min-height: 330px;
+  padding: 35px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px dashed #d1d5db;
+  border-radius: 12px;
+
+  background-color: var(--color-white);
+  text-align: center;
+}
+
+.facility-settings-page .placeholder-card i {
+  margin-bottom: 15px;
+
+  color: var(--color-danger);
+  font-size: 34px;
+}
+
+.facility-settings-page .placeholder-card h2 {
+  margin: 0 0 10px;
+
+  font-size: 15px;
+}
+
+.facility-settings-page .placeholder-card p {
+  margin: 0;
+
+  color: var(--color-light-muted);
+  font-size: 10px;
+}
+
+
+/* =========================================================
+   NotificationsCenter.vue
+========================================================= */
+
+.notifications-page {
+  width: 100%;
+
+  color: var(--color-text);
+}
+
+
+/* عنوان الصفحة */
+
+.notifications-page .page-heading {
+  width: 100%;
+  margin-bottom: 22px;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.notifications-page .page-heading h1 {
+  margin: 0 0 8px;
+
+  color: var(--color-text);
+
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.notifications-page .page-heading p {
+  margin: 0;
+
+  color: var(--color-light-muted);
+
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.notifications-page .read-all-button {
+  min-height: 38px;
+  padding: 0 14px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  flex-shrink: 0;
+
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+
+  background-color: var(--color-white);
+  color: var(--color-text);
+
+  font-size: 10px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.notifications-page .read-all-button:hover:not(:disabled) {
+  color: var(--color-primary);
+
+  border-color: var(--color-primary-border);
+  background-color: var(--color-primary-light);
+}
+
+.notifications-page .read-all-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
+/* الفلاتر */
+
+.notifications-page .filters-section {
+  width: 100%;
+  margin-bottom: 18px;
+}
+
+
+/* قائمة الإشعارات */
+
+.notifications-page .notifications-list {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+
+/* رسالة الخطأ */
+
+.notifications-page .error-message {
+  width: 100%;
+  margin-bottom: 16px;
+  padding: 11px 13px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  border: 1px solid var(--color-primary-border);
+  border-radius: 8px;
+
+  background-color: var(--color-primary-light);
+  color: #b91c1c;
+
+  font-size: 10px;
+}
+
+
+/* التحميل والحالة الفارغة */
+
+.notifications-page .loading-state,
+.notifications-page .empty-state {
+  min-height: 240px;
+  padding: 30px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px dashed #d1d5db;
+  border-radius: 12px;
+
+  background-color: var(--color-white);
+  text-align: center;
+}
+
+.notifications-page .loading-state p,
+.notifications-page .empty-state p {
+  margin: 10px 0 0;
+
+  color: var(--color-light-muted);
+  font-size: 10px;
+}
+
+.notifications-page .empty-state i {
+  margin-bottom: 14px;
+
+  color: var(--color-light-muted);
+  font-size: 34px;
+}
+
+.notifications-page .empty-state h3 {
+  margin: 0;
+
+  font-size: 14px;
+}
+
+.notifications-page .spinner {
+  width: 30px;
+  height: 30px;
+
+  border: 3px solid #fee2e2;
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+
+  animation: notifications-spin 0.8s linear infinite;
+}
+
+@keyframes notifications-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
