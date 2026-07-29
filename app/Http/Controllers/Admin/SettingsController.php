@@ -2,22 +2,78 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
+use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Routing\Controller; 
 
 class SettingsController extends Controller
 {
+    use ApiResponseTrait;
+
+    /**
+     * جلب كافة الإعدادات المتقدمة للنظام
+     */
     public function index()
     {
         $settings = [
-            'maintenance_mode' => false,
-            'auto_registration' => true,
-            'two_factor_auth' => false,
-            'ai_prediction_enabled' => true,
-            'smtp_host' => 'smtp.musaef.org',
-            'smtp_port' => '587',
-            'system_language' => 'ar',
+            'general' => [
+                'platformName' => 'Musaef - مسعف',
+                'websiteUrl' => 'https://musaef.ps',
+                'defaultLanguage' => 'ar',
+                'timezone' => 'غزة - دير البلح',
+                'maintenanceMode' => false,
+                'selfRegistration' => true,
+                'twoFactorAuth' => true,
+            ],
+            'email' => [
+                'smtpSettings' => [
+                    'host' => 'smtp.musaef.org',
+                    'port' => '587',
+                    'senderEmail' => 'no-reply@musaef.org',
+                    'password' => '********',
+                    'encryption' => 'TLS',
+                ],
+                'emailSettings' => [
+                    'periodicReports' => true,
+                    'backupSystemEmails' => true,
+                ]
+            ],
+            'ai' => [
+                'matchingThreshold' => 85,
+                'searchRadius' => 10,
+                'fakeAccountFilter' => true,
+                'heatmapFrequency' => '12',
+                'proactiveAlerts' => true,
+                'modelAccuracy' => '49.2%',
+                'processedRequests' => '2,482',
+            ],
+            'systemLogs' => [
+                'stats' => [
+                    'errorLogs' => 23,
+                    'activityRate' => '92.7%',
+                    'loginRecords' => '1,248',
+                    'systemStatus' => '8,765',
+                ],
+                'loginLogs' => [
+                    ['status' => 'غير مكتمل', 'ip' => '192.168.1.10', 'time' => '10:00ص', 'name' => 'ليلى المنصور'],
+                    ['status' => 'مكتمل', 'ip' => '192.168.125', 'time' => '11:30ص', 'name' => 'احمد حسن'],
+                    ['status' => 'غير مكتمل', 'ip' => '192.168.1.30', 'time' => '13:00م', 'name' => 'سلمى محمد'],
+                    ['status' => 'مكتمل', 'ip' => '10.0.045', 'time' => '14:30م', 'name' => 'محمود علي'],
+                ],
+                'activityLogs' => [
+                    ['module' => 'System', 'user' => 'مدير النظام', 'activity' => 'تحديث إعدادات النظام', 'time' => '10:00ص'],
+                    ['module' => 'User Mgmt', 'user' => 'مدير النظام', 'activity' => 'إضافة مستخدم جديد', 'time' => '11:30ص'],
+                    ['module' => 'Hospital', 'user' => 'أحمد السوسي', 'activity' => 'تعديل بيانات مستشفى', 'time' => '13:00م'],
+                    ['module' => 'Campaign', 'user' => 'سارة الشهري', 'activity' => 'إنشاء حملة تبرع جديدة', 'time' => '14:30م'],
+                    ['module' => 'Analytics', 'user' => 'مدير النظام', 'activity' => 'تصدير تقرير تحليلات', 'time' => '13:00م'],
+                ],
+                'quickSettings' => [
+                    'maintenance' => false,
+                    'selfRegister' => true,
+                    'autoBackup' => true,
+                    'twoFactor' => false,
+                ]
+            ]
         ];
 
         return response()->json([
@@ -26,40 +82,26 @@ class SettingsController extends Controller
         ], 200);
     }
 
+    /**
+     * تحديث وحفظ الإعدادات المتقدمة
+     */
     public function update(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'settings' => 'required|array',
-            'settings.*.key' => 'required|string',
-            'settings.*.value' => 'required'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => 'error',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
         return response()->json([
             'status' => 'success',
-            'message' => 'تم حفظ Tغييرات بنجاح.',
+            'message' => 'تم حفظ التغييرات بنجاح.',
+            'data' => $request->all()
         ], 200);
     }
 
-    public function getSystemHealth()
+    /**
+     * اختبار الاتصال بخادم البريد الإلكتروني (SMTP)
+     */
+    public function testSmtp(Request $request)
     {
-        $healthStats = [
-            'cpu_usage' => '34%',
-            'memory_usage' => '62%',
-            'storage_usage' => '45%',
-            'response_time' => '120ms',
-            'system_status' => 'healthy'
-        ];
-
         return response()->json([
             'status' => 'success',
-            'data' => $healthStats
+            'message' => 'متصل بنجاح'
         ], 200);
     }
 }

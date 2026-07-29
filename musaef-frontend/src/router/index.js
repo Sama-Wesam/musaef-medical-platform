@@ -1,169 +1,70 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { useAuthStore } from '@/stores/authStore';
+
+// 1. استيراد الصفحات العامة
+import Home from '@/views/public/HomeView.vue';
+import About from '@/views/public/AboutView.vue';
+import BloodGuide from '@/views/public/BloodGuide.vue';
+
+// 2. استيراد صفحات المصادقة
+import LoginRegister from '@/views/auth/LoginRegister.vue';
+import ForgotPassword from '@/views/auth/ForgotPassword.vue';
+import ResetPassword from '@/views/auth/ResetPassword.vue';
+
+// 3. استيراد صفحات بوابة المتبرع
+import DonorDashboard from '@/views/donor/Dashboard.vue';
+import DonationCenter from '@/views/donor/DonationCenter.vue';
+import DonorProfile from '@/views/donor/Profile.vue';
+import DonorAchievements from '@/views/donor/AchievementsView.vue';
+
+// 4. استيراد صفحات بوابة المستشفى وبنك الدم
+import HospitalDashboard from '@/views/hospital/Dashboard.vue';
+import HospitalRequests from '@/views/hospital/EmergencyRequests.vue';
+import HospitalInventory from '@/views/hospital/BloodInventory.vue';
+import HospitalNotifications from '@/views/hospital/Notifications.vue';
+import HospitalSettings from '@/views/hospital/Settings.vue';
+
+// 5. استيراد صفحات لوحة تحكم الإدارة العليا
+import AdminDashboard from '@/views/admin/Dashboard.vue';
+import AdminLiveRadar from '@/views/admin/LiveRadar.vue';
+import AdminAnalytics from '@/views/admin/Analytics.vue';
+import AdminAccounts from '@/views/admin/AccountsManagement.vue';
+import AdminSettings from '@/views/admin/AdvancedSettings.vue';
 
 const routes = [
-  // ==========================================
-  // 1. صفحات الواجهة العامة (Public Pages)
-  // ==========================================
-  {
-    path: '/',
-    name: 'Home',
-    component: () => import('@/views/public/HomeView.vue'),
-    meta: { requiresAuth: false }
-  },
-  {
-    path: '/help',
-    name: 'HelpCenter',
-    component: () => import('@/views/public/HelpCenterView.vue'),
-    meta: { requiresAuth: false }
-  },
+  // --- المسارات العامة ---
+  { path: '/', name: 'Home', component: Home },
+  { path: '/about', name: 'About', component: About },
+  { path: '/blood-guide', name: 'BloodGuide', component: BloodGuide },
 
-  // ==========================================
-  // 2. صفحة المصادقة (Auth Page)
-  // ==========================================
-  {
-    path: '/auth',
-    component: () => import('@/layouts/AuthLayout.vue'),
-    children: [
-      {
-        path: '',
-        name: 'Auth',
-        component: () => import('@/views/public/AuthPage.vue'),
-        meta: { requiresAuth: false, guestOnly: true }
-      }
-    ]
-  },
+  // --- مسارات المصادقة والتسجيل ---
+  { path: '/login', name: 'Login', component: LoginRegister, meta: { guestOnly: true } },
+  { path: '/register', name: 'Register', component: LoginRegister, meta: { guestOnly: true } },
+  { path: '/forgot-password', name: 'ForgotPassword', component: ForgotPassword, meta: { guestOnly: true } },
+  { path: '/reset-password', name: 'ResetPassword', component: ResetPassword, meta: { guestOnly: true } },
 
- // ==========================================
-  // 3. صفحات المتبرع (Donor Pages)
-  // ==========================================
-  {
-    path: '/donor',
-    component: () => import('@/layouts/DonorLayout.vue'),
-    meta: { requiresAuth: true, role: 'donor' },
-    children: [
-      { path: '', redirect: '/donor/dashboard' },
-      {
-        path: 'dashboard',
-        name: 'DonorDashboard',
-        component: () => import('@/views/donor/Dashboard.vue'),
-      },
-      {
-        path: 'donation-center',
-        name: 'DonationCenter',
-        component: () => import('@/views/donor/DonationCenter.vue'),
-      },
-      // 2. صفحة توصيات الذكاء الاصطناعي
-      {
-        path: 'donation-center/ai',
-        name: 'DonationCenterAI',
-        component: () => import('@/views/donor/DonationCenterAI.vue'),
-      },
-      // 3. صفحة الخريطة (انتبهي لاسم الملف لديكِ إذا كان DonationCenteMap.vue)
-      {
-        path: 'donation-center/map',
-        name: 'DonationCenterMap',
-        component: () => import('@/views/donor/DonationCenterMap.vue'),
-      },
-      {
-        path: 'achievements',
-        name: 'DonorAchievements',
-        component: () => import('@/views/donor/Achievements.vue'),
-      },
-      {
-        path: 'settings',
-        name: 'DonorSettings',
-        component: () => import('@/views/donor/AccountSettings.vue'),
-      },
-      {
-        path: 'main-dashboard',
-        name: 'MainDashboard',
-        component: () => import('@/views/donor/MainDashboard.vue'),
-      },
-    ],
-  },
+  // --- مسارات بوابة المتبرع ---
+  { path: '/donor/dashboard', name: 'DonorDashboard', component: DonorDashboard, meta: { requiresAuth: true } },
+  { path: '/donor/donation-center', name: 'DonationCenter', component: DonationCenter, meta: { requiresAuth: true } },
+  { path: '/donor/profile', name: 'DonorProfile', component: DonorProfile, meta: { requiresAuth: true } },
+  { path: '/donor/achievements', name: 'DonorAchievements', component: DonorAchievements, meta: { requiresAuth: true } },
 
-  // ==========================================
-  // 4. صفحات المستشفى (Hospital Pages)
-  // ==========================================
-  {
-    path: '/hospital',
-    component: () => import('@/layouts/HospitalLayout.vue'),
-    meta: { requiresAuth: true, role: 'hospital' },
-    children: [
-      { path: '', redirect: '/hospital/dashboard' },
-      {
-        path: 'dashboard',
-        name: 'HospitalDashboard',
-        component: () => import('@/views/hospital/Dashboard.vue'),
-      },
-      {
-        path: 'requests',
-        name: 'EmergencyRequests',
-        component: () => import('@/views/hospital/EmergencyRequestsManagement.vue'),
-      },
-      {
-        path: 'inventory',
-        name: 'BloodInventory',
-        component: () => import('@/views/hospital/BloodInventory.vue'),
-      },
-      {
-        path: 'settings',
-        name: 'FacilitySettings',
-        component: () => import('@/views/hospital/FacilitySettings.vue'),
-      }
-    ]
-  },
+  // --- مسارات بوابة المستشفى وبنك الدم ---
+  { path: '/hospital/dashboard', name: 'HospitalDashboard', component: HospitalDashboard, meta: { requiresAuth: true } },
+  { path: '/hospital/requests', name: 'HospitalRequests', component: HospitalRequests, meta: { requiresAuth: true } },
+  { path: '/hospital/inventory', name: 'HospitalInventory', component: HospitalInventory, meta: { requiresAuth: true } },
+  { path: '/hospital/notifications', name: 'HospitalNotifications', component: HospitalNotifications, meta: { requiresAuth: true } },
+  { path: '/hospital/settings', name: 'HospitalSettings', component: HospitalSettings, meta: { requiresAuth: true } },
 
-  // ==========================================
-  // 5. صفحات الإدارة (Admin Pages)
-  // ==========================================
-  {
-    path: '/admin',
-    component: () => import('@/layouts/AdminLayout.vue'),
-    meta: { requiresAuth: true, role: 'admin' },
-    children: [
-      { path: '', redirect: '/admin/dashboard' },
-      {
-        path: 'dashboard',
-        name: 'AdminDashboard',
-        component: () => import('@/views/admin/Dashboard.vue'),
-      },
-      {
-        path: 'radar',
-        name: 'LiveRadar',
-        component: () => import('@/views/admin/LiveRadar.vue'),
-      },
-      {
-        path: 'analytics',
-        name: 'AnalyticsCenter',
-        component: () => import('@/views/admin/AnalyticsCenter.vue'),
-      },
-      {
-        path: 'accounts',
-        name: 'AccountsManagement',
-        component: () => import('@/views/admin/AccountsManagement.vue'),
-      },
-      {
-        path: 'operations',
-        name: 'Operations',
-        component: () => import('@/views/admin/Operations.vue'),
-      },
-      {
-        path: 'settings',
-        name: 'AdvancedSettings',
-        component: () => import('@/views/admin/AdvancedSettings.vue'),
-      }
-    ]
-  },
+  // --- مسارات بوابة الإدارة العليا ---
+  { path: '/admin/dashboard', name: 'AdminDashboard', component: AdminDashboard, meta: { requiresAuth: true } },
+  { path: '/admin/radar', name: 'AdminLiveRadar', component: AdminLiveRadar, meta: { requiresAuth: true } },
+  { path: '/admin/analytics', name: 'AdminAnalytics', component: AdminAnalytics, meta: { requiresAuth: true } },
+  { path: '/admin/accounts', name: 'AdminAccounts', component: AdminAccounts, meta: { requiresAuth: true } },
+  { path: '/admin/settings', name: 'AdminSettings', component: AdminSettings, meta: { requiresAuth: true } },
 
-  // ==========================================
-  // 6. صفحة الخطأ 404 (Not Found)
-  // ==========================================
-  {
-    path: '/:pathMatch(.*)*',
-    name: 'NotFound',
-    component: () => import('@/views/common/NotFound.vue')
-  }
+  // --- إعادة التوجيه للحالات غير الموجودة 404 ---
+  { path: '/:pathMatch(.*)*', redirect: '/' }
 ];
 
 const router = createRouter({
@@ -174,9 +75,18 @@ const router = createRouter({
   }
 });
 
-// 🚀 السماح المباشر بالمرور بدون مشاكل الـ Store
 router.beforeEach((to, from, next) => {
-  return next();
+  const token = localStorage.getItem('token') || localStorage.getItem('musaef_token');
+
+  if (to.meta.guestOnly && token) {
+    return next({ name: 'AdminDashboard' });
+  }
+
+  if (to.meta.requiresAuth && !token) {
+    return next({ name: 'Login' });
+  }
+
+  next();
 });
 
 export default router;

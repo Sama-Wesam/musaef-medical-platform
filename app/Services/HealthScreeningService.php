@@ -6,7 +6,7 @@ use App\Models\Donor;
 use App\Models\HealthInfo;
 use Carbon\Carbon;
 
-class AuthService
+class HealthScreeningService
 {
     /**
      * تحليل إجابات الاستبيان الصحي وتحديد أهلية المتبرع
@@ -27,10 +27,10 @@ class AuthService
             $isEligible = false;
             $status = 'suspended';
             $message = 'سلامتك تهمنا! نرجو منك التبرع حين تتحسن حالتك الصحية.';
-        } 
+        }
         // 2. فلترة العمليات الجراحية أو الحمل (منع لمدة 6 أشهر)
         elseif (
-            (isset($answers['had_surgery']) && $answers['had_surgery'] == true) || 
+            (isset($answers['had_surgery']) && $answers['had_surgery'] == true) ||
             (isset($answers['is_pregnant']) && $answers['is_pregnant'] == true)
         ) {
             $isEligible = false;

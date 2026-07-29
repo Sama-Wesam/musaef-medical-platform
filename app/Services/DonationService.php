@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
-class AuthService
+class DonationService
 {
     /**
      * تسجيل متبرع جديد مع ربطه بالمستخدم بنفس الـ ID
@@ -21,7 +21,7 @@ class AuthService
                 'name'     => $data['name'],
                 'email'    => $data['email'],
                 'password' => Hash::make($data['password']),
-                'role'     => 'donor', 
+                'role'     => 'donor',
             ]);
 
             // 2. إنشاء سجل المتبرع بنفس الـ ID الناتج من المستخدم

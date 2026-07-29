@@ -21,6 +21,8 @@ class AIController extends Controller
     public function matchResults($requestId)
     {
         $results = $this->matchingService->getMatchingResults($requestId);
+
+        // ضمان تحويل الكائنات إلى Array/JSON قياسي دون نصوص مهربة
         return $this->successResponse($results, 'تم جلب نتائج المطابقة الذكية للطلب');
     }
 }

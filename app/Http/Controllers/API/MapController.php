@@ -21,7 +21,7 @@ class MapController extends Controller
 
         $radius = $request->radius ?? 15; // 15 كم افتراضي
 
-        // استدعاء Scope_nearby الذي أنشأناه في LocationTrait داخل مودل Hospital
+        // استدعاء Scope_nearby في LocationTrait داخل مودل Hospital
         $hospitals = Hospital::with('user')
             ->where('is_verified', true)
             ->nearby($request->latitude, $request->longitude, $radius)

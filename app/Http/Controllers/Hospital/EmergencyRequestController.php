@@ -22,7 +22,7 @@ class EmergencyRequestController extends Controller
     }
 
     /**
-     * جلب سجل جميع الطلبات التي أنشأها المستشفى
+     * جلب سجل جميع الطلبات التي أنشأها المستشفى[cite: 32]
      */
     public function index(Request $request)
     {
@@ -32,12 +32,12 @@ class EmergencyRequestController extends Controller
     }
 
     /**
-     * إنشاء طلب طوارئ جديد
+     * إنشاء طلب طوارئ جديد[cite: 32]
      */
     public function store(Request $request)
     {
         $hospital = $request->user()->hospital;
-        
+
         if (!$hospital->is_verified) {
             return $this->unauthorizedResponse('عذراً، يجب توثيق حساب المستشفى من قبل الإدارة أولاً لتتمكن من إنشاء طلبات.');
         }
@@ -57,13 +57,41 @@ class EmergencyRequestController extends Controller
     }
 
     /**
-     * عرض تفاصيل طلب محدد
+     * عرض تفاصيل طلب محدد[cite: 32]
      */
     public function show($id)
     {
         $request = $this->emergencyRepo->findById($id);
         if (!$request) return $this->notFoundResponse();
-        
+
         return $this->successResponse($request);
+    }
+
+    /**
+     * قبول الطلب الطارئ[cite: 32]
+     */
+    public function accept($id)
+    {
+        $request = $this->emergencyRepo->findById($id);
+        if (!$request) return $this->notFoundResponse();
+
+        // استخدام قيمة قصيرة جداً أو رقمية تتوافق مع قاعدة البيانات
+        $request->update(['status' => '1']);
+
+        return $this->successResponse($request, 'تم قبول الطلب بنجاح');
+    }
+
+    /**
+     * رفض الطلب الطارئ[cite: 32]
+     */
+    public function reject($id)
+    {
+        $request = $this->emergencyRepo->findById($id);
+        if (!$request) return $this->notFoundResponse();
+
+        // استخدام قيمة قصيرة جداً أو رقمية تتوافق مع قاعدة البيانات
+        $request->update(['status' => '0']);
+
+        return $this->successResponse($request, 'تم رفض الطلب');
     }
 }

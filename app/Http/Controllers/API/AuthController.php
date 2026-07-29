@@ -20,7 +20,7 @@ class AuthController extends Controller
     }
 
     /**
-     * تسجيل الدخول
+     * تسجيل الدخول الموحد
      */
     public function login(Request $request)
     {
@@ -33,7 +33,16 @@ class AuthController extends Controller
             $data = $this->authService->login($request->email, $request->password);
             return $this->successResponse($data, 'تم تسجيل الدخول بنجاح');
         } catch (ValidationException $e) {
-            return $this->errorResponse($e->getMessage(), 401);
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'بيانات الاعتماد غير صحيحة.',
+                'errors'  => $e->errors(),
+            ], 401);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'حدث خطأ في السيرفر: ' . $e->getMessage(),
+            ], 500);
         }
     }
 
@@ -68,9 +77,7 @@ class AuthController extends Controller
                 'is_pregnant'
             ]);
 
-            // استدعاء دالة التقييم الصحي المدمجة داخل AuthService بنجاح
             $eligibilityResult = $this->authService->evaluateHealthScreening($donor, $healthAnswers);
-
             $token = $user->createToken('musaef_auth_token')->plainTextToken;
 
             return $this->successResponse([
@@ -80,8 +87,11 @@ class AuthController extends Controller
                 'token'       => $token
             ], 'تم تسجيل حساب المتبرع وتقييم حالته بنجاح', 201);
 
-        } catch (\Exception $e) {
-            return $this->errorResponse('حدث خطأ أثناء إنشاء الحساب: ' . $e->getMessage(), 500);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'حدث خطأ أثناء إنشاء الحساب: ' . $e->getMessage(),
+            ], 500);
         }
     }
 
@@ -90,7 +100,9 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        if ($request->user() && $request->user()->currentAccessToken()) {
+            $request->user()->currentAccessToken()->delete();
+        }
         return $this->successResponse(null, 'تم تسجيل الخروج بنجاح');
     }
 }

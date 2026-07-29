@@ -3,9 +3,8 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\User;
 use App\Models\Hospital;
-use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 
 class HospitalSeeder extends Seeder
 {
@@ -14,51 +13,142 @@ class HospitalSeeder extends Seeder
      */
     public function run(): void
     {
-        // قائمة بجميع المستشفيات وبنوك الدم الرسمية لضمان ثبات العمليات
+        // قائمة الجهات الطبية بحساباتها وبياناتها التفصيلية
         $facilities = [
-            ['name' => 'جمعية بنك الدم المركزي', 'email' => 'central_bb@musaef.com', 'address' => 'قطاع غزة - تأسس عام 1971', 'lat' => 31.5167, 'lng' => 34.4500, 'license' => 'BB-1971'],
-            ['name' => 'بنك الدم المركزي - وزارة الصحة', 'email' => 'moh_bb@musaef.com', 'address' => 'قطاع غزة - وزارة الصحة', 'lat' => 31.5160, 'lng' => 34.4450, 'license' => 'BB-MOH'],
-            ['name' => 'مجمع الشفاء الطبي', 'email' => 'shifa@musaef.com', 'address' => 'محافظة غزة', 'lat' => 31.5273, 'lng' => 34.4447, 'license' => 'HOSP-GZ-01'],
-            ['name' => 'مستشفى الأهلي العربي (المعمداني)', 'email' => 'ahli@musaef.com', 'address' => 'محافظة غزة', 'lat' => 31.5050, 'lng' => 34.4550, 'license' => 'HOSP-GZ-02'],
-            ['name' => 'مستشفى القدس', 'email' => 'quds@musaef.com', 'address' => 'محافظة غزة', 'lat' => 31.5100, 'lng' => 34.4400, 'license' => 'HOSP-GZ-03'],
-            ['name' => 'مستشفى العيون', 'email' => 'eye_hosp@musaef.com', 'address' => 'محافظة غزة', 'lat' => 31.5200, 'lng' => 34.4450, 'license' => 'HOSP-GZ-04'],
-            ['name' => 'مستشفى الرنتيسي للأطفال', 'email' => 'rantisi@musaef.com', 'address' => 'محافظة غزة', 'lat' => 31.5300, 'lng' => 34.4500, 'license' => 'HOSP-GZ-05'],
-            ['name' => 'مستشفى الصحة النفسية', 'email' => 'mental_health@musaef.com', 'address' => 'محافظة غزة', 'lat' => 31.5250, 'lng' => 34.4480, 'license' => 'HOSP-GZ-06'],
-            ['name' => 'مستشفى كمال عدوان', 'email' => 'kamal_adwan@musaef.com', 'address' => 'شمال غزة', 'lat' => 31.5600, 'lng' => 34.4900, 'license' => 'HOSP-NG-01'],
-            ['name' => 'مستشفى العودة', 'email' => 'awda@musaef.com', 'address' => 'شمال غزة', 'lat' => 31.5500, 'lng' => 34.4800, 'license' => 'HOSP-NG-02'],
-            ['name' => 'المستشفى الإندونيسي', 'email' => 'indonesian@musaef.com', 'address' => 'شمال غزة', 'lat' => 31.5650, 'lng' => 34.5000, 'license' => 'HOSP-NG-03'],
-            ['name' => 'مستشفى شهداء الأقصى', 'email' => 'aqsa@musaef.com', 'address' => 'دير البلح - المحافظة الوسطى', 'lat' => 31.4167, 'lng' => 34.3500, 'license' => 'HOSP-DB-01'],
-            ['name' => 'مجمع ناصر الطبي', 'email' => 'nasser@musaef.com', 'address' => 'خان يونس', 'lat' => 31.3462, 'lng' => 34.3063, 'license' => 'HOSP-KY-01'],
-            ['name' => 'مستشفى غزة الأوروبي', 'email' => 'european@musaef.com', 'address' => 'خان يونس', 'lat' => 31.3200, 'lng' => 34.3300, 'license' => 'HOSP-KY-02'],
-            ['name' => 'مستشفى الأمل', 'email' => 'amal@musaef.com', 'address' => 'خان يونس', 'lat' => 31.3500, 'lng' => 34.3000, 'license' => 'HOSP-KY-03'],
-            ['name' => 'مستشفى أبو يوسف النجار', 'email' => 'najjar@musaef.com', 'address' => 'رفح', 'lat' => 31.2968, 'lng' => 34.2455, 'license' => 'HOSP-RF-01'],
-            ['name' => 'مستشفى الكويت التخصصي', 'email' => 'kuwait@musaef.com', 'address' => 'رفح', 'lat' => 31.2900, 'lng' => 34.2400, 'license' => 'HOSP-RF-02'],
+            [
+                'email'          => 'shifa@musaef.com',
+                'name'           => 'مجمع الشفاء الطبي',
+                'facility_name'  => 'مجمع الشفاء الطبي',
+                'facility_type'  => 'حكومي',
+                'manager_name'   => 'د. مروان أبو سعدة',
+                'license_number' => 'BB-1971',
+                'address'        => 'غزة - الرمال',
+                'phone'          => '082823400',
+                'latitude'       => 31.5167,
+                'longitude'      => 34.4500,
+            ],
+            [
+                'email'          => 'central_bb@musaef.com',
+                'name'           => 'جمعية بنك الدم المركزي',
+                'facility_name'  => 'جمعية بنك الدم المركزي',
+                'facility_type'  => 'أهلي خيري',
+                'manager_name'   => 'د. زياد شعت',
+                'license_number' => 'BB-1980',
+                'address'        => 'غزة - الرمال شارع الوحدة',
+                'phone'          => '082845600',
+                'latitude'       => 31.5190,
+                'longitude'      => 34.4530,
+            ],
+            [
+                'email'          => 'moh_bb@musaef.com',
+                'name'           => 'بنك الدم المركزي - وزارة الصحة',
+                'facility_name'  => 'بنك الدم المركزي - وزارة الصحة',
+                'facility_type'  => 'حكومي',
+                'manager_name'   => 'د. أيمن عكلوك',
+                'license_number' => 'BB-1995',
+                'address'        => 'غزة - النصر',
+                'phone'          => '082881234',
+                'latitude'       => 31.5250,
+                'longitude'      => 34.4480,
+            ],
+            [
+                'email'          => 'ahli@musaef.com',
+                'name'           => 'مستشفى الأهلي العربي (المعمداني)',
+                'facility_name'  => 'مستشفى الأهلي العربي (المعمداني)',
+                'facility_type'  => 'أهلي خيري',
+                'manager_name'   => 'د. سهيلة ترازي',
+                'license_number' => 'BB-1882',
+                'address'        => 'غزة - الزيتون',
+                'phone'          => '082860123',
+                'latitude'       => 31.5050,
+                'longitude'      => 34.4630,
+            ],
+            [
+                'email'          => 'quds@musaef.com',
+                'name'           => 'مستشفى القدس',
+                'facility_name'  => 'مستشفى القدس - الهلال الأحمر',
+                'facility_type'  => 'أهلي خيري',
+                'manager_name'   => 'د. بشار مراد',
+                'license_number' => 'BB-2002',
+                'address'        => 'غزة - تل الهوى',
+                'phone'          => '082834567',
+                'latitude'       => 31.4980,
+                'longitude'      => 34.4380,
+            ],
+            [
+                'email'          => 'kamal_adwan@musaef.com',
+                'name'           => 'مستشفى كمال عدوان',
+                'facility_name'  => 'مستشفى كمال عدوان',
+                'facility_type'  => 'حكومي',
+                'manager_name'   => 'د. حسام أبو صفية',
+                'license_number' => 'BB-2005',
+                'address'        => 'شمال غزة - بيت لاهيا',
+                'phone'          => '082488888',
+                'latitude'       => 31.5490,
+                'longitude'      => 34.4980,
+            ],
+            [
+                'email'          => 'indonesian@musaef.com',
+                'name'           => 'المستشفى الإندونيسي',
+                'facility_name'  => 'المستشفى الإندونيسي',
+                'facility_type'  => 'حكومي',
+                'manager_name'   => 'د. عاطف الكحلوت',
+                'license_number' => 'BB-2015',
+                'address'        => 'شمال غزة - بيت لاهيا',
+                'phone'          => '082477777',
+                'latitude'       => 31.5380,
+                'longitude'      => 34.5020,
+            ],
+            [
+                'email'          => 'nasser@musaef.com',
+                'name'           => 'مجمع ناصر الطبي',
+                'facility_name'  => 'مجمع ناصر الطبي',
+                'facility_type'  => 'حكومي',
+                'manager_name'   => 'د. عاطف الحوت',
+                'license_number' => 'BB-1985',
+                'address'        => 'خانيونس - وسط المدينة',
+                'phone'          => '082055555',
+                'latitude'       => 31.3450,
+                'longitude'      => 34.3030,
+            ],
+            [
+                'email'          => 'najjar@musaef.com',
+                'name'           => 'مستشفى أبو يوسف النجار',
+                'facility_name'  => 'مستشفى أبو يوسف النجار',
+                'facility_type'  => 'حكومي',
+                'manager_name'   => 'د. مروان الهمص',
+                'license_number' => 'BB-2000',
+                'address'        => 'رفح - الجنينة',
+                'phone'          => '082133333',
+                'latitude'       => 31.2910,
+                'longitude'      => 34.2580,
+            ],
         ];
 
         foreach ($facilities as $facility) {
-
-            // 1. إنشاء أو جلب حساب المستخدم المرتبط بالمستشفى
-            $user = User::firstOrCreate(
+            // 1. إنشاء أو تحديث حساب المستخدم
+            $user = User::updateOrCreate(
                 ['email' => $facility['email']],
                 [
-                    'name' => $facility['name'],
-                    'password' => Hash::make('password123'),
-                    'role' => 'hospital',
-                    'email_verified_at' => now(),
+                    'name'     => $facility['name'],
+                    'password' => 'password123', // يتم التشفير تلقائياً بواسطة الموديل User
+                    'role'     => 'hospital',
+                    'phone'    => $facility['phone'],
                 ]
             );
 
-            // 2. تحديث الفحص ليشمل الترخيص الطبي الفريد تأميناً لعمليات الـ Seeding المشتركة
-            Hospital::firstOrCreate(
+            // 2. ربط حساب المستخدم بسجل المستشفى
+            Hospital::updateOrCreate(
+                ['user_id' => $user->id],
                 [
-                    'user_id' => $user->id,
-                    'license_number' => $facility['license']
-                ],
-                [
-                    'address' => $facility['address'],
-                    'latitude' => $facility['lat'],
-                    'longitude' => $facility['lng'],
-                    'is_verified' => true,
+                    'facility_name'  => $facility['facility_name'],
+                    'facility_type'  => $facility['facility_type'],
+                    'manager_name'   => $facility['manager_name'],
+                    'license_number' => $facility['license_number'],
+                    'address'        => $facility['address'],
+                    'latitude'       => $facility['latitude'],
+                    'longitude'      => $facility['longitude'],
+                    'is_verified'    => true,
                 ]
             );
         }

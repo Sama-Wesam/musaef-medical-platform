@@ -15,7 +15,7 @@ trait ApiResponseTrait
             'success' => true,
             'message' => $message,
             'data'    => $data
-        ], $statusCode);
+        ], $statusCode, [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 
     /**
@@ -32,7 +32,7 @@ trait ApiResponseTrait
             $response['errors'] = $errors;
         }
 
-        return response()->json($response, $statusCode);
+        return response()->json($response, $statusCode, [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 
     /**
@@ -42,7 +42,7 @@ trait ApiResponseTrait
     {
         return $this->errorResponse($message, 401);
     }
-    
+
     /**
      * إرجاع استجابة لعنصر غير موجود
      */

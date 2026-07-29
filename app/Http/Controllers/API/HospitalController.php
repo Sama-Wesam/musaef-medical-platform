@@ -20,10 +20,14 @@ class HospitalController extends Controller
 
     public function inventory(Request $request)
     {
-        $hospitalId = $request->user()->hospital->id ?? null;
-        if (!$hospitalId) return $this->unauthorizedResponse();
+        $hospital = $request->user()->hospital ?? null;
 
-        $inventory = $this->hospitalService->getInventory($hospitalId);
-        return $this->successResponse($inventory);
+        if (!$hospital) {
+            return $this->unauthorizedResponse('حساب المستشفى غير متاح أو غير معرّف');
+        }
+
+        $inventory = $this->hospitalService->getInventory($hospital->id);
+
+        return $this->successResponse($inventory, 'تم جلب مخزون بنك الدم بنجاح');
     }
 }

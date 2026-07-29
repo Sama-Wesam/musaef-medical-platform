@@ -29,4 +29,19 @@ class NotificationController extends Controller
         $this->notificationService->markAsRead($id);
         return $this->successResponse(null, 'تم التحديد كمقروء');
     }
+
+    // إضافة الدالة الناقصة لتحديد جميع إشعارات المستخدم كمقروءة
+    public function markAllAsRead(Request $request)
+    {
+        $userId = $request->user()->id;
+
+        // إذا لم توجد الدالة في الخدمة، يمكنك تحديثها مباشرة أو عبر الخدمة
+        if (method_exists($this->notificationService, 'markAllAsRead')) {
+            $this->notificationService->markAllAsRead($userId);
+        } else {
+            \App\Models\Notification::where('user_id', $userId)->update(['read_at' => now()]);
+        }
+
+        return $this->successResponse(null, 'تم تحديث جميع الإشعارات كمقروءة بنجاح');
+    }
 }

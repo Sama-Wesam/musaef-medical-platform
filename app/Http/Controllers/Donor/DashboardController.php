@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Donor;
 
+use App\Http\Resources\BloodRequestResource;
 use App\Services\StatisticsService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
@@ -23,9 +24,14 @@ class DashboardController extends Controller
      */
     public function index(Request $request)
     {
-        $donorId = $request->user()->donor->id;
-        $stats = $this->statsService->getDonorDashboardStats($donorId);
-        
+        $donor = $request->user()->donor ?? null;
+
+        if (!$donor) {
+            return $this->notFoundResponse('بيانات المتبرع غير موجودة');
+        }
+
+        $stats = $this->statsService->getDonorDashboardStats($donor->id);
+
         return $this->successResponse($stats, 'تم جلب إحصائيات لوحة التحكم بنجاح');
     }
 }

@@ -6,64 +6,97 @@ use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use App\Models\HealthInfo;
+use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
     use ApiResponseTrait;
 
-    /**
-     * عرض بيانات الملف الشخصي والبيانات الصحية
-     */
     public function show(Request $request)
     {
-        $donor = $request->user()->donor;
+        $donor = $request->user()->load(['user', 'healthInfo', 'bloodType']);
 
         if (!$donor) {
             return $this->notFoundResponse('بيانات المتبرع غير موجودة');
         }
 
-        $donor->load(['healthInfo', 'bloodType']);
-
         return $this->successResponse($donor, 'تم جلب الملف الشخصي');
     }
 
-    /**
-     * تحديث بيانات الموقع والتوفر
-     */
     public function update(Request $request)
     {
         $validated = $request->validate([
-            'address' => 'nullable|string',
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
-            'is_available' => 'boolean',
+            'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|email|max:255|unique:users,email,' . $request->user()->id,
+            'phone' => 'nullable|string|max:20',
+            'blood_type_id' => 'nullable|exists:blood_types,id',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
-        $donor = $request->user()->donor;
-        $donor->update($validated);
+        $user = $request->user();
+        $donor = $user->donor;
+
+        $userData = [];
+        if (isset($validated['name'])) {
+            $userData['name'] = $validated['name'];
+        }
+        if (isset($validated['email'])) {
+            $userData['email'] = $validated['email'];
+        }
+
+        if (!empty($userData)) {
+            $user->update($userData);
+        }
+
+        $donorData = [];
+        if (isset($validated['phone'])) {
+            $donorData['phone'] = $validated['phone'];
+        }
+        if (isset($validated['blood_type_id'])) {
+            $donorData['blood_type_id'] = $validated['blood_type_id'];
+        }
+
+        // معالجة رفع الصورة الشخصية
+        if ($request->hasFile('avatar')) {
+            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $user->update(['avatar' => $path]);
+            $donorData['avatar'] = $path;
+        }
+
+        if (!empty($donorData)) {
+            $donor->update($donorData);
+        }
+
+        $donor->load(['user', 'healthInfo', 'bloodType']);
 
         return $this->successResponse($donor, 'تم تحديث الملف الشخصي بنجاح');
     }
 
-    /**
-     * تحديث أو إنشاء البيانات الصحية
-     */
-    public function updateHealthInfo(Request $request)
+    public function updateHealthQuestionnaire(Request $request)
     {
-        $validated = $request->validate([
-            'weight' => 'required|numeric|min:40',
-            'height' => 'required|numeric',
-            'has_chronic_diseases' => 'required|boolean',
-            'diseases_description' => 'nullable|string',
-        ]);
+        $answers = $request->input('answers', []);
+        $affirmativeCount = 0;
+        foreach ($answers as $question) {
+            if (isset($question['answer']) && $question['answer'] === true) {
+                $affirmativeCount++;
+            }
+        }
 
-        $donor = $request->user()->donor;
+        $isEligible = $affirmativeCount < 3;
 
-        $healthInfo = HealthInfo::updateOrCreate(
-            ['donor_id' => $donor->id],
-            $validated
-        );
+        $result = $isEligible ? [
+            'is_eligible' => true,
+            'title' => 'حالتك الصحية مؤهلة للتبرع',
+            'message' => 'بناءً على إجاباتك، يمكنك التبرع بالدم بأمان.'
+        ] : [
+            'is_eligible' => false,
+            'title' => 'صحتك تهمنا',
+            'message' => 'بناءً على إجاباتك الحالية، يفضل أخذ قسط من الراحة أو مراجعة الطبيب قبل التبرع حرصاً على سلامتك.'
+        ];
 
-        return $this->successResponse($healthInfo, 'تم تحديث البيانات الصحية بنجاح');
+        return $this->successResponse($result, 'تم تقييم الحالة الصحية بنجاح');
     }
 }

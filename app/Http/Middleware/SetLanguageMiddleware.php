@@ -4,21 +4,18 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\App;
 
 class SetLanguageMiddleware
 {
-    /**
-     * Handle an incoming request.
-     */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next)
     {
-        // قراءة اللغة المرسلة في الـ Header (مثلاً: ar أو en)
-        // إذا لم يتم إرسال لغة، يتم اعتماد اللغة العربية الافتراضية للمشروع
-        $locale = $request->header('Accept-Language', config('app.locale', 'ar'));
+        $lang = $request->header('Accept-Language') ?: $request->get('lang', 'ar');
 
-        if (in_array($locale, ['ar', 'en'])) {
-            app()->setLocale($locale);
+        if (in_array($lang, ['ar', 'en'])) {
+            App::setLocale($lang);
+        } else {
+            App::setLocale('ar');
         }
 
         return $next($request);

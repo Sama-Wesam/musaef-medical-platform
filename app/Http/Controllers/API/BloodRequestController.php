@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Repositories\EmergencyRepository;
+use App\Models\BloodRequest;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -11,17 +11,14 @@ class BloodRequestController extends Controller
 {
     use ApiResponseTrait;
 
-    protected $emergencyRepo;
-
-    public function __construct(EmergencyRepository $emergencyRepo)
-    {
-        $this->emergencyRepo = $emergencyRepo;
-    }
-
-    // عرض الطلبات المفتوحة للعامة
+    // عرض طلبات التبرع ذات الحالة pending للعامة وللمتبرعين[cite: 14]
     public function index()
     {
-        $requests = $this->emergencyRepo->getActiveEmergencies();
-        return $this->successResponse($requests);
+        $requests = BloodRequest::with(['hospital', 'bloodType'])
+                    ->where('status', 'pending')
+                    ->latest()
+                    ->get();
+
+        return $this->successResponse($requests, 'تم جلب طلبات التبرع بنجاح');
     }
 }

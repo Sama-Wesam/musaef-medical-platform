@@ -4,7 +4,7 @@ namespace App\AI;
 
 use Symfony\Component\Process\Process;
 
-class ResponsivenessEngine
+class ResponsePrediction
 {
     public function getActiveDonors(array $donors)
     {

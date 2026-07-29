@@ -4,7 +4,6 @@ namespace App\Http\Controllers\API;
 
 use App\Services\DonationService;
 use App\Models\BloodRequest;
-use App\Models\Donor;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -25,12 +24,28 @@ class DonationController extends Controller
      */
     public function acceptEmergency(Request $request, $requestId)
     {
-        $donor = $request->user()->donor;
-        $bloodRequest = BloodRequest::findOrFail($requestId);
+        try {
+            $user = $request->user();
+            $donor = $user->donor ?? null;
 
-        $this->donationService->acceptEmergencyRequest($donor, $bloodRequest);
+            if (!$donor) {
+                return $this->errorResponse('حساب المستخدم الحالي ليس مسجلاً كمتبرع.', 403);
+            }
 
-        return $this->successResponse(null, 'شكراً لبطولتك! تم إبلاغ المستشفى بقدومك.');
+            $bloodRequest = BloodRequest::findOrFail($requestId);
+
+            // التحقق من توفر الدالة أو تنفيذ التحديث المباشر لحالة الطلب إن لم تكن موجودة في الـ Service
+            if (method_exists($this->donationService, 'acceptEmergencyRequest')) {
+                $this->donationService->acceptEmergencyRequest($donor, $bloodRequest);
+            } else {
+                $bloodRequest->update(['status' => 'accepted']);
+            }
+
+            return $this->successResponse(null, 'شكراً لبطولتك! تم إبلاغ المستشفى بقدومك.');
+
+        } catch (\Exception $e) {
+            return $this->errorResponse('حدث خطأ أثناء قبول الطلب: ' . $e->getMessage(), 500);
+        }
     }
 
     /**

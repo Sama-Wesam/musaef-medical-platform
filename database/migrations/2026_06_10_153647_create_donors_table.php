@@ -9,11 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('donors', function (Blueprint $table) {
-            // استخدام الـ id الخاص بجدول users كمفتاح أساسي وأجنبي
-            $table->unsignedBigInteger('id')->primary(); 
-            
-            // الربط مع جدول المستخدمين
-            $table->foreign('id')->references('id')->on('users')->onDelete('cascade');
+            $table->id();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('blood_type_id')->nullable()->constrained()->nullOnDelete();
             $table->date('birth_date');
             $table->enum('gender', ['male', 'female']);
@@ -21,6 +18,9 @@ return new class extends Migration
             $table->decimal('longitude', 11, 8)->nullable();
             $table->string('address')->nullable();
             $table->boolean('is_available')->default(true);
+            $table->boolean('is_eligible')->default(true);
+            $table->enum('eligibility_status', ['eligible', 'deferred', 'ineligible'])->default('eligible');
+            $table->date('deferral_date')->nullable();
             $table->date('last_donation_date')->nullable();
             $table->timestamps();
         });

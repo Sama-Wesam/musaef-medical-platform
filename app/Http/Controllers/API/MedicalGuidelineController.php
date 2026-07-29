@@ -5,7 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Article;
 
-class EducationController extends Controller
+class MedicalGuidelineController extends Controller
 {
     /**
      * عرض المقالات المنشورة فقط للزوار.
