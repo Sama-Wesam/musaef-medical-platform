@@ -68,7 +68,6 @@ import { ref, onMounted } from 'vue';
 import donor from '@/api/donor';
 import DonorHeader from '@/components/donor/DonorHeader.vue';
 
-// استدعاء المكونات الفرعية للتبويبات
 import PersonalInfoTab from '@/components/donor/profile/PersonalInfoTab.vue';
 import HealthDataTab from '@/components/donor/profile/HealthDataTab.vue';
 import SettingsTab from '@/components/donor/profile/SettingsTab.vue';

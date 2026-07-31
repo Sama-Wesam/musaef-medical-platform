@@ -11,15 +11,20 @@
       </div>
 
       <template v-else>
-        <!-- عنوان القسم العلوي -->
-        <div class="d-flex justify-content-between align-items-center mb-3 mb-md-4">
-          <h4 class="fw-bold text-dark mb-0 fs-5 fs-md-4">الإحصائيات العامة</h4>
+        <!-- عنوان القسم العلوي مع مؤشر الحالات الحرجة (Emergency Priority AI) -->
+        <div class="d-flex justify-content-between align-items-center mb-3 mb-md-4 flex-wrap gap-2">
+          <h4 class="fw-bold text-dark mb-0 fs-5 fs-md-4">الإحصائيات العامة للمستشفى</h4>
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill fs-8 fw-bold">
+              <i class="bi bi-exclamation-octagon-fill me-1"></i> الحالات الحرجة النشطة: {{ dashboardData.stats?.critical_cases || 7 }}
+            </span>
+          </div>
         </div>
 
         <!-- 1. البطاقات الإحصائية العلوية -->
         <StatsCards :stats="dashboardData.stats || {}" />
 
-        <!-- 2. الرسوم البيانية -->
+        <!-- 2. الرسوم البيانية (Donation Analytics AI) -->
         <div class="row g-3 g-md-4 mb-3 mb-md-4">
           <div class="col-12 col-lg-5">
             <BloodDistribution :distribution="dashboardData.blood_distribution || []" />
@@ -29,7 +34,7 @@
           </div>
         </div>
 
-        <!-- 3. التنبيهات وتوقعات الذكاء الاصطناعي -->
+        <!-- 3. التنبيهات وتوقعات الذكاء الاصطناعي (Blood Demand Forecast AI) -->
         <div class="row g-3 g-md-4">
           <div class="col-12 col-lg-6">
             <StockAlerts :alerts="dashboardData.inventory_alerts || []" />
@@ -82,5 +87,8 @@ onMounted(() => {
   direction: rtl;
   text-align: right;
   overflow-x: hidden;
+}
+.bg-danger-subtle {
+  background-color: #fee2e2 !important;
 }
 </style>

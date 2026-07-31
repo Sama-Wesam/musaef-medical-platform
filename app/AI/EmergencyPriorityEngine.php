@@ -16,8 +16,10 @@ class EmergencyPriorityEngine
             'requests' => $requests
         ];
 
+        $pythonPath = env('PYTHON_PATH', 'python3');
+
         $process = new Process([
-            'python',
+            $pythonPath,
             base_path('scripts/python/emergency_priority.py'),
             json_encode($payload, JSON_UNESCAPED_UNICODE)
         ]);

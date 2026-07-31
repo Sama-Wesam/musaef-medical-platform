@@ -91,7 +91,7 @@
     </section>
 
     <!-- ==================================
-            Latest Emergency Cases
+            Latest Emergency Cases (AI Prioritized)
     =================================== -->
     <section class="latest-cases emergency-section py-4 py-md-5">
       <div class="container px-3 px-md-4">
@@ -118,11 +118,11 @@
             <div class="emergency-card h-100">
               <!-- Card Header -->
               <div class="card-header-top">
-                <span class="blood-group">
+                <span class="blood-group" dir="ltr">
                   {{ item.blood }}
                 </span>
-                <span class="urgent-badge">
-                  {{ item.urgency_label || 'عاجل' }}
+                <span :class="['urgent-badge', getSeverityClass(item.severity)]">
+                  {{ item.urgency_label }}
                 </span>
               </div>
 
@@ -176,7 +176,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import apiClient from '@/api/axios' // استدعاء مثيل الـ Axios المخصص للمشروع
+import apiClient from '@/api/axios' // استدعاء الـ Axios Interceptor المخصص للمشروع
 import Navbar from '@/components/common/Navbar.vue'
 import HeroSection from '@/components/common/HeroSection.vue'
 import Footer from '@/components/common/Footer.vue'
@@ -244,19 +244,19 @@ const statistics = ref([
 ])
 
 /* ===========================
-      أحدث الحالات
+      أحدث الحالات (مرتبة بالذكاء الاصطناعي)
 =========================== */
 const emergencyCases = ref([])
 
 const fetchHomeStats = async () => {
   try {
     const res = await apiClient.get('/public/home-stats')
-    if (res && res.data) {
-      const stats = res.data
-      statistics.value[0].number = (stats.supported_cases || 0) + '+'
-      statistics.value[1].number = (stats.total_requests || 0) + '+'
-      statistics.value[2].number = (stats.hospitals_count || 0) + '+'
-      statistics.value[3].number = (stats.donors_count || 0) + '+'
+    const statsData = (res && res.data) ? res.data : res
+    if (statsData) {
+      statistics.value[0].number = (statsData.supported_cases || 0) + '+'
+      statistics.value[1].number = (statsData.total_requests || 0) + '+'
+      statistics.value[2].number = (statsData.hospitals_count || 0) + '+'
+      statistics.value[3].number = (statsData.donors_count || 0) + '+'
     }
   } catch (error) {
     console.error('خطأ في جلب الإحصائيات:', error)
@@ -266,19 +266,38 @@ const fetchHomeStats = async () => {
 const fetchUrgentRequests = async () => {
   try {
     const res = await apiClient.get('/public/urgent-requests')
-    if (res && res.data) {
-      emergencyCases.value = res.data.map(req => ({
-        blood: req.blood_type || req.blood,
-        hospital: req.hospital_name || req.hospital || 'مستشفى غير محدد',
-        location: req.location || 'غير محدد',
-        units: req.units_needed || req.units || 1,
-        urgency_label: req.urgency_label || 'عاجل',
-        time: req.time_ago || req.created_at_human || 'منذ فترة قصيرة'
+    // التعامل المباشر والمرن مع استجابة Axios
+    const casesData = Array.isArray(res) ? res : ((res && res.data && Array.isArray(res.data)) ? res.data : [])
+
+    if (casesData.length > 0) {
+      emergencyCases.value = casesData.map(req => ({
+        blood: req.blood || 'O+',
+        hospital: req.hospital || 'مستشفى الشفاء الطبي',
+        location: req.location || 'غزة - الرمال',
+        units: req.units_needed || 1,
+        severity: req.severity || 'Critical',
+        urgency_label: translateSeverity(req.severity, req.condition_type),
+        time: req.created_at || 'منذ فترة قصيرة'
       }))
     }
   } catch (error) {
     console.error('خطأ في جلب الحالات الطارئة:', error)
   }
+}
+
+// دالة صياغة وترجمة الشارة
+const translateSeverity = (severity, condition) => {
+  if (severity === 'Critical') return 'حرج جداً'
+  if (severity === 'High') return 'عاجل'
+  if (condition) return condition
+  return 'عاجل'
+}
+
+// دالة تلوين الشارة حسب درجة أولوية وخطورة الذكاء الاصطناعي
+const getSeverityClass = (severity) => {
+  if (severity === 'Critical') return 'severity-critical'
+  if (severity === 'High') return 'severity-high'
+  return 'severity-normal'
 }
 
 const shareCase = (item) => {
@@ -636,12 +655,26 @@ section {
 }
 
 .urgent-badge {
-  background: #fdecec;
-  color: #dc2626;
   font-weight: bold;
   padding: 5px 14px;
   border-radius: 50px;
   font-size: 13px;
+}
+
+.severity-critical {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+.severity-high {
+  background: #fdecec;
+  color: #dc2626;
+}
+
+.severity-normal {
+  background: #f3f4f6;
+  color: #4b5563;
 }
 
 .blood-group {

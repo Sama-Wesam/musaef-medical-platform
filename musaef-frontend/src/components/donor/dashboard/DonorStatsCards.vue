@@ -6,7 +6,7 @@
         <div class="d-flex align-items-center justify-content-between mb-2 mb-md-3 w-100">
           <span class="text-dark fw-bold fs-8 fs-md-6">عدد التبرعات</span>
           <div class="stat-icon-wrapper bg-pink-light">
-            <img :src="getImageUrl('blood-icon.png')" alt="تبرعات" class="stat-icon-img" />
+            <img :src="bloodIcon" alt="تبرعات" class="stat-icon-img" />
           </div>
         </div>
         <h3 class="fw-black text-danger mb-1 mb-md-2 fs-4 fs-md-3">{{ stats.donationsCount }}</h3>
@@ -22,7 +22,7 @@
         <div class="d-flex align-items-center justify-content-between mb-2 mb-md-3 w-100">
           <span class="text-dark fw-bold fs-8 fs-md-6">النقاط</span>
           <div class="stat-icon-wrapper bg-yellow-light">
-            <img :src="getImageUrl('star.png')" alt="نقاط" class="stat-icon-img" />
+            <img :src="starIcon" alt="نقاط" class="stat-icon-img" />
           </div>
         </div>
         <h3 class="fw-black text-warning mb-1 mb-md-2 fs-4 fs-md-3">{{ stats.points }}</h3>
@@ -36,7 +36,7 @@
         <div class="d-flex align-items-center justify-content-between mb-2 mb-md-3 w-100">
           <span class="text-dark fw-bold fs-8 fs-md-6">الطلبات القريبة</span>
           <div class="stat-icon-wrapper bg-blue-light">
-            <img :src="getImageUrl('Frame 2147225248.png')" alt="موقع" class="stat-icon-img" />
+            <img :src="locationIcon" alt="موقع" class="stat-icon-img" />
           </div>
         </div>
         <h3 class="fw-black text-primary mb-1 mb-md-2 fs-4 fs-md-3">{{ stats.nearbyRequestsCount }}</h3>
@@ -52,7 +52,7 @@
         <div class="d-flex align-items-center justify-content-between mb-2 mb-md-3 w-100">
           <span class="text-dark fw-bold fs-8 fs-md-6">حالة الأهلية للتبرع</span>
           <div class="stat-icon-wrapper bg-green-light">
-            <img :src="getImageUrl('Frame 2147225275.png')" alt="أهلية" class="stat-icon-img" />
+            <img :src="eligibilityIcon" alt="أهلية" class="stat-icon-img" />
           </div>
         </div>
         <h3 class="fw-bold mb-1 mb-md-2 fs-5 fs-md-4" :class="stats.isEligible ? 'text-success' : 'text-danger'">
@@ -67,16 +67,18 @@
 </template>
 
 <script setup>
+// استيراد الأيقونات المباشر
+import bloodIcon from '@/assets/icons/blood-icon.png';
+import starIcon from '@/assets/icons/star.png';
+import locationIcon from '@/assets/icons/Frame 2147225248.png';
+import eligibilityIcon from '@/assets/icons/Frame 2147225275.png';
+
 defineProps({
   stats: {
     type: Object,
     required: true
   }
 });
-
-const getImageUrl = (fileName) => {
-  return new URL(`../../../assets/images/${fileName}`, import.meta.url).href;
-};
 </script>
 
 <style scoped>

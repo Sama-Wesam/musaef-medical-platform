@@ -44,24 +44,24 @@ const routes = [
   { path: '/reset-password', name: 'ResetPassword', component: ResetPassword, meta: { guestOnly: true } },
 
   // --- مسارات بوابة المتبرع ---
-  { path: '/donor/dashboard', name: 'DonorDashboard', component: DonorDashboard, meta: { requiresAuth: true } },
-  { path: '/donor/donation-center', name: 'DonationCenter', component: DonationCenter, meta: { requiresAuth: true } },
-  { path: '/donor/profile', name: 'DonorProfile', component: DonorProfile, meta: { requiresAuth: true } },
-  { path: '/donor/achievements', name: 'DonorAchievements', component: DonorAchievements, meta: { requiresAuth: true } },
+  { path: '/donor/dashboard', name: 'DonorDashboard', component: DonorDashboard, meta: { requiresAuth: true, role: 'donor' } },
+  { path: '/donor/donation-center', name: 'DonationCenter', component: DonationCenter, meta: { requiresAuth: true, role: 'donor' } },
+  { path: '/donor/profile', name: 'DonorProfile', component: DonorProfile, meta: { requiresAuth: true, role: 'donor' } },
+  { path: '/donor/achievements', name: 'DonorAchievements', component: DonorAchievements, meta: { requiresAuth: true, role: 'donor' } },
 
   // --- مسارات بوابة المستشفى وبنك الدم ---
-  { path: '/hospital/dashboard', name: 'HospitalDashboard', component: HospitalDashboard, meta: { requiresAuth: true } },
-  { path: '/hospital/requests', name: 'HospitalRequests', component: HospitalRequests, meta: { requiresAuth: true } },
-  { path: '/hospital/inventory', name: 'HospitalInventory', component: HospitalInventory, meta: { requiresAuth: true } },
-  { path: '/hospital/notifications', name: 'HospitalNotifications', component: HospitalNotifications, meta: { requiresAuth: true } },
-  { path: '/hospital/settings', name: 'HospitalSettings', component: HospitalSettings, meta: { requiresAuth: true } },
+  { path: '/hospital/dashboard', name: 'HospitalDashboard', component: HospitalDashboard, meta: { requiresAuth: true, role: 'hospital' } },
+  { path: '/hospital/requests', name: 'HospitalRequests', component: HospitalRequests, meta: { requiresAuth: true, role: 'hospital' } },
+  { path: '/hospital/inventory', name: 'HospitalInventory', component: HospitalInventory, meta: { requiresAuth: true, role: 'hospital' } },
+  { path: '/hospital/notifications', name: 'HospitalNotifications', component: HospitalNotifications, meta: { requiresAuth: true, role: 'hospital' } },
+  { path: '/hospital/settings', name: 'HospitalSettings', component: HospitalSettings, meta: { requiresAuth: true, role: 'hospital' } },
 
   // --- مسارات بوابة الإدارة العليا ---
-  { path: '/admin/dashboard', name: 'AdminDashboard', component: AdminDashboard, meta: { requiresAuth: true } },
-  { path: '/admin/radar', name: 'AdminLiveRadar', component: AdminLiveRadar, meta: { requiresAuth: true } },
-  { path: '/admin/analytics', name: 'AdminAnalytics', component: AdminAnalytics, meta: { requiresAuth: true } },
-  { path: '/admin/accounts', name: 'AdminAccounts', component: AdminAccounts, meta: { requiresAuth: true } },
-  { path: '/admin/settings', name: 'AdminSettings', component: AdminSettings, meta: { requiresAuth: true } },
+  { path: '/admin/dashboard', name: 'AdminDashboard', component: AdminDashboard, meta: { requiresAuth: true, role: 'admin' } },
+  { path: '/admin/radar', name: 'AdminLiveRadar', component: AdminLiveRadar, meta: { requiresAuth: true, role: 'admin' } },
+  { path: '/admin/analytics', name: 'AdminAnalytics', component: AdminAnalytics, meta: { requiresAuth: true, role: 'admin' } },
+  { path: '/admin/accounts', name: 'AdminAccounts', component: AdminAccounts, meta: { requiresAuth: true, role: 'admin' } },
+  { path: '/admin/settings', name: 'AdminSettings', component: AdminSettings, meta: { requiresAuth: true, role: 'admin' } },
 
   // --- إعادة التوجيه للحالات غير الموجودة 404 ---
   { path: '/:pathMatch(.*)*', redirect: '/' }
@@ -78,12 +78,42 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token') || localStorage.getItem('musaef_token');
 
-  if (to.meta.guestOnly && token) {
-    return next({ name: 'AdminDashboard' });
+  let userRole = localStorage.getItem('user_role');
+  if (!userRole) {
+    try {
+      const authStore = useAuthStore();
+      userRole = authStore.userRole;
+    } catch (e) {
+      userRole = null;
+    }
   }
 
-  if (to.meta.requiresAuth && !token) {
-    return next({ name: 'Login' });
+  const getTargetDashboardName = (role) => {
+    if (role === 'admin') return 'AdminDashboard';
+    if (role === 'hospital' || role === 'blood_bank') return 'HospitalDashboard';
+    return 'DonorDashboard';
+  };
+
+  // 1. إعادة توجيه المستخدمين المسجلين مسبقاً من صفحات الزوار/المصادقة إلى لوحتهم المناسبة
+  if (to.meta.guestOnly && token) {
+    const targetName = getTargetDashboardName(userRole);
+    if (to.name === targetName) return next();
+    return next({ name: targetName });
+  }
+
+  // 2. التحقق من مسارات الصلاحيات والـ Authentication للمسارات المحمية
+  if (to.meta.requiresAuth) {
+    if (!token) {
+      if (to.name === 'Login') return next();
+      return next({ name: 'Login' });
+    }
+
+    // 3. التحقق من مطابقة الصلاحية (Role-Based Access Control)
+    if (to.meta.role && userRole && to.meta.role !== userRole) {
+      const targetName = getTargetDashboardName(userRole);
+      if (to.name === targetName) return next();
+      return next({ name: targetName });
+    }
   }
 
   next();

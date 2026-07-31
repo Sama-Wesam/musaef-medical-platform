@@ -68,11 +68,11 @@
 import { RouterLink, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 
-import dashboardIcon from "@/assets/images/Frame 2147225921.png";
-import radarIcon from "@/assets/images/fluent_radar-20-regular.png";
-import analyticsIcon from "@/assets/images/carbon_analytics.png";
-import usersIcon from "@/assets/images/mdi_users-outline (2).png";
-import settingsIcon from "@/assets/images/solar_settings-linear.png";
+import dashboardIcon from "@/assets/icons/Frame 2147225921.png";
+import radarIcon from "@/assets/icons/fluent_radar-20-regular.png";
+import analyticsIcon from "@/assets/icons/carbon_analytics.png";
+import usersIcon from "@/assets/icons/mdi_users-outline (2).png";
+import settingsIcon from "@/assets/icons/solar_settings-linear.png";
 
 const router = useRouter();
 const authStore = useAuthStore();

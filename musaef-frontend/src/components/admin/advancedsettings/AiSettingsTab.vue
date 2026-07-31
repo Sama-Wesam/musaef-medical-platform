@@ -5,9 +5,9 @@
       <!-- العمود الأيمن: التحكم بنموذج المطابقة التنبؤية والتنبؤ بالطلب -->
       <div class="col-12 col-lg-8">
         <div class="d-flex flex-column gap-3 gap-md-4">
-          <!-- مربع التحكم بنموذج المطابقة التنبؤية -->
+          <!-- مربع التحكم بنموذج المطابقة التنبؤية (SmartMatchingEngine) -->
           <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white text-end">
-            <h6 class="fw-bold text-dark mb-3 mb-md-4 fs-6 text-end">التحكم بنموذج المطابقة التنبؤية</h6>
+            <h6 class="fw-bold text-dark mb-3 mb-md-4 fs-6 text-end">التحكم بنموذج المطابقة التنبؤية (Smart Matching AI)</h6>
 
             <div class="p-3 bg-white rounded-3 mb-3 mb-md-4 border border-light-subtle">
               <div class="d-flex justify-content-between align-items-center mb-3">
@@ -51,10 +51,11 @@
               </div>
             </div>
 
+            <!-- خوارزمية كشف وتصفية الحسابات الوهمية (FraudDetectionAI) -->
             <div class="d-flex align-items-center justify-content-between p-2.5 p-md-3 border-top flex-wrap gap-2">
               <div class="min-w-0">
-                <span class="fw-bold text-dark fs-8 d-block mb-1 text-truncate">خوارزمية كشف وتصفية الحسابات الوهمية تلقائياً</span>
-                <small class="text-muted fs-9 d-block text-truncate">تقوم AI بتحليل سلوك المستخدمين وإيقاف الحسابات الوهمية تلقائياً</small>
+                <span class="fw-bold text-dark fs-8 d-block mb-1 text-truncate">خوارزمية كشف وتصفية الحسابات الوهمية تلقائياً (Fraud Detection AI)</span>
+                <small class="text-muted fs-9 d-block text-truncate">تقوم AI بتحليل السجلات عبر fraud_detection.py وإيقاف الحسابات الوهمية تلقائياً</small>
               </div>
               <div class="form-check form-switch m-0 ms-auto ms-sm-0">
                 <input class="form-check-input custom-switch" type="checkbox" v-model="aiSettings.fakeAccountFilter" />
@@ -62,12 +63,12 @@
             </div>
           </div>
 
-          <!-- مربع التحكم بنموذج التنبؤ بالطلب المستقبلي -->
+          <!-- مربع التحكم بنموذج التنبؤ بالطلب المستقبلي (BloodDemandForecast & HeatMapAnalysis) -->
           <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white text-end">
-            <h6 class="fw-bold text-dark mb-3 mb-md-4 fs-6 text-end">التحكم بنموذج التنبؤ بالطلب المستقبلي</h6>
+            <h6 class="fw-bold text-dark mb-3 mb-md-4 fs-6 text-end">التحكم بنموذج التنبؤ بالطلب المستقبلي (Demand Forecast & Heatmap)</h6>
 
             <div class="d-flex align-items-center justify-content-between p-2.5 p-md-3 border-bottom flex-wrap gap-2">
-              <span class="fw-bold text-dark fs-8">دورية تحديث الخريطة الحرارية لنقص الفصائل</span>
+              <span class="fw-bold text-dark fs-8">دورية تحديث الخريطة الحرارية لنقص الفصائل (Heat Map Analysis)</span>
               <select class="form-select form-select-sm fs-8 rounded-3 ms-auto ms-sm-0" style="width: 130px;" v-model="aiSettings.heatmapFrequency">
                 <option value="12">كل 12 ساعة</option>
                 <option value="24">كل 24 ساعة</option>
@@ -77,8 +78,8 @@
 
             <div class="d-flex align-items-center justify-content-between p-2.5 p-md-3 flex-wrap gap-2">
               <div class="min-w-0">
-                <span class="fw-bold text-dark fs-8 d-block mb-1 text-truncate">نظام التنبيهات الاستباقية للمستشفيات</span>
-                <small class="text-muted fs-9 d-block text-truncate">إرسال توصيات الآلية للمستشفيات برفع الجاهزية عند توقع نقص فصيلة معينة خلال 48 ساعة.</small>
+                <span class="fw-bold text-dark fs-8 d-block mb-1 text-truncate">نظام التنبيهات الاستباقية للمستشفيات (Blood Demand Forecast)</span>
+                <small class="text-muted fs-9 d-block text-truncate">إرسال توصيات آليه للمستشفيات برفع الجاهزية عند توقع نقص فصيلة معينة خلال 48 ساعة.</small>
               </div>
               <div class="form-check form-switch m-0 ms-auto ms-sm-0">
                 <input class="form-check-input custom-switch" type="checkbox" v-model="aiSettings.proactiveAlerts" />
@@ -88,16 +89,16 @@
         </div>
       </div>
 
-      <!-- العمود الأيسر: حالة النماذج الذكية + زر حفظ الإعدادات المتقدمة -->
+      <!-- العمود الأيسر: حالة النماذج الذكية + مقاييس الأداء + زر الحفظ -->
       <div class="col-12 col-lg-4">
         <div class="d-flex flex-column gap-3">
           <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white text-end">
-            <h6 class="fw-bold text-dark mb-3 mb-md-4 text-end fs-6">حالة النماذج الذكية</h6>
+            <h6 class="fw-bold text-dark mb-3 mb-md-4 text-end fs-6">حالة النماذج الذكية ومقاييس الأداء</h6>
 
             <div class="ai-stat-card p-3 rounded-4 mb-3 position-relative bg-light-subtle text-end">
               <div class="d-flex justify-content-between align-items-start mb-2">
                 <div class="model-icon">
-                  <img :src="getImageUrl('Frame 2147226156.png')" alt="نموذج التنبؤ بالطلب" width="32" height="32" />
+                  <img :src="getIconUrl('Frame 2147226156.png')" alt="نموذج التنبؤ بالطلب" width="32" height="32" />
                 </div>
                 <div class="text-end">
                   <h6 class="fw-bold text-dark fs-8 mb-1">نموذج التنبؤ بالطلب</h6>
@@ -105,7 +106,7 @@
                 </div>
               </div>
               <div class="mt-3 text-end">
-                <span class="text-muted fs-9 d-block mb-1">دقة التنبؤ</span>
+                <span class="text-muted fs-9 d-block mb-1">دقة التنبؤ (Model Metrics)</span>
                 <h4 class="fw-bold text-purple mb-0 fs-4">49.2%</h4>
               </div>
             </div>
@@ -113,7 +114,7 @@
             <div class="ai-stat-card p-3 rounded-4 mb-3 position-relative bg-light-subtle text-end">
               <div class="d-flex justify-content-between align-items-start mb-2">
                 <div class="model-icon">
-                  <img :src="getImageUrl('Group 1000002338.png')" alt="نموذج المطابقة الفورية" width="32" height="32" />
+                  <img :src="getIconUrl('Group 1000002338.png')" alt="نموذج المطابقة الفورية" width="32" height="32" />
                 </div>
                 <div class="text-end">
                   <h6 class="fw-bold text-dark fs-8 mb-1">نموذج المطابقة الفورية</h6>
@@ -121,9 +122,9 @@
                 </div>
               </div>
               <div class="mt-3 text-end">
-                <span class="text-muted fs-9 d-block mb-1">تم المعالجة</span>
+                <span class="text-muted fs-9 d-block mb-1">تم المعالجة بنجاح</span>
                 <h4 class="fw-bold text-success mb-1 fs-4">2,482</h4>
-                <span class="text-muted fs-9">طلب بنجاح</span>
+                <span class="text-muted fs-9">طلب مطابقة منفذ</span>
               </div>
             </div>
 
@@ -163,8 +164,8 @@ const props = defineProps({
   aiSettings: Object
 });
 
-const getImageUrl = (fileName) => {
-  return new URL(`../../../assets/images/${fileName}`, import.meta.url).href;
+const getIconUrl = (fileName) => {
+  return new URL(`../../../assets/icons/${fileName}`, import.meta.url).href;
 };
 
 const matchingPercentage = computed(() => {

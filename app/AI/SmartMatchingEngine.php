@@ -30,7 +30,6 @@ class SmartMatchingEngine
                 'donor_id'             => $donor->id,
                 'latitude'             => $donor->latitude,
                 'longitude'            => $donor->longitude,
-                // تم التعديل هنا ليتوافق مع اسم الحقل في جدول donors
                 'date_of_birth'        => $donor->birth_date,
                 'last_donation_date'   => $donor->last_donation_date ? $donor->last_donation_date->toDateString() : null,
                 'is_eligible'          => $donor->healthInfo->is_eligible ?? false,
@@ -47,12 +46,13 @@ class SmartMatchingEngine
             'donors' => $donorsData,
         ];
 
+        $pythonPath = env('PYTHON_PATH', 'python3');
+
         // 3. استدعاء سكريبت Python باستخدام Process
-        // نفترض أن ملف smart_matching.py موجود في مجلد scripts/python في الجذر
         $process = new Process([
-            'python',
+            $pythonPath,
             base_path('scripts/python/smart_matching.py'),
-            json_encode($payload)
+            json_encode($payload, JSON_UNESCAPED_UNICODE)
         ]);
 
         $process->run();

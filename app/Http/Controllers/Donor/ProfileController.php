@@ -2,23 +2,34 @@
 
 namespace App\Http\Controllers\Donor;
 
+use App\Services\HealthScreeningService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use App\Models\HealthInfo;
 use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
     use ApiResponseTrait;
 
+    protected $healthScreeningService;
+
+    public function __construct(HealthScreeningService $healthScreeningService)
+    {
+        $this->healthScreeningService = $healthScreeningService;
+    }
+
     public function show(Request $request)
     {
-        $donor = $request->user()->load(['user', 'healthInfo', 'bloodType']);
+        // 1. الحصول على نموذج المتبرع المرتبط بالرمز الحالي
+        $donor = $request->user()->donor;
 
         if (!$donor) {
             return $this->notFoundResponse('بيانات المتبرع غير موجودة');
         }
+
+        // 2. تحميل العلاقات الخاصة بالمتبرع بالشكل الصحيح
+        $donor->load(['user', 'healthInfo', 'bloodType']);
 
         return $this->successResponse($donor, 'تم جلب الملف الشخصي');
     }
@@ -36,27 +47,22 @@ class ProfileController extends Controller
         $user = $request->user();
         $donor = $user->donor;
 
-        $userData = [];
-        if (isset($validated['name'])) {
-            $userData['name'] = $validated['name'];
-        }
-        if (isset($validated['email'])) {
-            $userData['email'] = $validated['email'];
+        if (!$donor) {
+            return $this->notFoundResponse('بيانات المتبرع غير موجودة');
         }
 
-        if (!empty($userData)) {
-            $user->update($userData);
+        if (isset($validated['name']) || isset($validated['email'])) {
+            $user->update(array_filter([
+                'name' => $validated['name'] ?? null,
+                'email' => $validated['email'] ?? null,
+            ]));
         }
 
-        $donorData = [];
-        if (isset($validated['phone'])) {
-            $donorData['phone'] = $validated['phone'];
-        }
-        if (isset($validated['blood_type_id'])) {
-            $donorData['blood_type_id'] = $validated['blood_type_id'];
-        }
+        $donorData = array_filter([
+            'phone' => $validated['phone'] ?? null,
+            'blood_type_id' => $validated['blood_type_id'] ?? null,
+        ]);
 
-        // معالجة رفع الصورة الشخصية
         if ($request->hasFile('avatar')) {
             if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
                 Storage::disk('public')->delete($user->avatar);
@@ -75,28 +81,21 @@ class ProfileController extends Controller
         return $this->successResponse($donor, 'تم تحديث الملف الشخصي بنجاح');
     }
 
+    /**
+     * تحديث وحفظ استبيان الأهلية الصحية الاعتماد على HealthScreeningService
+     */
     public function updateHealthQuestionnaire(Request $request)
     {
-        $answers = $request->input('answers', []);
-        $affirmativeCount = 0;
-        foreach ($answers as $question) {
-            if (isset($question['answer']) && $question['answer'] === true) {
-                $affirmativeCount++;
-            }
+        $donor = $request->user()->donor ?? null;
+        if (!$donor) {
+            return $this->notFoundResponse('بيانات المتبرع غير موجودة');
         }
 
-        $isEligible = $affirmativeCount < 3;
+        $answers = $request->input('answers', []);
 
-        $result = $isEligible ? [
-            'is_eligible' => true,
-            'title' => 'حالتك الصحية مؤهلة للتبرع',
-            'message' => 'بناءً على إجاباتك، يمكنك التبرع بالدم بأمان.'
-        ] : [
-            'is_eligible' => false,
-            'title' => 'صحتك تهمنا',
-            'message' => 'بناءً على إجاباتك الحالية، يفضل أخذ قسط من الراحة أو مراجعة الطبيب قبل التبرع حرصاً على سلامتك.'
-        ];
+        // التقييم الطبي وحفظ سجل الأهلية عبر خدمة الفحص الطبي الموحدة
+        $evaluation = $this->healthScreeningService->evaluateHealthScreening($donor, $answers);
 
-        return $this->successResponse($result, 'تم تقييم الحالة الصحية بنجاح');
+        return $this->successResponse($evaluation, 'تم تقييم وحفظ الحالة الصحية بنجاح');
     }
 }

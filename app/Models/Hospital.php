@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use App\Traits\LocationTrait;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Hospital extends Model
 {
-    use LocationTrait;
+    use HasFactory, LocationTrait;
 
     protected $table = 'hospitals';
 

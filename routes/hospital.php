@@ -29,9 +29,9 @@ Route::middleware(['auth:sanctum', 'hospital'])->prefix('hospital')->group(funct
     Route::post('/requests', [EmergencyRequestController::class, 'store']);
     Route::get('/requests/{id}', [EmergencyRequestController::class, 'show']);
 
-    // المسارات الجديدة المضافة للقبول والرفض
-    Route::post('/requests/{id}/accept', [EmergencyRequestController::class, 'accept'] ?? [EmergencyRequestController::class, 'updateStatus']);
-    Route::post('/requests/{id}/reject', [EmergencyRequestController::class, 'reject'] ?? [EmergencyRequestController::class, 'updateStatus']);
+    // قبول ورفض طلبات الطوارئ
+    Route::post('/requests/{id}/accept', [EmergencyRequestController::class, 'accept']);
+    Route::post('/requests/{id}/reject', [EmergencyRequestController::class, 'reject']);
 
     // متابعة الاستجابات
     Route::get('/active-requests', [ActiveRequestsController::class, 'index']);

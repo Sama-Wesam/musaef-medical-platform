@@ -7,4 +7,28 @@ enum UserRole: string
     case ADMIN = 'admin';       // مدير النظام
     case DONOR = 'donor';       // المتبرع
     case HOSPITAL = 'hospital'; // المستشفى أو بنك الدم
+
+    /**
+     * الحصول على المسمى باللغة العربية
+     */
+    public function label(): string
+    {
+        return match($this) {
+            self::ADMIN => 'مدير النظام',
+            self::DONOR => 'متبرع',
+            self::HOSPITAL => 'جهة طبية / مستشفى',
+        };
+    }
+
+    /**
+     * لون الشارة (Badge Color) للعرض في الواجهات
+     */
+    public function badgeColor(): string
+    {
+        return match($this) {
+            self::ADMIN => 'danger',
+            self::DONOR => 'success',
+            self::HOSPITAL => 'primary',
+        };
+    }
 }

@@ -9,19 +9,21 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// ================== أوامر مخصصة لمنصة مسعف ==================
+// ================== أوامر وجدولة منصة مسعف الأوتوماتيكية ==================
 
-// 1. تنظيف الطلبات المعلقة التي مر عليها أكثر من 48 ساعة ولم تكتمل
-Schedule::call(function () {
-    BloodRequest::whereIn('status', ['pending', 'searching'])
-        ->where('created_at', '<', now()->subHours(48))
-        ->update(['status' => 'cancelled']);
-})->daily();
+// 1. تنظيف طلبات الطوارئ المنتهية الصلاحية كل 6 ساعات
+Schedule::command('emergencies:clean')->everySixHours();
 
-// 2. تحديث التوقعات الذكية (AI Forecast) كل أسبوع لتوقع احتياجات المستشفيات
+// 2. إرسال التقارير اليومية لجميع المدراء كل يوم الساعة 8 صباحاً
+Schedule::command('reports:send-daily')->dailyAt('08:00');
+
+// 3. فحص مستويات مخزون الدم وإرسال التنبيهات للمستشفيات مرتين يومياً (الساعة 1 صباحاً و 1 ظهراً)
+Schedule::command('statistics:update-blood')->twiceDaily(1, 13);
+
+// 4. تحديث التوقعات الذكية (AI Forecast) كل أسبوع لتوقع احتياجات المستشفيات
 Artisan::command('ai:forecast', function () {
     $this->info('جاري تشغيل خوارزمية الذكاء الاصطناعي لتوقع احتياج الدم...');
-    //   AIService لتوليد التقرير الأسبوعي
+    // AIService لتوليد التقرير الأسبوعي
     $this->info('تم التحديث بنجاح.');
 })->purpose('تحديث توقعات الذكاء الاصطناعي لاحتياج المستشفيات');
 

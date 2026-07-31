@@ -39,8 +39,8 @@
     </div>
 
     <div class="d-flex align-items-center justify-content-start gap-2 mb-3 pt-2">
-      <span class="fs-5">⚠️</span>
-      <h6 class="fw-bold text-dark mb-0 fs-6">تنبيهات المخزون الذكية (المهمة جداً للمستشفى)</h6>
+      <span class="fs-5">🧠</span>
+      <h6 class="fw-bold text-dark mb-0 fs-6">تنبيهات المخزون الذكية والذكاء الاصطناعي (Blood Demand Forecast AI)</h6>
     </div>
 
     <div class="d-flex flex-column gap-3 mb-4">
@@ -65,8 +65,8 @@
             <span class="text-danger fs-6">📈</span>
           </div>
           <div class="text-end">
-            <span class="fw-bold text-dark d-block fs-7 mb-1">توقعات الذكاء الاصطناعي لطلب المستقبلي</span>
-            <small class="text-muted fs-8 d-block">تلقي توصيات استباقية من النظام لإطلاق حملات التبرع قبل التوقع بحالة نقص محتملة خلال 72 ساعة القادمة</small>
+            <span class="fw-bold text-dark d-block fs-7 mb-1">توقعات الذكاء الاصطناعي للطلب المستقبلي</span>
+            <small class="text-muted fs-8 d-block">تلقي توصيات استباقية من نموذج BloodDemandForecast لإطلاق حملات التبرع قبل النقص المتوقع خلال 72 ساعة</small>
           </div>
         </div>
         <div class="form-check form-switch m-0 p-0 ms-auto ms-sm-0">
@@ -94,7 +94,7 @@ const notifSettings = ref({
 });
 
 const saveNotificationSettings = () => {
-  alert('تم حفظ إعدادات الإشعارات بنجاح');
+  alert('تم حفظ إعدادات الإشعارات والتنبيهات الذكية بنجاح[cite: 67]');
 };
 
 const resetNotifSettings = () => {

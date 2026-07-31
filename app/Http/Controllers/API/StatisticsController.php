@@ -22,7 +22,6 @@ class StatisticsController extends Controller
     public function userStats(Request $request)
     {
         $user = $request->user();
-        $stats = [];
 
         // إنشاء مفتاح كاش فريد لكل مستخدم بناءً على معرفه ودوره
         $cacheKey = "user_stats_{$user->role}_{$user->id}";
@@ -37,6 +36,6 @@ class StatisticsController extends Controller
             return [];
         });
 
-        return $this->successResponse($stats);
+        return $this->successResponse($stats, 'تم جلب إحصائيات المستخدم بنجاح');
     }
 }

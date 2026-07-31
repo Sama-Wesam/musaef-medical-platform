@@ -10,7 +10,7 @@ def main():
         requests = input_data.get('requests', [])
         donors = input_data.get('donors', [])
 
-        # إنشاء خريطة مركزة على الإحداثيات العامة
+        # إنشاء خريطة مركزة على إحداثيات قطاع غزة
         m = folium.Map(location=[31.5, 34.4], zoom_start=12)
 
         # إضافة طبقة حرارية للحالات (اللون الأحمر - حاجة ملحة)
@@ -25,10 +25,10 @@ def main():
         output_path = "public/maps/heatmap.html"
         m.save(output_path)
 
-        print(json.dumps({"status": "success", "path": output_path}))
+        print(json.dumps({"status": "success", "path": output_path}, ensure_ascii=False))
 
     except Exception as e:
-        print(json.dumps({"status": "error", "message": str(e)}))
+        print(json.dumps({"status": "error", "message": str(e)}, ensure_ascii=False))
 
 if __name__ == "__main__":
     main()

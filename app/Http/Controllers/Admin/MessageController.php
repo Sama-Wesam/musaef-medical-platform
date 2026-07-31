@@ -3,34 +3,35 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\ContactMessage;
+use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Routing\Controller;
 
 class MessageController extends Controller
 {
+    use ApiResponseTrait;
+
     public function index()
     {
         $messages = ContactMessage::orderBy('created_at', 'desc')->get();
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $messages
-        ], 200);
+        return $this->successResponse($messages, 'تم جلب رسائل التواصل بنجاح');
     }
 
     public function show($id)
     {
-        $message = ContactMessage::findOrFail($id);
+        $message = ContactMessage::find($id);
+
+        if (!$message) {
+            return $this->notFoundResponse('الرسالة غير موجودة');
+        }
 
         if (!$message->is_read) {
             $message->update(['is_read' => true]);
         }
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $message
-        ], 200);
+        return $this->successResponse($message, 'تم جلب تفاصيل الرسالة');
     }
 
     public function reply(Request $request, $id)
@@ -40,13 +41,14 @@ class MessageController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'status' => 'error',
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->errorResponse('خطأ في التحقق من البيانات', 422, $validator->errors());
         }
 
-        $message = ContactMessage::findOrFail($id);
+        $message = ContactMessage::find($id);
+
+        if (!$message) {
+            return $this->notFoundResponse('الرسالة غير موجودة');
+        }
 
         $message->update([
             'reply_content' => $request->reply_content,
@@ -54,21 +56,19 @@ class MessageController extends Controller
             'status' => 'replied'
         ]);
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'تم إرسال الرد بنجاح.',
-            'data' => $message
-        ], 200);
+        return $this->successResponse($message, 'تم إرسال الرد بنجاح');
     }
 
     public function destroy($id)
     {
-        $message = ContactMessage::findOrFail($id);
+        $message = ContactMessage::find($id);
+
+        if (!$message) {
+            return $this->notFoundResponse('الرسالة غير موجودة');
+        }
+
         $message->delete();
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'تم حذف الرسالة بنجاح.'
-        ], 200);
+        return $this->successResponse(null, 'تم حذف الرسالة بنجاح');
     }
 }

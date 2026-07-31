@@ -42,11 +42,17 @@
         <small class="text-muted fs-9 flex-shrink-0">08:30 ص</small>
       </div>
     </div>
-    <button class="btn btn-light bg-light text-secondary btn-sm w-100 rounded-pill fs-8 mt-auto">
+    <button class="btn btn-light bg-light text-secondary btn-sm w-100 rounded-pill fs-8 mt-auto fw-bold" @click="handleViewAllOperations">
       عرض جميع العمليات
     </button>
   </div>
 </template>
+
+<script setup>
+const handleViewAllOperations = () => {
+  alert("📋 جاري فتح سجل عمليات التبرع بالكامل للاطلاع على الأرشيف التفصيلي...");
+};
+</script>
 
 <style scoped>
 .fs-8 { font-size: 0.8rem; }

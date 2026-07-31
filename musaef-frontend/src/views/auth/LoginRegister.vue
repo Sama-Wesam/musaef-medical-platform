@@ -6,7 +6,7 @@
         <!-- ================= 1. القسم الأيمن: النماذج والمدخلات ================= -->
         <div class="col-12 col-lg-6 form-section-col p-3 p-sm-4 p-md-5 d-flex flex-column justify-content-center position-relative bg-light-gray order-2 order-lg-1">
 
-          <!-- شعار قطرة الدم علوياً -->
+          <!-- شعار قطرة الدم علوياً من مجلد images -->
           <div class="top-logo-container position-absolute top-0 end-0 p-3 p-md-4 z-3">
             <img :src="getImageUrl('auth-logo.png')" alt="مسعف" class="top-auth-logo" @error="handleLogoFallback" />
           </div>
@@ -305,8 +305,9 @@
           </div>
         </div>
 
-        <!-- ================= 2. القسم الأيسر: البانر البصري والعبارة ================= -->
+        <!-- ================= 2. القسم الأيسر: البانر البصري والعبارة والأيقونات الأربع ================= -->
         <div class="col-12 col-lg-6 hero-visual-col position-relative d-flex flex-column justify-content-start p-4 p-md-5 order-1 order-lg-2">
+          <!-- صورة الخلفية تسحب من مجلد images -->
           <img
             :src="getImageUrl('login.jpeg')"
             alt="لأن الدقيقة تساوي حياة"
@@ -319,39 +320,41 @@
               لأن الدقيقة تساوي <span class="text-danger">حياة</span>
             </h2>
 
+            <!-- رسمة نبض القلب تسحب الآن من مجلد icons -->
             <div class="pulse-line-wrapper my-2 mx-auto text-center">
-              <img :src="getImageUrl('Vector 7.png')" alt="نبض القلب" class="pulse-vector-img mx-auto" />
+              <img :src="getIconUrl('Vector 7.png')" alt="نبض القلب" class="pulse-vector-img mx-auto" />
             </div>
 
             <p class="hero-description text-dark fw-bold mb-3 mb-md-4 text-center">
               نوصلك بالمتبرع المناسب في أسرع وقت لإنقاذ حياة محتاجة.
             </p>
 
+            <!-- الأيقونات الأربع تسحب بشكل صحيح من مجلد icons -->
             <div class="row g-2 justify-content-center text-center mt-3 mt-md-4">
               <div class="col-3">
                 <div class="feature-icon-box mx-auto mb-2">
-                  <img :src="getImageUrl('Frame 2147225319.png')" alt="إنقاذ الأرواح" class="feature-img" />
+                  <img :src="getIconUrl('Frame 2147225319.png')" alt="إنقاذ الأرواح" class="feature-img" />
                 </div>
                 <span class="d-block feature-label text-dark fw-bold">إنقاذ الأرواح</span>
               </div>
 
               <div class="col-3">
                 <div class="feature-icon-box mx-auto mb-2">
-                  <img :src="getImageUrl('Frame 2147225318.png')" alt="استجابة سريعة" class="feature-img" />
+                  <img :src="getIconUrl('Frame 2147225318.png')" alt="استجابة سريعة" class="feature-img" />
                 </div>
                 <span class="d-block feature-label text-dark fw-bold">استجابة سريعة</span>
               </div>
 
               <div class="col-3">
                 <div class="feature-icon-box mx-auto mb-2">
-                  <img :src="getImageUrl('Frame 2147225317.png')" alt="مجتمع المتبرعين" class="feature-img" />
+                  <img :src="getIconUrl('Frame 2147225317.png')" alt="مجتمع المتبرعين" class="feature-img" />
                 </div>
                 <span class="d-block feature-label text-dark fw-bold">مجتمع المتبرعين</span>
               </div>
 
               <div class="col-3">
                 <div class="feature-icon-box mx-auto mb-2">
-                  <img :src="getImageUrl('Frame 2147225316.png')" alt="آمن وموثوق" class="feature-img" />
+                  <img :src="getIconUrl('Frame 2147225316.png')" alt="آمن وموثوق" class="feature-img" />
                 </div>
                 <span class="d-block feature-label text-dark fw-bold">آمن وموثوق</span>
               </div>
@@ -372,7 +375,6 @@ import { useAuthStore } from '@/stores/authStore';
 const authStore = useAuthStore();
 const { login, register, loading, error } = useAuth();
 
-// فصائل الدم المطابقة لقاعدة البيانات (مفترض أن الـ IDs من 1 إلى 8 أو تطابق الجدول)
 const bloodTypes = ref([
   { id: 1, name: 'A+' },
   { id: 2, name: 'A-' },
@@ -412,22 +414,26 @@ const registerForm = ref({
   terms: false
 });
 
+// 1. دالة استدعاء الصور (تسحب من src/assets/images) باستخدام المسار المطلق لـ Vite
 const getImageUrl = (fileName) => {
-  return new URL(`../../assets/images/${fileName}`, import.meta.url).href;
+  return new URL(`/src/assets/images/${fileName}`, import.meta.url).href;
 };
 
-// تنفيذ تسجيل الدخول عبر الـ Composable
+// 2. دالة استدعاء الأيقونات (تسحب من src/assets/icons) باستخدام المسار المطلق لـ Vite
+const getIconUrl = (fileName) => {
+  return new URL(`/src/assets/icons/${fileName}`, import.meta.url).href;
+};
+
 const onLogin = async () => {
   successMessage.value = '';
   await login(loginForm.value);
 };
 
-// تنفيذ إنشاء الحساب (متبرع أو مستشفى)
 const onRegister = async () => {
   successMessage.value = '';
   const result = await register(registerForm.value, accountType.value);
   if (result.success && accountType.value === 'hospital') {
-    successMessage.value = 'تم إرسال طلب تسجيل الجهة الطبية بنجاح. سيتم مراجعة بياناتكم وقبول الطلب قريباً.';
+    successMessage.value = 'تم إرسال طلب تسجيل الجهة الطبية بنجاح. سيتم مراجعته والتواصل معكم قريباً.';
     activeTab.value = 'login';
   }
 };

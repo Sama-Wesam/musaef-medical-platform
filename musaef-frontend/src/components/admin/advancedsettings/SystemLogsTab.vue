@@ -8,7 +8,7 @@
           <div class="d-flex justify-content-between align-items-center mb-2">
             <span class="text-muted fs-8 fw-semibold">سجل الأخطاء</span>
             <div class="icon-badge bg-danger-subtle rounded-circle p-2 d-flex align-items-center justify-content-center">
-              <img :src="getImageUrl('solar_danger-triangle-linear.png')" alt="error log" width="20" height="20" />
+              <img :src="getIconUrl('solar_danger-triangle-linear.png')" alt="error log" width="20" height="20" />
             </div>
           </div>
           <h3 class="fw-black text-dark mb-1 fs-3">23</h3>
@@ -25,7 +25,7 @@
           <div class="d-flex justify-content-between align-items-center mb-2">
             <span class="text-muted fs-8 fw-semibold">سجل الأنشطة</span>
             <div class="icon-badge bg-purple-subtle rounded-circle p-2 d-flex align-items-center justify-content-center">
-              <img :src="getImageUrl('Vector 23.png')" alt="activities log" width="20" height="20" />
+              <img :src="getIconUrl('Vector 23.png')" alt="activities log" width="20" height="20" />
             </div>
           </div>
           <h3 class="fw-black text-dark mb-1 fs-3">92.7%</h3>
@@ -42,7 +42,7 @@
           <div class="d-flex justify-content-between align-items-center mb-2">
             <span class="text-muted fs-8 fw-semibold">سجل الدخول</span>
             <div class="icon-badge bg-danger-subtle rounded-circle p-2 d-flex align-items-center justify-content-center">
-              <img :src="getImageUrl('Vector (3).png')" alt="login log" width="20" height="20" />
+              <img :src="getIconUrl('Vector (3).png')" alt="login log" width="20" height="20" />
             </div>
           </div>
           <h3 class="fw-black text-dark mb-1 fs-3">1,248</h3>
@@ -59,7 +59,7 @@
           <div class="d-flex justify-content-between align-items-center mb-2">
             <span class="text-muted fs-8 fw-semibold">حالة النظام</span>
             <div class="icon-badge bg-success-subtle rounded-circle p-2 d-flex align-items-center justify-content-center">
-              <img :src="getImageUrl('icon-park-solid_correct.png')" alt="system status" width="20" height="20" />
+              <img :src="getIconUrl('icon-park-solid_correct.png')" alt="system status" width="20" height="20" />
             </div>
           </div>
           <h3 class="fw-black text-dark mb-1 fs-3">8,765</h3>
@@ -75,7 +75,7 @@
       <div class="col-12 col-lg-8">
         <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white h-100 text-start">
           <div class="d-flex align-items-center justify-content-start gap-2 mb-3 mb-md-4">
-            <img :src="getImageUrl('Vector (3).png')" alt="login icon" width="20" height="20" />
+            <img :src="getIconUrl('Vector (3).png')" alt="login icon" width="20" height="20" />
             <h6 class="fw-bold text-dark mb-0 fs-7">سجل الدخول</h6>
           </div>
           <div class="table-responsive">
@@ -109,14 +109,14 @@
       <div class="col-12 col-lg-4">
         <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white h-100 text-start">
           <div class="d-flex align-items-center justify-content-start gap-2 mb-3 mb-md-4">
-            <img :src="getImageUrl('mdi_gift-outline.png')" alt="gift icon" width="22" height="22" />
+            <img :src="getIconUrl('mdi_gift-outline.png')" alt="gift icon" width="22" height="22" />
             <h6 class="fw-bold text-dark mb-0 fs-7">أدوات النظام</h6>
           </div>
           <div class="d-flex flex-column gap-2.5 gap-md-3">
             <div class="tool-card p-2.5 p-md-3 rounded-3 border bg-light-subtle d-flex align-items-center justify-content-between cursor-pointer" @click="runTool('إدارة النسخ الاحتياطية')">
               <div class="d-flex align-items-center gap-2 gap-md-3 min-w-0">
                 <div class="tool-icon-box bg-primary-subtle text-primary rounded-3 flex-shrink-0">
-                  <img :src="getImageUrl('tabler_cloud-up.png')" alt="backup" width="20" height="20" />
+                  <img :src="getIconUrl('tabler_cloud-up.png')" alt="backup" width="20" height="20" />
                 </div>
                 <div class="text-start min-w-0">
                   <span class="fw-bold text-dark fs-8 d-block mb-0.5 text-truncate">إدارة النسخ الاحتياطية</span>
@@ -129,7 +129,7 @@
             <div class="tool-card p-2.5 p-md-3 rounded-3 border bg-light-subtle d-flex align-items-center justify-content-between cursor-pointer" @click="runTool('مراقبة الأداء')">
               <div class="d-flex align-items-center gap-2 gap-md-3 min-w-0">
                 <div class="tool-icon-box bg-primary-subtle text-primary rounded-3 flex-shrink-0">
-                  <img :src="getImageUrl('line-md_gauge.png')" alt="performance" width="20" height="20" />
+                  <img :src="getIconUrl('line-md_gauge.png')" alt="performance" width="20" height="20" />
                 </div>
                 <div class="text-start min-w-0">
                   <span class="fw-bold text-dark fs-8 d-block mb-0.5 text-truncate">مراقبة الأداء</span>
@@ -142,7 +142,7 @@
             <div class="tool-card p-2.5 p-md-3 rounded-3 border bg-light-subtle d-flex align-items-center justify-content-between cursor-pointer" @click="runTool('إدارة الخدمات')">
               <div class="d-flex align-items-center gap-2 gap-md-3 min-w-0">
                 <div class="tool-icon-box bg-primary-subtle text-primary rounded-3 flex-shrink-0">
-                  <img :src="getImageUrl('arcticons_toolbox.png')" alt="services" width="20" height="20" />
+                  <img :src="getIconUrl('arcticons_toolbox.png')" alt="services" width="20" height="20" />
                 </div>
                 <div class="text-start min-w-0">
                   <span class="fw-bold text-dark fs-8 d-block mb-0.5 text-truncate">إدارة الخدمات</span>
@@ -155,7 +155,7 @@
             <div class="tool-card p-2.5 p-md-3 rounded-3 border bg-light-subtle d-flex align-items-center justify-content-between cursor-pointer" @click="runTool('سجلات النظام الشاملة')">
               <div class="d-flex align-items-center gap-2 gap-md-3 min-w-0">
                 <div class="tool-icon-box bg-danger-subtle text-danger rounded-3 flex-shrink-0">
-                  <img :src="getImageUrl('solar_calendar-linear.png')" alt="logs" width="20" height="20" />
+                  <img :src="getIconUrl('solar_calendar-linear.png')" alt="logs" width="20" height="20" />
                 </div>
                 <div class="text-start min-w-0">
                   <span class="fw-bold text-dark fs-8 d-block mb-0.5 text-truncate">سجلات النظام</span>
@@ -173,7 +173,7 @@
       <div class="col-12 col-lg-8">
         <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white h-100 text-start">
           <div class="d-flex align-items-center justify-content-start gap-2 mb-3 mb-md-4">
-            <img :src="getImageUrl('Vector 23 (1).png')" alt="activity icon" width="22" height="22" />
+            <img :src="getIconUrl('Vector 23 (1).png')" alt="activity icon" width="22" height="22" />
             <h6 class="fw-bold text-dark mb-0 fs-7">سجل الأنشطة</h6>
           </div>
           <div class="table-responsive">
@@ -207,7 +207,7 @@
       <div class="col-12 col-lg-4">
         <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white h-100 text-start">
           <div class="d-flex align-items-center justify-content-start gap-2 mb-3 mb-md-4">
-            <img :src="getImageUrl('material-symbols_settings-outline (1).png')" alt="settings icon" width="22" height="22" />
+            <img :src="getIconUrl('material-symbols_settings-outline (1).png')" alt="settings icon" width="22" height="22" />
             <h6 class="fw-bold text-dark mb-0 fs-7">الإعدادات السريعة</h6>
           </div>
           <div class="d-flex flex-column gap-3">
@@ -258,7 +258,7 @@
     <!-- مؤشرات إدارة النظام -->
     <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white text-end mb-4">
       <div class="d-flex align-items-center justify-content-start gap-2 mb-4">
-        <img :src="getImageUrl('Vector 24.png')" alt="performance metrics" width="22" height="22" />
+        <img :src="getIconUrl('Vector 24.png')" alt="performance metrics" width="22" height="22" />
         <h5 class="fw-bold text-dark mb-0 fs-6">مؤشرات أدارة النظام</h5>
       </div>
 
@@ -342,8 +342,8 @@ defineProps({
   settings: Object
 });
 
-const getImageUrl = (fileName) => {
-  return new URL(`../../../assets/images/${fileName}`, import.meta.url).href;
+const getIconUrl = (fileName) => {
+  return new URL(`../../../assets/icons/${fileName}`, import.meta.url).href;
 };
 
 const runTool = (toolName) => {

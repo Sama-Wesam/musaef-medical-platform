@@ -52,7 +52,7 @@ class DonorController extends Controller
         // تحديد الحقول المطلوبة فقط لتخفيف الحمل من الداتا بيز
         $suggestedRequests = BloodRequest::select(['id', 'hospital_id', 'blood_type_id', 'status', 'created_at'])
             ->with([
-                'hospital:id,name,address',
+                'hospital:id,facility_name,address',
                 'bloodType:id,name'
             ])
             ->where('status', 'pending')
@@ -60,28 +60,27 @@ class DonorController extends Controller
             ->take(3)
             ->get();
 
-        return response()->json([
-            'status' => true,
-            'data' => [
-                'donations_count' => 8,
-                'points' => 230,
-                'badges_count' => 3,
-                'days_until_next_donation' => 45,
-                'is_eligible' => true,
-                'last_donation_text' => 'آخر تبرع منذ 45 يوم',
-                'level' => 'متقدم',
-                'nearby_requests_count' => $nearbyCount,
-                'notifications' => [],
-                'suggested_requests' => $suggestedRequests
-            ]
-        ]);
+        $data = [
+            'donations_count' => 8,
+            'points' => 230,
+            'badges_count' => 3,
+            'days_until_next_donation' => 45,
+            'is_eligible' => true,
+            'last_donation_text' => 'آخر تبرع منذ 45 يوم',
+            'level' => 'متقدم',
+            'nearby_requests_count' => $nearbyCount,
+            'notifications' => [],
+            'suggested_requests' => $suggestedRequests
+        ];
+
+        return $this->successResponse($data, 'تم جلب إحصائيات الصفحة الرئيسية بنجاح');
     }
 
     public function urgentRequests(Request $request)
     {
         $urgentRequests = BloodRequest::select(['id', 'hospital_id', 'blood_type_id', 'emergency_level', 'status', 'created_at'])
             ->with([
-                'hospital:id,name,address',
+                'hospital:id,facility_name,address',
                 'bloodType:id,name'
             ])
             ->whereIn('emergency_level', ['high', 'critical'])
@@ -90,37 +89,33 @@ class DonorController extends Controller
             ->take(5)
             ->get();
 
-        return response()->json([
-            'status' => true,
-            'data' => $urgentRequests
-        ]);
+        return $this->successResponse($urgentRequests, 'تم جلب الحالات العاجلة بنجاح');
     }
 
     public function rewardsAndCard(Request $request)
     {
         $donor = $request->user()->donor ?? null;
 
-        return response()->json([
-            'status' => true,
-            'data' => [
-                'donor_code' => 'BD' . ($donor->id ?? 123456789),
-                'level' => 'متبرع متقدم',
-                'location' => 'غزة - فلسطين',
-                'status_text' => 'متبرع نشط',
-                'units_donated' => 8,
-                'cases_supported' => 12,
-                'points' => 350,
-                'points_progress' => 70,
-                'points_needed' => 150,
-                'target_points' => 500,
-                'badges' => [
-                    ['id' => 1, 'title' => 'منقذ حياة', 'desc' => 'تم إنقاذ أكثر من 10 حالات', 'date' => '1 يونيو 2024', 'image' => 'badge-hero.png'],
-                    ['id' => 2, 'title' => '10 تبرعات', 'desc' => 'تم إنجاز 10 تبرعات', 'date' => '20 مايو 2025', 'image' => 'badge-10.png'],
-                    ['id' => 3, 'title' => '5 تبرعات', 'desc' => 'تم إنجاز 5 تبرعات', 'date' => '10 أبريل 2024', 'image' => 'badge-5.png'],
-                    ['id' => 4, 'title' => 'أول تبرع', 'desc' => 'تم إنجاز أول تبرع', 'date' => '15 مارس 2024', 'image' => 'badge-1.png']
-                ]
+        $data = [
+            'donor_code' => 'BD' . ($donor->id ?? 123456789),
+            'level' => 'متبرع متقدم',
+            'location' => 'غزة - فلسطين',
+            'status_text' => 'متبرع نشط',
+            'units_donated' => 8,
+            'cases_supported' => 12,
+            'points' => 350,
+            'points_progress' => 70,
+            'points_needed' => 150,
+            'target_points' => 500,
+            'badges' => [
+                ['id' => 1, 'title' => 'منقذ حياة', 'desc' => 'تم إنقاذ أكثر من 10 حالات', 'date' => '1 يونيو 2024', 'image' => 'badge-hero.png'],
+                ['id' => 2, 'title' => '10 تبرعات', 'desc' => 'تم إنجاز 10 تبرعات', 'date' => '20 مايو 2025', 'image' => 'badge-10.png'],
+                ['id' => 3, 'title' => '5 تبرعات', 'desc' => 'تم إنجاز 5 تبرعات', 'date' => '10 أبريل 2024', 'image' => 'badge-5.png'],
+                ['id' => 4, 'title' => 'أول تبرع', 'desc' => 'تم إنجاز أول تبرع', 'date' => '15 مارس 2024', 'image' => 'badge-1.png']
             ]
-        ]);
+        ];
+
+        return $this->successResponse($data, 'تم جلب المكافآت والبطاقة الذكية بنجاح');
     }
 
     public function donationHistory(Request $request)
@@ -144,10 +139,7 @@ class DonorController extends Controller
             ]
         ];
 
-        return response()->json([
-            'status' => true,
-            'data' => $history
-        ]);
+        return $this->successResponse($history, 'تم جلب سجل التبرعات بنجاح');
     }
 
     public function notifications(Request $request)
@@ -176,18 +168,14 @@ class DonorController extends Controller
             ]
         ];
 
-        return response()->json([
-            'status' => true,
-            'data' => $notifications,
+        return $this->successResponse([
+            'notifications' => $notifications,
             'unread_count' => collect($notifications)->where('read', false)->count()
-        ]);
+        ], 'تم جلب الإشعارات بنجاح');
     }
 
     public function markNotificationsAsRead(Request $request)
     {
-        return response()->json([
-            'status' => true,
-            'message' => 'تم تحديث جميع الإشعارات كمقروءة بنجاح'
-        ]);
+        return $this->successResponse(null, 'تم تحديث جميع الإشعارات كمقروءة بنجاح');
     }
 }

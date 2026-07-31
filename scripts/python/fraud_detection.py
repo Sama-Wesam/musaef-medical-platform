@@ -10,7 +10,6 @@ def main():
         data = pd.DataFrame(input_data['logs'])
 
         # تدريب النموذج لاكتشاف القيم الشاذة
-        # contamination=0.05 يعني نفترض أن 5% من البيانات قد تكون مشبوهة
         model = IsolationForest(contamination=0.05, random_state=42)
 
         # -1 يعني "احتيالي/شاذ"، 1 يعني "طبيعي"
@@ -22,7 +21,7 @@ def main():
         print(json.dumps(fraudulent_logs, ensure_ascii=False))
 
     except Exception as e:
-        print(json.dumps({'error': str(e)}))
+        print(json.dumps({'error': str(e)}, ensure_ascii=False))
 
 if __name__ == "__main__":
     main()

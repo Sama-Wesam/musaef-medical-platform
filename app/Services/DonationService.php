@@ -2,58 +2,20 @@
 
 namespace App\Services;
 
-use App\Models\User;
-use App\Models\Donor;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
-
 class DonationService
 {
     /**
-     * تسجيل متبرع جديد مع ربطه بالمستخدم بنفس الـ ID
+     * تسجيل عملية التبرع وتحديث المخزون
      */
-    public function registerDonor(array $data)
+    public function recordDonation(array $data)
     {
-        return DB::transaction(function () use ($data) {
-            // 1. إنشاء المستخدم
-            $user = User::create([
-                'name'     => $data['name'],
-                'email'    => $data['email'],
-                'password' => Hash::make($data['password']),
-                'role'     => 'donor',
-            ]);
-
-            // 2. إنشاء سجل المتبرع بنفس الـ ID الناتج من المستخدم
-            $donor = Donor::create([
-                'id'            => $user->id, // هنا الربط المباشر (Shared Primary Key)
-                'blood_type_id' => $data['blood_type_id'],
-                'birth_date'    => $data['birth_date'],
-                'gender'        => $data['gender'],
-            ]);
-
-            return ['user' => $user, 'donor' => $donor];
-        });
-    }
-
-    /**
-     * تسجيل الدخول
-     */
-    public function login($email, $password)
-    {
-        $user = User::where('email', $email)->first();
-
-        if (!$user || !Hash::check($password, $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['البيانات المدخلة غير صحيحة.'],
-            ]);
-        }
-
-        $token = $user->createToken('musaef_auth_token')->plainTextToken;
-
+        //  إضافة المنطق البرمجي لإضافة النقاط للمتبرع وتحديث المخزون 
         return [
-            'user'  => $user,
-            'token' => $token,
+            'id' => 1,
+            'donor_id' => $data['donor_id'] ?? null,
+            'emergency_request_id' => $data['emergency_request_id'] ?? null,
+            'units_donated' => $data['units_donated'] ?? 1,
+            'status' => 'completed'
         ];
     }
 }

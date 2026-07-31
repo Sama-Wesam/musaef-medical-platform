@@ -24,9 +24,9 @@ class EmergencyService
     public function createEmergencyRequest(array $data, $hospital)
     {
         // 1. فحص الاحتيال بالذكاء الاصطناعي
-        $fraudCheck = $this->fraudDetectionAI->analyzeRequest($hospital, $data['units_required']);
-        
-        if ($fraudCheck['is_suspicious'] && $fraudCheck['fraud_score'] > 50) {
+        $fraudCheck = $this->fraudDetectionAI->analyzeRequest($data);
+
+        if (isset($fraudCheck['is_fraud']) && $fraudCheck['is_fraud'] === true) {
             throw new Exception("تم حظر الطلب للاشتباه بسلوك غير معتاد (Spam).");
         }
 
@@ -44,10 +44,10 @@ class EmergencyService
     public function markAsCompleted(int $requestId)
     {
         $request = $this->emergencyRepository->findById($requestId);
-        
+
         if ($request && $request->status !== RequestStatus::COMPLETED->value) {
             $this->emergencyRepository->updateStatus($requestId, RequestStatus::COMPLETED->value);
-            
+
             // إخفاء الحالة من الخريطة المباشرة
             event(new EmergencyResolved($request));
             return true;

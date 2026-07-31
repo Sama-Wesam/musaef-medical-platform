@@ -12,7 +12,7 @@
             :class="{ 'active-tab': accountsStore.activeTab === 'donors' }"
             @click="switchTab('donors')"
           >
-            <img :src="getImageUrl('Vector (2).png')" alt="donors icon" width="18" height="18" />
+            <img :src="getIconUrl('Vector (2).png')" alt="donors icon" width="18" height="18" />
             <span>المتبرعون</span>
           </button>
 
@@ -22,7 +22,7 @@
             :class="{ 'active-tab': accountsStore.activeTab === 'hospitals' }"
             @click="switchTab('hospitals')"
           >
-            <img :src="getImageUrl('solar_hospital-linear (2).png')" alt="hospitals icon" width="18" height="18" />
+            <img :src="getIconUrl('solar_hospital-linear (2).png')" alt="hospitals icon" width="18" height="18" />
             <span>المستشفيات</span>
           </button>
 
@@ -32,7 +32,7 @@
             :class="{ 'active-tab': accountsStore.activeTab === 'roles' }"
             @click="switchTab('roles')"
           >
-            <img :src="getImageUrl('Vector (1).png')" alt="roles icon" width="18" height="18" />
+            <img :src="getIconUrl('Vector (1).png')" alt="roles icon" width="18" height="18" />
             <span>الصلاحيات</span>
           </button>
 
@@ -42,7 +42,7 @@
             :class="{ 'active-tab': accountsStore.activeTab === 'logs' }"
             @click="switchTab('logs')"
           >
-            <img :src="getImageUrl('el_list-alt (2).png')" alt="logs icon" width="18" height="18" />
+            <img :src="getIconUrl('el_list-alt (2).png')" alt="logs icon" width="18" height="18" />
             <span>سجل العمليات</span>
           </button>
 
@@ -126,8 +126,15 @@ const filteredLogs = computed(() => {
   return accountsStore.auditLogs.filter(l => l.user.includes(accountsStore.searchQuery) || l.details.includes(accountsStore.searchQuery));
 });
 
-const getImageUrl = (fileName) => {
-  return new URL(`../../assets/images/${fileName}`, import.meta.url).href;
+// دالة محدثة لجلب الأيقونات من المسار الصحيح للمجلد المطلوب
+const getIconUrl = (fileName) => {
+  if (!fileName) return '';
+  if (fileName.startsWith('http') || fileName.startsWith('data:')) return fileName;
+  try {
+    return new URL(`../../assets/icons/${fileName}`, import.meta.url).href;
+  } catch (e) {
+    return '';
+  }
 };
 
 watch([() => accountsStore.searchQuery, () => accountsStore.selectedFilter], () => {

@@ -41,9 +41,9 @@ def main():
             analytics_result['top_donor_region'] = "لا توجد بيانات كافية"
 
         # 4. تحليل المستشفى الأكثر استهلاكاً للدم بناءً على كميات الطلبات المكتملة
-        if not df_requests.empty and 'hospital_name' in df_requests.columns:
-            # تجميع البيانات حسب اسم المستشفى وحساب مجموع الوحدات المطلوبة
-            top_hospital = df_requests.groupby('hospital_name')['units_needed'].sum().idxmax()
+        # تم تعديل الحقل إلى units_required ليتوافق مع استعلام الباك إند في DonationAnalyticsEngine.php
+        if not df_requests.empty and 'hospital_name' in df_requests.columns and 'units_required' in df_requests.columns:
+            top_hospital = df_requests.groupby('hospital_name')['units_required'].sum().idxmax()
             analytics_result['top_consuming_hospital'] = top_hospital
         else:
             analytics_result['top_consuming_hospital'] = "لا توجد بيانات كافية"

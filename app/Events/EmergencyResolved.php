@@ -20,7 +20,7 @@ class EmergencyResolved implements ShouldBroadcast
      */
     public function __construct(BloodRequest $bloodRequest)
     {
-        $this->bloodRequest = $bloodRequest;
+        $this->bloodRequest = $bloodRequest; 
     }
 
     /**

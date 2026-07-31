@@ -8,9 +8,6 @@ def train_model():
     """
     توليد بيانات تاريخية افتراضية لتدريب النموذج عليها
     """
-    # X = [المخزون_الحالي, الاستهلاك_اليومي, الطلبات_المعلقة, الطوارئ(1/0), الموسم(1-4)]
-    # y = الأيام_المتبقية_حتى_النفاد (Days until shortage)
-
     data = {
         'current_stock': np.random.randint(10, 500, 200),
         'daily_consumption': np.random.randint(5, 50, 200),
@@ -20,8 +17,6 @@ def train_model():
     }
     df = pd.DataFrame(data)
 
-    # معادلة منطقية لإنتاج النتيجة (y) لكي يتدرب عليها النموذج
-    # المخزون / (الاستهلاك + الطلبات + (إذا كانت هناك طوارئ يزداد الاستهلاك بنسبة 50%))
     emergency_factor = np.where(df['is_emergency'] == 1, 1.5, 1.0)
     df['days_until_shortage'] = df['current_stock'] / ((df['daily_consumption'] + df['pending_requests'] + 1) * emergency_factor)
 
@@ -78,7 +73,7 @@ def main():
         print(json.dumps(result, ensure_ascii=False))
 
     except Exception as e:
-        print(json.dumps({'error': str(e)}))
+        print(json.dumps({'error': str(e)}, ensure_ascii=False))
 
 if __name__ == "__main__":
     main()

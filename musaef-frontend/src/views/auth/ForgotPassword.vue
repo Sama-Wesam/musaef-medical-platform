@@ -8,7 +8,7 @@
 
           <!-- شعار قطرة الدم علوياً -->
           <div class="top-logo-container position-absolute top-0 end-0 p-3 p-md-4 z-3">
-            <img :src="getImageUrl('auth-logo.png')" alt="مسعف" class="top-auth-logo" @error="handleLogoFallback" />
+            <img :src="authLogoImg" alt="مسعف" class="top-auth-logo" />
           </div>
 
           <div class="auth-card-inner bg-white rounded-4 p-3 p-sm-4 shadow-sm mt-5 mt-lg-4 mx-auto w-100">
@@ -73,11 +73,11 @@
 
         <!-- ================= 2. القسم الأيسر: البانر البصري والعبارة والأيقونات الأربع ================= -->
         <div class="col-12 col-lg-6 hero-visual-col position-relative d-flex flex-column justify-content-start p-4 p-md-5 order-1 order-lg-2">
+          <!-- صورة الخلفية الرئيسية -->
           <img
-            :src="getImageUrl('login.jpeg')"
+            :src="heroBgImg"
             alt="لأن الدقيقة تساوي حياة"
             class="hero-bg-image"
-            @error="handleImgFallback"
           />
 
           <div class="hero-content position-relative z-2 text-center pt-3 mx-auto">
@@ -85,8 +85,9 @@
               لأن الدقيقة تساوي <span class="text-danger">حياة</span>
             </h2>
 
+            <!-- صورة خط النبض -->
             <div class="pulse-line-wrapper my-2 mx-auto text-center">
-              <img :src="getImageUrl('Vector 7.png')" alt="نبض القلب" class="pulse-vector-img mx-auto" />
+              <img :src="vectorPulseImg" alt="نبض القلب" class="pulse-vector-img mx-auto" />
             </div>
 
             <p class="hero-description text-dark fw-bold mb-3 mb-md-4 text-center">
@@ -97,28 +98,28 @@
             <div class="row g-2 justify-content-center text-center mt-3 mt-md-4">
               <div class="col-3">
                 <div class="feature-icon-box mx-auto mb-2">
-                  <img :src="getImageUrl('Frame 2147225319.png')" alt="إنقاذ الأرواح" class="feature-img" />
+                  <img :src="iconLivesImg" alt="إنقاذ الأرواح" class="feature-img" />
                 </div>
                 <span class="d-block feature-label text-dark fw-bold">إنقاذ الأرواح</span>
               </div>
 
               <div class="col-3">
                 <div class="feature-icon-box mx-auto mb-2">
-                  <img :src="getImageUrl('Frame 2147225318.png')" alt="استجابة سريعة" class="feature-img" />
+                  <img :src="iconResponseImg" alt="استجابة سريعة" class="feature-img" />
                 </div>
                 <span class="d-block feature-label text-dark fw-bold">استجابة سريعة</span>
               </div>
 
               <div class="col-3">
                 <div class="feature-icon-box mx-auto mb-2">
-                  <img :src="getImageUrl('Frame 2147225317.png')" alt="مجتمع المتبرعين" class="feature-img" />
+                  <img :src="iconCommunityImg" alt="مجتمع المتبرعين" class="feature-img" />
                 </div>
                 <span class="d-block feature-label text-dark fw-bold">مجتمع المتبرعين</span>
               </div>
 
               <div class="col-3">
                 <div class="feature-icon-box mx-auto mb-2">
-                  <img :src="getImageUrl('Frame 2147225316.png')" alt="آمن وموثوق" class="feature-img" />
+                  <img :src="iconSafeImg" alt="آمن وموثوق" class="feature-img" />
                 </div>
                 <span class="d-block feature-label text-dark fw-bold">آمن وموثوق</span>
               </div>
@@ -135,14 +136,20 @@
 import { ref } from 'vue';
 import { useAuth } from '@/composables/useAuth';
 
+// استيراد الصور والأيقونات مباشرة لضمان ربط Vite لها
+import heroBgImg from '@/assets/images/login.jpeg';
+import authLogoImg from '@/assets/images/auth-logo.png';
+
+import vectorPulseImg from '@/assets/icons/Vector 7.png';
+import iconLivesImg from '@/assets/icons/Frame 2147225319.png';
+import iconResponseImg from '@/assets/icons/Frame 2147225318.png';
+import iconCommunityImg from '@/assets/icons/Frame 2147225317.png';
+import iconSafeImg from '@/assets/icons/Frame 2147225316.png';
+
 const email = ref('');
 const sent = ref(false);
 
 const { sendPasswordResetEmail, loading, error } = useAuth();
-
-const getImageUrl = (fileName) => {
-  return new URL(`../../assets/images/${fileName}`, import.meta.url).href;
-};
 
 const handleReset = async () => {
   sent.value = false;
@@ -152,14 +159,6 @@ const handleReset = async () => {
   } else {
     sent.value = true;
   }
-};
-
-const handleImgFallback = (e) => {
-  e.target.src = getImageUrl('hero-drop.png');
-};
-
-const handleLogoFallback = (e) => {
-  e.target.src = getImageUrl('logo.png');
 };
 </script>
 

@@ -28,21 +28,26 @@ def main():
         # 1. استقبال البيانات وتجهيزها
         input_data = json.loads(sys.argv[1])
         hospital = input_data['hospital']
-        donors_raw = input_data['donors']
+        donors_raw = input_data.get('donors', [])
         limit = input_data.get('limit', 10)
+
+        # التحقق المبكر لمنع المعالجة الحسابية والتعليق في حال عدم وجود متبرعين
+        if not donors_raw:
+            print(json.dumps([], ensure_ascii=False))
+            sys.exit(0)
 
         # تحويل البيانات إلى Pandas DataFrame لسهولة وسرعة التعامل معها
         df = pd.DataFrame(donors_raw)
 
         if df.empty:
-            print(json.dumps([]))
+            print(json.dumps([], ensure_ascii=False))
             return
 
         # 2. تطبيق فلتر الأهلية (استبعاد غير المؤهلين فوراً)
         df = df[df['is_eligible'] == True].copy()
 
         if df.empty:
-            print(json.dumps([]))
+            print(json.dumps([], ensure_ascii=False))
             return
 
         # 3. حساب المسافة الجغرافية وسرعة الوصول (ETA)
@@ -53,16 +58,11 @@ def main():
         df['eta_minutes'] = (df['distance_km'] / 40.0) * 60.0
 
         # 4. حساب العمر من تاريخ الميلاد
-        # (يفترض أن Laravel يرسل 'date_of_birth' في الـ JSON)
         df['age'] = df['date_of_birth'].apply(calculate_age)
 
         # 5. استخدام Scikit-Learn (MinMaxScaler) لتوحيد البيانات (Normalization)
-        # هذا هو جوهر تعلم الآلة لضمان عدم طغيان رقم كبير (مثل المسافة) على رقم صغير (مثل عدد التبرعات)
         scaler = MinMaxScaler()
 
-        # المعايير التي ستدخل في نموذج التقييم:
-        # المسافة (أقل أفضل)، العمر (أصغر أفضل)، التبرعات السابقة (أكثر أفضل)
-        # لتطبيق ذلك، نعكس المسافة والعمر بضربهما في -1 ليصبح الأكبر هو الأفضل للنموذج
         df['distance_inverted'] = df['distance_km'] * -1
         df['age_inverted'] = df['age'] * -1
 
@@ -72,7 +72,6 @@ def main():
         normalized_features = scaler.fit_transform(features)
 
         # 6. تحديد أوزان المعايير (Feature Weights) لإنتاج الـ Score النهائي
-        # 50% للمسافة، 20% للعمر، 30% لخبرة التبرع
         weights = np.array([0.50, 0.20, 0.30])
 
         # ضرب القيم الموحدة في الأوزان وجمعها، ثم تحويلها لنسبة مئوية
@@ -88,10 +87,10 @@ def main():
         # تجهيز المخرجات لتعود إلى Laravel
         final_results = best_matches[['donor_id', 'match_score', 'eta_minutes']].to_dict(orient='records')
 
-        print(json.dumps(final_results))
+        print(json.dumps(final_results, ensure_ascii=False))
 
     except Exception as e:
-        print(json.dumps({'error': str(e)}))
+        print(json.dumps({'error': str(e)}, ensure_ascii=False))
 
 if __name__ == "__main__":
     main()

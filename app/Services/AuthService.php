@@ -4,8 +4,6 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Models\Donor;
-use App\Models\HealthInfo;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -44,7 +42,7 @@ class AuthService
             $user = User::create([
                 'name'     => $data['name'],
                 'email'    => $data['email'],
-                'password' => $data['password'], // تم إزالة Hash::make لأن موديل User يتضمن 'password' => 'hashed'
+                'password' => $data['password'], // يتم تشفيرها تلقائياً بفضل $casts في موديل User
                 'role'     => 'donor',
             ]);
 
@@ -58,53 +56,5 @@ class AuthService
 
             return ['user' => $user, 'donor' => $donor];
         });
-    }
-
-    /**
-     * تقييم استبيان حالة المتبرع الصحية
-     */
-    public function evaluateHealthScreening(Donor $donor, array $answers)
-    {
-        $isEligible = true;
-        $deferralDate = null;
-        $message = 'أنت مؤهل فوراً للتبرع!';
-        $status = 'eligible';
-
-        if (isset($answers['has_symptoms']) && $answers['has_symptoms'] == true) {
-            $isEligible = false;
-            $status = 'suspended';
-            $message = 'سلامتك تهمنا! نرجو منك التبرع حين تتحسن حالتك الصحية.';
-        } elseif (
-            (isset($answers['had_surgery']) && $answers['had_surgery'] == true) ||
-            (isset($answers['is_pregnant']) && $answers['is_pregnant'] == true)
-        ) {
-            $isEligible = false;
-            $status = 'deferred';
-            $deferralDate = Carbon::now()->addMonths(6);
-            $message = 'عذراً، أنت غير مؤهل حالياً للتبرع.';
-        }
-
-        $donor->update([
-            'is_eligible' => $isEligible,
-            'eligibility_status' => $status,
-            'deferral_date' => $deferralDate,
-        ]);
-
-        HealthInfo::updateOrCreate(
-            ['donor_id' => $donor->id],
-            [
-                'has_symptoms' => $answers['has_symptoms'] ?? false,
-                'had_surgery' => $answers['had_surgery'] ?? false,
-                'takes_medication' => $answers['takes_medication'] ?? false,
-                'is_pregnant' => $answers['is_pregnant'] ?? false,
-            ]
-        );
-
-        return [
-            'is_eligible' => $isEligible,
-            'status' => $status,
-            'message' => $message,
-            'deferral_date' => $deferralDate ? $deferralDate->format('Y-m-d') : null,
-        ];
     }
 }

@@ -40,7 +40,6 @@ class HealthScreeningService
         }
         // 3. الأدوية (لا تمنع الأهلية فوراً ولكن قد تتطلب مراجعة)
         elseif (isset($answers['takes_medication']) && $answers['takes_medication'] == true) {
-            // يمكن إضافة شارة مختلفة هنا أو إبقاءه مؤهلاً مع ملاحظة للمستشفى
             $status = 'eligible_with_review';
         }
 

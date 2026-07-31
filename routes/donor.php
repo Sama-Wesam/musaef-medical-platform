@@ -9,15 +9,13 @@ use App\Http\Controllers\Donor\NearbyHospitalsController;
 use App\Http\Controllers\Donor\RewardsController;
 use App\Http\Controllers\Donor\QRCardController;
 use App\Http\Controllers\Donor\NotificationsController;
-use App\Http\Controllers\Donor\EmergencyNotificationsController as DonorRequestController;
 
 Route::middleware(['auth:sanctum', 'donor'])->prefix('donor')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index']);
-    Route::get('/requests', [DonorRequestController::class, 'index']); // مسار عرض جميع الطلبات
-    Route::get('/ai-recommendations', [DonorRequestController::class, 'aiRecommendations']); // مسار التوصيات
-    Route::post('/requests/{id}/accept', [DonorRequestController::class, 'accept']); // مسار قبول الطلب
-    // ================================================================
+    Route::get('/requests', [EmergencyNotificationsController::class, 'index']); // مسار عرض جميع الطلبات
+    Route::get('/ai-recommendations', [EmergencyNotificationsController::class, 'aiRecommendations']); // مسار التوصيات
+    Route::post('/requests/{id}/accept', [EmergencyNotificationsController::class, 'accept']); // مسار قبول الطلب
 
     // الملف الشخصي والصحي
     Route::get('/profile', [ProfileController::class, 'show']);

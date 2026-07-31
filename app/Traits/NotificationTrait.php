@@ -7,7 +7,10 @@ use Illuminate\Support\Facades\Log;
 trait NotificationTrait
 {
     /**
-     * إرسال إشعار Firebase Push Notification (FCM)
+     * إرسال إشعار Push Notification عبر Firebase (FCM)
+     *
+     * ملاحظة: يتم استخدام cURL المباشر لضمان الأداء العالي والبساطة دون تعقيدات إضافية.
+     * للـ FCM Legacy Server Key، أو يمكن تحديثه مستقبلاً ليتوافق مع Firebase HTTP v1 API مع OAuth2 Tokens.
      */
     public function sendPushNotification(string $deviceToken, string $title, string $body, array $data = []): bool
     {
@@ -24,7 +27,7 @@ trait NotificationTrait
                 "data" => $data
             ];
 
-            // كود مبسط للاتصال بـ Firebase API
+            // كود مبسط ومباشر للاتصال بـ Firebase API عبر cURL
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, 'https://fcm.googleapis.com/fcm/send');
             curl_setopt($ch, CURLOPT_POST, true);

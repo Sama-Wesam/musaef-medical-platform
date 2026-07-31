@@ -2,7 +2,6 @@
 
 namespace App\AI;
 
-use App\Models\BloodRequest;
 use App\Models\Donor;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\Process\Process;
@@ -37,9 +36,11 @@ class DonationAnalyticsEngine
             'inventory' => $inventory
         ];
 
+        $pythonPath = env('PYTHON_PATH', 'python3');
+
         // 4. استدعاء سكريبت البايثون ومعالجة البيانات
         $process = new Process([
-            'python',
+            $pythonPath,
             base_path('scripts/python/donation_analytics.py'),
             json_encode($payload, JSON_UNESCAPED_UNICODE)
         ]);

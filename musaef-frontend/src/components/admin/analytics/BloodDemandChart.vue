@@ -1,7 +1,7 @@
 <template>
   <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white mb-3 mb-md-4 dir-rtl">
     <div class="d-flex align-items-center justify-content-start gap-2 mb-3 mb-md-4">
-      <img :src="getImageUrl('mdi_blood-plus-outline (2).png')" alt="blood icon" width="24" height="24" class="header-icon" />
+      <img :src="getIconUrl('mdi_blood-plus-outline (2).png')" alt="blood icon" width="24" height="24" class="header-icon" />
       <h5 class="fw-bold text-dark mb-0 fs-6 fs-md-5">الطلب حسب فصيلة الدم</h5>
     </div>
 
@@ -60,8 +60,14 @@ defineProps({
   }
 });
 
-const getImageUrl = (fileName) => {
-  return new URL(`../../../assets/images/${fileName}`, import.meta.url).href;
+const getIconUrl = (fileName) => {
+  if (!fileName) return '';
+  if (fileName.startsWith('http') || fileName.startsWith('data:')) return fileName;
+  try {
+    return new URL(`../../../assets/icons/${fileName}`, import.meta.url).href;
+  } catch (e) {
+    return '';
+  }
 };
 </script>
 

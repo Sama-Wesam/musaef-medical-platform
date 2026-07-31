@@ -76,10 +76,7 @@ class SettingsController extends Controller
             ]
         ];
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $settings
-        ], 200);
+        return $this->successResponse($settings, 'تم جلب الإعدادات بنجاح');
     }
 
     /**
@@ -87,11 +84,7 @@ class SettingsController extends Controller
      */
     public function update(Request $request)
     {
-        return response()->json([
-            'status' => 'success',
-            'message' => 'تم حفظ التغييرات بنجاح.',
-            'data' => $request->all()
-        ], 200);
+        return $this->successResponse($request->all(), 'تم حفظ التغييرات بنجاح');
     }
 
     /**
@@ -99,9 +92,6 @@ class SettingsController extends Controller
      */
     public function testSmtp(Request $request)
     {
-        return response()->json([
-            'status' => 'success',
-            'message' => 'متصل بنجاح'
-        ], 200);
+        return $this->successResponse(null, 'متصل بنجاح');
     }
 }

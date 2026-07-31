@@ -22,15 +22,14 @@
         "phpunit/phpunit": "^11.5.50"
     },
     "autoload": {
-    "psr-4": {
-        "App\\": "app/",
-        "Database\\Factories\\": "database/factories/",
-        "Database\\Seeders\\": "database/seeders/"
-    },
-    "files": [
-        "app/Helpers/helpers.php"
-    ]
-
+        "psr-4": {
+            "App\\": "app/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/"
+        },
+        "files": [
+            "app/Helpers/helpers.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

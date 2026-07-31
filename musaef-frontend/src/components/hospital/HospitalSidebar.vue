@@ -2,7 +2,7 @@
   <!-- خلفية معتمة لإغلاق القائمة في الجوال عند النقر خارجها -->
   <div class="sidebar-backdrop d-lg-none" @click="closeMobileSidebar"></div>
 
-  <aside class="hospital-sidebar d-flex flex-column justify-content-between">
+  <aside class="hospital-sidebar d-flex flex-column justify-content-between" dir="rtl">
 
     <!-- =========================
          الجزء العلوي
@@ -132,13 +132,10 @@
     </div>
 
     <!-- =========================
-         تسجيل الخروج
+         تسجيل الخروج (مطابق لسايدبار الآدمن)
     ========================== -->
     <div class="logout-wrapper">
-      <button
-        @click="handleLogout"
-        class="logout-btn w-100 border-0 bg-transparent"
-      >
+      <button class="logout-btn" @click="handleLogout">
         تسجيل الخروج
       </button>
     </div>
@@ -150,11 +147,11 @@
 import { RouterLink, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
 
-import dashboardIcon from '@/assets/images/Frame 2147225925.png';
-import bellIcon from '@/assets/images/solar_bell-outline.png';
-import alertIcon from '@/assets/images/ant-design_alert-twotone.png';
-import bloodPlusIcon from '@/assets/images/mdi_blood-plus-outline.png';
-import settingsIcon from '@/assets/images/material-symbols_settings-outline.png';
+import dashboardIcon from '@/assets/icons/Frame 2147225925.png';
+import bellIcon from '@/assets/icons/solar_bell-outline.png';
+import alertIcon from '@/assets/icons/ant-design_alert-twotone.png';
+import bloodPlusIcon from '@/assets/icons/mdi_blood-plus-outline.png';
+import settingsIcon from '@/assets/icons/material-symbols_settings-outline.png';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -342,6 +339,7 @@ const handleLogout = async () => {
     font-size: 14px;
     font-weight: 700;
     transition: .25s;
+    cursor: pointer;
 }
 
 @media (min-width: 1200px) { .support-btn { height: 46px; font-size: 15px; } }
@@ -351,20 +349,19 @@ const handleLogout = async () => {
 .logout-wrapper { padding-top: 20px; }
 
 .logout-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 48px;
-    border-radius: 999px;
-    border: 1px solid #DADADA;
-    background: #FFFFFF;
-    text-decoration: none;
-    color: #111827;
-    font-size: 16px;
-    font-weight: 700;
-    transition: .25s;
-    cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 48px;
+  border-radius: 999px;
+  border: 1px solid #DADADA;
+  background: #FFFFFF;
+  color: #111827;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: .25s;
 }
 
 @media (min-width: 1200px) { .logout-btn { height: 56px; font-size: 18px; } }

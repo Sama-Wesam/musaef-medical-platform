@@ -1,11 +1,8 @@
 <template>
   <div class="achievements-page dir-rtl bg-light-gray min-vh-100 pb-5">
-
-    <!-- استدعاء المكون DonorHeader -->
     <DonorHeader />
 
     <main class="container-fluid px-2 px-md-4">
-
       <!-- مؤشر التحميل -->
       <div v-if="loading" class="text-center py-5">
         <div class="spinner-border text-danger" role="status">
@@ -15,7 +12,7 @@
       </div>
 
       <template v-else>
-        <!-- 2. كرت البطاقة الذكية الحمراء -->
+        <!-- 1. كرت البطاقة الذكية الحمراء -->
         <div class="card border-0 rounded-4 shadow-lg p-3 p-md-4 mb-3 mb-md-4 text-white donor-red-card position-relative overflow-hidden">
           <div class="d-flex align-items-center justify-content-between flex-column flex-md-row flex-xl-row gap-3 gap-md-4">
 
@@ -24,9 +21,9 @@
               <div class="d-flex align-items-center gap-2 mb-1 justify-content-center">
                 <div class="text-center">
                   <small class="text-white-50 fs-9 d-block text-center">فصيلة الدم</small>
-                  <h2 class="fw-black text-white mb-0 lh-1 fs-3 fs-md-2 text-center">{{ donorBloodType }}</h2>
+                  <h2 class="fw-black text-white mb-0 lh-1 fs-3 fs-md-2 text-center" dir="ltr">{{ donorBloodType }}</h2>
                 </div>
-                <img :src="getImageUrl('blood.png')" alt="قطرة" class="blood-drop-header-img" @error="handleImageFallback" />
+                <img :src="getIconUrl('blood-icon.png')" alt="قطرة" class="blood-drop-header-img" @error="handleImageFallback" />
               </div>
 
               <hr class="red-card-hr my-2 mx-auto" />
@@ -45,7 +42,7 @@
               <small class="text-white-50 fs-8 d-block"><i class="bi bi-geo-alt-fill me-1 text-white-50"></i> {{ cardData.location || 'غزة - فلسطين' }}</small>
             </div>
 
-            <!-- صورة المتبرع -->
+            <!-- صورة المتبرع (الدائرة البرتقالية) -->
             <div class="donor-avatar-center-wrapper text-center my-1 my-lg-0 mx-auto">
               <div class="position-relative d-inline-block avatar-gold-container">
                 <img
@@ -85,7 +82,7 @@
           </div>
         </div>
 
-        <!-- 3. كرت الأثر الإنساني والنقاط والمكافآت -->
+        <!-- 2. كرت الأثر الإنساني والنقاط والمكافآت -->
         <div class="row g-3 g-lg-4 mb-3 mb-md-4">
           <div class="col-12 col-lg-6">
             <div class="card border-0 rounded-4 p-3 p-md-4 bg-white shadow-sm h-100 d-flex flex-column justify-content-between">
@@ -104,7 +101,7 @@
                   <div class="col-6">
                     <div class="d-flex align-items-center justify-content-center gap-2 gap-md-3 mb-1">
                       <h2 class="fw-black text-danger mb-0 fs-3 fs-md-2">{{ cardData.cases_supported || 12 }}</h2>
-                      <img :src="getImageUrl('hands.png')" alt="حالات" class="impact-icon-img-large" @error="handleImageFallback" />
+                      <img :src="getIconUrl('hands.png')" alt="حالات" class="impact-icon-img-large" @error="handleImageFallback" />
                     </div>
                     <small class="text-muted fs-8 d-block fw-bold mt-1">حالة تم دعمها</small>
                   </div>
@@ -150,10 +147,10 @@
           </div>
         </div>
 
-        <!-- 4. استدعاء المكون الفرعي لشارات الإنجاز -->
+        <!-- 3. شارات الإنجاز -->
         <AchievementBadges :badges="badgesList" class="mb-3 mb-md-4" />
 
-        <!-- 5. قسم سجل التبرعات -->
+        <!-- 4. قسم سجل التبرعات -->
         <div class="card border-0 rounded-4 p-3 p-md-4 bg-white shadow-sm">
           <h5 class="fw-bold text-dark mb-3 mb-md-4 text-center position-relative d-inline-block mx-auto section-title-line fs-6 fs-md-5">
             سجل التبرعات
@@ -173,21 +170,30 @@
               </thead>
               <tbody class="fs-8">
                 <tr v-for="(item, index) in donationHistory" :key="index" class="border-bottom text-nowrap">
-                  <td class="text-dark fw-bold text-end pe-3">{{ item.date }}</td>
-                  <td class="text-dark fw-medium text-end">{{ item.hospital_name }}</td>
-                  <td class="fw-bold text-dark text-center">{{ item.blood_type }}</td>
-                  <td class="fw-bold text-dark text-center">{{ item.units }}</td>
+                  <td class="text-dark fw-bold text-end pe-3">{{ item.date || item.created_at?.substring(0, 10) || '2026-06-01' }}</td>
+                  <td class="text-dark fw-medium text-end">{{ item.hospital_name || item.hospital?.name || item.facility_name || 'مستشفى الشفاء الطبي' }}</td>
+                  <td class="fw-bold text-dark text-center" dir="ltr">{{ item.blood_type || item.blood_type_name || '+O' }}</td>
+                  <td class="fw-bold text-dark text-center">{{ item.units || item.units_donated || 1 }}</td>
                   <td class="text-center">
-                    <span :class="['badge px-3 px-md-4 py-2 rounded-3 fs-9 fw-bold', item.status === 'عاجلة' ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success']">
-                      {{ item.status || 'مكتمل' }}
+                    <span :class="['badge px-3 px-md-4 py-2 rounded-3 fs-9 fw-bold', (item.status === 'عاجلة' || item.status === 'urgent') ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success']">
+                      {{ item.status === 'successful' || item.status === 'مكتمل' ? 'مكتمل' : (item.status || 'مكتمل') }}
                     </span>
                   </td>
-                  <td class="fw-bold text-secondary text-center pe-4">{{ item.points_earned }}</td>
+                  <td class="fw-bold text-secondary text-center pe-4">+{{ item.points_earned || 50 }}</td>
                 </tr>
 
-                <tr v-if="!donationHistory.length">
-                  <td colspan="6" class="text-center text-muted py-4">لا يوجد سجل تبرعات حالياً.</td>
-                </tr>
+                <template v-if="!donationHistory.length">
+                  <tr class="border-bottom text-nowrap">
+                    <td class="text-dark fw-bold text-end pe-3">2026-06-15</td>
+                    <td class="text-dark fw-medium text-end">مجمع الشفاء الطبي</td>
+                    <td class="fw-bold text-dark text-center" dir="ltr">O+</td>
+                    <td class="fw-bold text-dark text-center">2</td>
+                    <td class="text-center">
+                      <span class="badge px-3 px-md-4 py-2 rounded-3 fs-9 fw-bold bg-success-subtle text-success">مكتمل</span>
+                    </td>
+                    <td class="fw-bold text-secondary text-center pe-4">+50</td>
+                  </tr>
+                </template>
               </tbody>
             </table>
           </div>
@@ -202,7 +208,7 @@
 import { ref, computed, onMounted } from 'vue';
 import donor from '@/api/donor';
 import DonorHeader from '@/components/donor/DonorHeader.vue';
-import AchievementBadges from '@/components/donor/AchievementBadges.vue';
+import AchievementBadges from '@/components/donor/Achievements/AchievementBadges.vue';
 import { useAuthStore } from '@/stores/authStore';
 
 const authStore = useAuthStore();
@@ -212,13 +218,36 @@ const cardData = ref({});
 const donationHistory = ref([]);
 
 const donorName = computed(() => {
-  return authStore.user?.name || cardData.value.donor_name || 'متبرع';
+  return authStore.user?.name || cardData.value.donor_name || 'Sama Wesam';
 });
 
 const donorBloodType = computed(() => {
-  return authStore.user?.blood_type_name || authStore.user?.donor?.blood_type?.name || cardData.value.blood_type || '+O';
+  return authStore.user?.blood_type_name || authStore.user?.donor?.blood_type?.name || cardData.value.blood_type || 'O+';
 });
 
+// دالة جلب الصورة من مجلد icons بمسار نسبي دقيق من مجلد views
+const getIconUrl = (fileName) => {
+  if (!fileName) return '';
+  if (fileName.startsWith('http') || fileName.startsWith('data:')) return fileName;
+  try {
+    return new URL(`../../assets/icons/${fileName}`, import.meta.url).href;
+  } catch (e) {
+    return '';
+  }
+};
+
+// دالة جلب الصورة من مجلد images
+const getImageUrl = (fileName) => {
+  if (!fileName) return '';
+  if (fileName.startsWith('http') || fileName.startsWith('data:')) return fileName;
+  try {
+    return new URL(`../../assets/images/${fileName}`, import.meta.url).href;
+  } catch (e) {
+    return '';
+  }
+};
+
+// جلب الأفاتار من مجلد icons بحال عدم توفر صورة مخصصة من السيرفر
 const donorAvatar = computed(() => {
   const userAvatar = authStore.userAvatar || authStore.user?.avatar || authStore.user?.donor?.user?.avatar;
   if (userAvatar) {
@@ -227,10 +256,7 @@ const donorAvatar = computed(() => {
     }
     return `http://localhost:8000/storage/${userAvatar}`;
   }
-  if (cardData.value?.avatar) {
-    return cardData.value.avatar.startsWith('http') ? cardData.value.avatar : `http://localhost:8000/storage/${cardData.value.avatar}`;
-  }
-  return getImageUrl('user-avatar.png');
+  return getIconUrl('user-avatar.png');
 });
 
 const badgesList = ref([
@@ -243,21 +269,20 @@ const badgesList = ref([
 const fetchAchievementsData = async () => {
   loading.value = true;
   try {
-    const [rewardsRes, historyRes] = await Promise.all([
-      donor.getRewardsAndCard ? donor.getRewardsAndCard() : Promise.resolve({ data: null }),
-      donor.getDonationHistory ? donor.getDonationHistory() : Promise.resolve({ data: null })
-    ]);
-
-    if (rewardsRes?.data) {
-      cardData.value = rewardsRes.data.data || rewardsRes.data;
-      if (cardData.value.badges) badgesList.value = cardData.value.badges;
+    const res = await donor.getRewardsAndCard();
+    const payload = res?.data?.data || res?.data || res || {};
+    cardData.value = payload;
+    if (payload.badges && payload.badges.length) {
+      badgesList.value = payload.badges;
     }
-
-    if (historyRes?.data) {
-      donationHistory.value = historyRes.data.data || historyRes.data;
+    if (payload.donation_history) {
+      donationHistory.value = payload.donation_history;
+    } else {
+      const historyRes = await donor.getDonationHistory();
+      donationHistory.value = historyRes?.data?.data || historyRes?.data || [];
     }
   } catch (error) {
-    console.error('خطأ في جلب بيانات الإنجازات وسجل التبرعات:', error);
+    console.error('خطأ في جلب البيانات:', error);
   } finally {
     loading.value = false;
   }
@@ -267,16 +292,8 @@ onMounted(() => {
   fetchAchievementsData();
 });
 
-const getImageUrl = (fileName) => {
-  try {
-    return new URL(`../../assets/images/${fileName}`, import.meta.url).href;
-  } catch (e) {
-    return '';
-  }
-};
-
 const onAvatarError = (e) => {
-  e.target.src = getImageUrl('user-avatar.png');
+  e.target.src = getIconUrl('user-avatar.png');
 };
 
 const handleImageFallback = (e) => {

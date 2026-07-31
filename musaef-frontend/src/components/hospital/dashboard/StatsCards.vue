@@ -6,7 +6,7 @@
         <div class="d-flex justify-content-between align-items-start mb-2">
           <h6 class="fw-bold text-danger mb-0 card-title-right">الحالات الحرجة</h6>
           <div class="card-icon danger">
-            <img src="@/assets/images/solar_danger-triangle-linear.png" alt="حالات حرجة">
+            <img src="@/assets/icons/solar_danger-triangle-linear.png" alt="حالات حرجة">
           </div>
         </div>
         <div class="text-end mb-3">
@@ -28,7 +28,7 @@
         <div class="d-flex justify-content-between align-items-start mb-2">
           <h6 class="fw-bold text-success mb-0 card-title-right">المتبرعون المسجلون اليوم</h6>
           <div class="card-icon success">
-            <img src="@/assets/images/tabler_users.png" alt="المتبرعون">
+            <img src="@/assets/icons/tabler_users.png" alt="المتبرعون">
           </div>
         </div>
         <div class="text-end mb-3">
@@ -50,7 +50,7 @@
         <div class="d-flex justify-content-between align-items-start mb-2">
           <h6 class="fw-bold text-purple mb-0 card-title-right">وحدات الدم المتوفرة</h6>
           <div class="card-icon purple">
-            <img src="@/assets/images/streamline-ultimate_blood-drop.png" alt="وحدات الدم">
+            <img src="@/assets/icons/streamline-ultimate_blood-drop.png" alt="وحدات الدم">
           </div>
         </div>
         <div class="text-end mb-3">
@@ -72,7 +72,7 @@
         <div class="d-flex justify-content-between align-items-start mb-2">
           <h6 class="fw-bold text-primary mb-0 card-title-right">الطلبات النشطة</h6>
           <div class="card-icon primary">
-            <img src="@/assets/images/stash_data-date-light.png" alt="الطلبات">
+            <img src="@/assets/icons/stash_data-date-light.png" alt="الطلبات">
           </div>
         </div>
         <div class="text-end mb-3">

@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Hospital;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class HospitalSeeder extends Seeder
 {
@@ -126,12 +127,12 @@ class HospitalSeeder extends Seeder
         ];
 
         foreach ($facilities as $facility) {
-            // 1. إنشاء أو تحديث حساب المستخدم
+            // 1. إنشاء أو تحديث حساب المستخدم مع تشفير كلمة المرور صراحة
             $user = User::updateOrCreate(
                 ['email' => $facility['email']],
                 [
                     'name'     => $facility['name'],
-                    'password' => 'password123', // يتم التشفير تلقائياً بواسطة الموديل User
+                    'password' => Hash::make('password123'), // التشفير الصريح لضمان نجاح تسجيل الدخول
                     'role'     => 'hospital',
                     'phone'    => $facility['phone'],
                 ]

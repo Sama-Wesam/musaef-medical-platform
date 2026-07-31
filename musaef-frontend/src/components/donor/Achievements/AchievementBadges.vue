@@ -7,7 +7,7 @@
     <div class="row g-3 g-md-4 text-center">
       <div v-for="badge in badges" :key="badge.id" class="col-12 col-sm-6 col-xl-3">
         <div class="p-3 border rounded-4 bg-white h-100 shadow-2xs d-flex flex-column align-items-center justify-content-center">
-          <img :src="getImageUrl(badge.image)" :alt="badge.title" class="badge-card-img mb-2 mb-md-3" />
+          <img :src="getIconUrl(badge.image)" :alt="badge.title" class="badge-card-img mb-2 mb-md-3" />
           <h6 class="fw-bold text-dark mb-1 fs-7">{{ badge.title }}</h6>
           <small class="text-muted fs-9 d-block mb-1 text-truncate w-100">{{ badge.desc }}</small>
           <small class="text-secondary fw-bold fs-9">{{ badge.date }}</small>
@@ -25,8 +25,17 @@ defineProps({
   }
 });
 
-const getImageUrl = (fileName) => {
-  return new URL(`../../assets/images/${fileName}`, import.meta.url).href;
+// التوجيه الصحيح المباشر إلى مجلد src/assets/icons من المسار الثلاثي العميق
+const getIconUrl = (fileName) => {
+  if (!fileName) return '';
+  if (fileName.startsWith('http') || fileName.startsWith('data:')) {
+    return fileName;
+  }
+  try {
+    return new URL(`../../../assets/icons/${fileName}`, import.meta.url).href;
+  } catch (e) {
+    return '';
+  }
 };
 </script>
 

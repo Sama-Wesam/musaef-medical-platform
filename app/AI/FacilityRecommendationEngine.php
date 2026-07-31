@@ -18,8 +18,10 @@ class FacilityRecommendationEngine
             'facilities'          => $otherFacilities
         ];
 
+        $pythonPath = env('PYTHON_PATH', 'python3');
+
         $process = new Process([
-            'python',
+            $pythonPath,
             base_path('scripts/python/facility_recommendation.py'),
             json_encode($payload, JSON_UNESCAPED_UNICODE)
         ]);

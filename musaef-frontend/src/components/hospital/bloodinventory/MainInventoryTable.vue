@@ -38,7 +38,7 @@
               </div>
             </td>
             <td class="py-2.5">
-              <button class="btn btn-outline-secondary btn-sm rounded-pill px-2.5 px-md-3 fs-9 text-nowrap">
+              <button class="btn btn-outline-secondary btn-sm rounded-pill px-2.5 px-md-3 fs-9 text-nowrap fw-bold" @click="handleViewDetails(item)">
                 عرض التفاصيل
               </button>
             </td>
@@ -56,6 +56,10 @@ defineProps({
     required: true
   }
 });
+
+const handleViewDetails = (item) => {
+  alert(`📊 تفاصيل مخزون فصيلة الدم (${item.type}):\n- الوحدات المتوفرة: ${item.available}\n- الحد الأدنى المطلوب: ${item.minRequired}\n- الحالة: ${item.status}\n- نسبة التغطية: ${item.percentage}%`);
+};
 </script>
 
 <style scoped>

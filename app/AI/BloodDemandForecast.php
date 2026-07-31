@@ -21,11 +21,13 @@ class BloodDemandForecast
             'season'            => $season // 1 الشتاء، 2 الربيع، 3 الصيف، 4 الخريف
         ];
 
+        $pythonPath = env('PYTHON_PATH', 'python3');
+
         // استدعاء ملف البايثون
         $process = new Process([
-            'python',
+            $pythonPath,
             base_path('scripts/python/blood_prediction.py'),
-            json_encode($payload)
+            json_encode($payload, JSON_UNESCAPED_UNICODE)
         ]);
 
         $process->run();

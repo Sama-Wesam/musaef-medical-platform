@@ -18,7 +18,6 @@ return new class extends Migration
             $table->decimal('longitude', 11, 8)->nullable();
             $table->string('address')->nullable();
             $table->boolean('is_available')->default(true);
-            $table->boolean('is_eligible')->default(true);
             $table->enum('eligibility_status', ['eligible', 'deferred', 'ineligible'])->default('eligible');
             $table->date('deferral_date')->nullable();
             $table->date('last_donation_date')->nullable();

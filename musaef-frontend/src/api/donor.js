@@ -2,22 +2,22 @@ import apiClient from './axios';
 
 export default {
   getDashboardData() {
-    return apiClient.get('/donor/home-stats');
+    return apiClient.get('/donor/profile');
   },
   getUrgentRequests() {
-    return apiClient.get('/donor/urgent-requests');
+    return apiClient.get('/emergencies/active');
   },
   getDonationRequests() {
     return apiClient.get('/emergencies/active');
   },
   acceptDonationRequest(requestId) {
-    return apiClient.post(`/emergencies/${requestId}/accept`);
+    return apiClient.post(`/donor/requests/${requestId}/accept`);
   },
   getRewardsAndCard() {
-    return apiClient.get('/donor/rewards-and-card');
+    return apiClient.get('/donor/rewards');
   },
   getDonationHistory() {
-    return apiClient.get('/donor/donation-history');
+    return apiClient.get('/donor/qr-card');
   },
   // مسارات الإشعارات
   getNotifications() {

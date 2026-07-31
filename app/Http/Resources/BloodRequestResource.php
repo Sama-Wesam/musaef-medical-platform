@@ -12,7 +12,7 @@ class BloodRequestResource extends JsonResource
         return [
             'id' => $this->id,
             'hospital_id' => $this->hospital_id,
-            'urgency_level' => $this->urgency_level ?? 'حارجة',
+            'urgency_level' => $this->urgency_level ?? 'حرجة',
             'hospital_name' => $this->hospital->facility_name ?? $this->hospital->user->name ?? 'مستشفى غير محدد',
             'address' => $this->hospital->address ?? '',
             'latitude' => $this->hospital->latitude ?? null,

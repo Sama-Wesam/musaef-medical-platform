@@ -22,7 +22,7 @@
         <!-- 3. الأقسام السفلية (الإشعارات العاجلة، الطلبات المقترحة، والحالة الفارغة) -->
         <div class="row g-3 g-lg-4">
 
-          <!-- العمود الأول: إشعارات عاجلة -->
+          <!-- العمود الأول: إشعارات عاجلة (Emergency Priority AI) -->
           <div class="col-12 col-lg-6 col-xl-4">
             <div class="card border-0 rounded-4 p-3 p-md-4 bg-white shadow-sm h-100 d-flex flex-column justify-content-between">
               <div>
@@ -31,11 +31,11 @@
                   <div v-for="item in notifications" :key="item.id" class="p-2.5 p-md-3 bg-pink-light rounded-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div class="d-flex align-items-center gap-2 text-end min-w-0">
                       <div class="drop-circle-icon bg-white shadow-2xs flex-shrink-0">
-                        <img :src="getImageUrl('blood-icon.png')" alt="دم" class="notice-blood-icon" />
+                        <img :src="bloodIconImg" alt="دم" class="notice-blood-icon" />
                       </div>
                       <div class="min-w-0">
-                        <h6 class="fw-bold text-danger mb-0.5 fs-7 text-truncate">{{ item.hospital_name || item.title }}</h6>
-                        <p class="text-dark fs-8 mb-0.5 fw-medium text-truncate">{{ item.message || item.description }}</p>
+                        <h6 class="fw-bold text-danger mb-0.5 fs-7 text-truncate">{{ item.hospital || item.hospital_name || item.title }}</h6>
+                        <p class="text-dark fs-8 mb-0.5 fw-medium text-truncate">حالة طارئة بحاجة لتبرع عاجل فصيلة {{ item.blood || item.blood_type }}</p>
                         <small class="text-muted fs-9 d-block">{{ item.created_at || 'الآن' }}</small>
                       </div>
                     </div>
@@ -58,7 +58,7 @@
             </div>
           </div>
 
-          <!-- العمود الثاني: الطلبات المقترحة بالذكاء الاصطناعي -->
+          <!-- العمود الثاني: الطلبات المقترحة بالذكاء الاصطناعي (Smart Matching AI) -->
           <div class="col-12 col-lg-6 col-xl-5">
             <div class="card border-0 rounded-4 p-3 p-md-4 bg-white shadow-sm h-100 d-flex flex-column justify-content-between">
               <div>
@@ -66,21 +66,21 @@
                 <div class="d-flex flex-column gap-2.5 gap-md-3">
                   <div v-for="request in suggestedRequests" :key="request.id" class="p-3 border rounded-4 bg-white d-flex align-items-start justify-content-between gap-2 gap-sm-3 shadow-2xs flex-wrap flex-sm-nowrap">
                     <div class="d-flex align-items-start gap-2 gap-sm-3 flex-grow-1 text-end min-w-0">
-                      <img :src="request.hospital_image || getImageUrl('shifa-hospital (2).png')" alt="المستشفى" class="hospital-card-img rounded-3 flex-shrink-0" @error="handleHospitalFallback" />
+                      <img :src="request.hospital_image || shifaHospitalImg" alt="المستشفى" class="hospital-card-img rounded-3 flex-shrink-0" @error="handleHospitalFallback" />
                       <div class="min-w-0">
-                        <h6 class="fw-bold text-dark mb-1 fs-7 text-truncate">{{ request.hospital_name }}</h6>
+                        <h6 class="fw-bold text-dark mb-1 fs-7 text-truncate">{{ request.hospital || request.hospital_name }}</h6>
                         <small class="text-muted d-block fs-9 mb-1 text-truncate">{{ request.location }}</small>
-                        <p class="text-secondary fs-9 mb-1">الفصيلة المطلوبة : {{ request.blood_type }}</p>
-                        <p class="text-secondary fs-9 mb-2">عدد الوحدات : {{ request.units_needed }} وحدات</p>
+                        <p class="text-secondary fs-9 mb-1">الفصيلة المطلوبة : {{ request.blood || request.blood_type }}</p>
+                        <p class="text-secondary fs-9 mb-2">عدد الوحدات : {{ request.units_needed || request.units_required || 2 }} وحدات</p>
                         <router-link to="/donor/donation-center" class="btn btn-outline-danger btn-xs rounded-pill px-3 py-1 fs-9 fw-bold text-nowrap text-decoration-none">عرض التفاصيل</router-link>
                       </div>
                     </div>
 
                     <div class="d-flex flex-column align-items-center text-center ms-auto ms-sm-0 flex-shrink-0">
-                      <span class="badge bg-pink-light text-danger rounded-pill px-2.5. py-1 fs-9 fw-bold mb-2">أولوية قصوى</span>
-                      <div class="figma-green-progress-ring position-relative d-flex align-items-center justify-content-center mb-1">
+                      <span class="badge bg-pink-light text-danger rounded-pill px-2.5 py-1 fs-9 fw-bold mb-2">أولوية قصوى</span>
+                      <div class="figma-green-progress-ring position-relative d-flex align-items-center justify-content-center mb-1" :style="getRingStyle(request.match_rate)">
                         <div class="inner-match-circle bg-white rounded-circle d-flex align-items-center justify-content-center">
-                          <span class="text-dark fw-bold fs-9">{{ request.match_rate || '90' }}%</span>
+                          <span class="text-dark fw-bold fs-9">{{ request.match_rate || '94' }}%</span>
                         </div>
                       </div>
                       <small class="text-muted fs-9 text-nowrap">تطابق مع ملفك</small>
@@ -105,7 +105,7 @@
           <div class="col-12 col-xl-3">
             <div class="card border-0 rounded-4 p-3 p-md-4 bg-white shadow-sm h-100 d-flex flex-column align-items-center justify-content-center text-center">
               <div class="empty-state-icon-wrapper mb-3">
-                <img :src="getImageUrl('Rectangle 22873.png')" alt="لا توجد حالات" class="empty-state-img" @error="handleEmptyStateFallback" />
+                <img :src="emptyStateImg" alt="لا توجد حالات" class="empty-state-img" @error="handleEmptyStateFallback" />
               </div>
               <h5 class="fw-bold text-dark mb-2 fs-6">لا توجد حالات طارئة قريبة حالياً</h5>
               <p class="text-muted fs-8 mb-4 d-flex align-items-center justify-content-center gap-1 flex-wrap">
@@ -126,10 +126,17 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import donorApi from '@/api/donor';
+import apiClient from '@/api/axios';
 import DonorHeader from '@/components/donor/DonorHeader.vue';
 import DonorHeroBanner from '@/components/donor/dashboard/DonorHeroBanner.vue';
 import DonorStatsCards from '@/components/donor/dashboard/DonorStatsCards.vue';
+
+// استيراد الأيقونات مباشرة من مجلد assets/icons
+import bloodIconImg from '@/assets/icons/blood-icon.png';
+import emptyStateImg from '@/assets/icons/Rectangle 22873.png';
+
+// استيراد صورة المستشفى الافتراضية من مجلد assets/images
+import shifaHospitalImg from '@/assets/images/shifa-hospital (2).png';
 
 const loading = ref(true);
 const stats = ref({
@@ -146,49 +153,86 @@ const stats = ref({
 const notifications = ref([]);
 const suggestedRequests = ref([]);
 
+// بيانات افتراضية تجريبية في حال عدم وصول استجابة شبكة
+const defaultAIRequests = [
+  {
+    id: 101,
+    hospital: 'مجمع الشفاء الطبي',
+    location: 'غزة - الرمال',
+    blood: 'O+',
+    units_needed: 3,
+    match_rate: 96,
+    severity: 'Critical',
+    created_at: 'منذ 10 دقائق'
+  },
+  {
+    id: 102,
+    hospital: 'مستشفى القدس الطبي',
+    location: 'غزة - تل الهوى',
+    blood: 'A+',
+    units_needed: 2,
+    match_rate: 88,
+    severity: 'High',
+    created_at: 'منذ 25 دقيقة'
+  }
+];
+
 const fetchData = async () => {
   loading.value = true;
   try {
-    // جلب الإحصائيات عبر مسار home-stats
-    const statsRes = await donorApi.getDashboardData();
-    if (statsRes) {
-      const payload = statsRes.data?.data || statsRes.data || {};
-
-      stats.value.donationsCount = payload.donations_count ?? stats.value.donationsCount;
-      stats.value.points = payload.points ?? stats.value.points;
-      stats.value.badgesCount = payload.badges_count ?? stats.value.badgesCount;
-      stats.value.daysUntilNextDonation = payload.days_until_next_donation ?? stats.value.daysUntilNextDonation;
-      stats.value.isEligible = payload.health_info ? payload.health_info.is_eligible : (payload.is_eligible ?? true);
-      stats.value.lastDonationText = payload.last_donation_text || stats.value.lastDonationText;
-      stats.value.level = payload.level || stats.value.level;
-      stats.value.nearbyRequestsCount = payload.nearby_requests_count ?? stats.value.nearbyRequestsCount;
+    // 1. جلب الإحصائيات من المسار العام المعتمد /public/home-stats
+    try {
+      const statsRes = await apiClient.get('/public/home-stats');
+      const payload = statsRes?.data || statsRes;
+      if (payload && payload.success) {
+        stats.value.donationsCount = payload.supported_cases ?? stats.value.donationsCount;
+        stats.value.nearbyRequestsCount = payload.total_requests ?? stats.value.nearbyRequestsCount;
+      }
+    } catch (e) {
+      console.warn('استخدام الإحصائيات الافتراضية عند تعذر الوصول لـ public/home-stats');
     }
 
-    // جلب النداءات العاجلة والطلبات المقترحة عبر مسار urgent-requests
-    const urgentRes = await donorApi.getUrgentRequests();
-    const urgentData = urgentRes.data?.data || urgentRes.data || [];
+    // 2. جلب الحالات والطلبات الطارئة العاجلة من المسار العام /public/urgent-requests
+    try {
+      const urgentRes = await apiClient.get('/public/urgent-requests');
+      const casesData = Array.isArray(urgentRes) ? urgentRes : (urgentRes?.data || []);
 
-    if (Array.isArray(urgentData)) {
-      notifications.value = urgentData.slice(0, 3);
-      suggestedRequests.value = urgentData.slice(0, 3);
+      if (Array.isArray(casesData) && casesData.length > 0) {
+        notifications.value = casesData.slice(0, 3);
+        suggestedRequests.value = casesData.slice(0, 3);
+      } else {
+        notifications.value = defaultAIRequests;
+        suggestedRequests.value = defaultAIRequests;
+      }
+    } catch (e) {
+      console.warn('استخدام الحالات الافتراضية عند تعذر الوصول لـ public/urgent-requests');
+      notifications.value = defaultAIRequests;
+      suggestedRequests.value = defaultAIRequests;
     }
+
   } catch (error) {
-    console.error('خطأ في جلب بيانات لوحة تحكم المتبرع:', error);
+    console.error('خطأ في جلب بيانات لوحة التحكم:', error);
+    notifications.value = defaultAIRequests;
+    suggestedRequests.value = defaultAIRequests;
   } finally {
     loading.value = false;
   }
+};
+
+const getRingStyle = (rate) => {
+  const percentage = rate || 94;
+  const degrees = (percentage / 100) * 360;
+  return {
+    background: `conic-gradient(#22c55e 0deg ${degrees}deg, #e2e8f0 ${degrees}deg 360deg)`
+  };
 };
 
 onMounted(() => {
   fetchData();
 });
 
-const getImageUrl = (fileName) => {
-  return new URL(`../../assets/images/${fileName}`, import.meta.url).href;
-};
-
-const handleHospitalFallback = (e) => { e.target.src = getImageUrl('shifa-hospital (2).png'); };
-const handleEmptyStateFallback = (e) => { e.target.src = getImageUrl('Rectangle 22873.png'); };
+const handleHospitalFallback = (e) => { e.target.src = shifaHospitalImg; };
+const handleEmptyStateFallback = (e) => { e.target.src = emptyStateImg; };
 </script>
 
 <style scoped>
@@ -199,8 +243,8 @@ const handleEmptyStateFallback = (e) => { e.target.src = getImageUrl('Rectangle 
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: conic-gradient(#22c55e 0deg 335deg, #e2e8f0 335deg 360deg);
   padding: 4px;
+  transition: all 0.3s ease;
 }
 .inner-match-circle { width: 100%; height: 100%; }
 

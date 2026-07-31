@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Http\Requests\DonationRequest;
 use App\Services\DonationService;
 use App\Models\BloodRequest;
 use App\Traits\ApiResponseTrait;
@@ -34,7 +35,6 @@ class DonationController extends Controller
 
             $bloodRequest = BloodRequest::findOrFail($requestId);
 
-            // التحقق من توفر الدالة أو تنفيذ التحديث المباشر لحالة الطلب إن لم تكن موجودة في الـ Service
             if (method_exists($this->donationService, 'acceptEmergencyRequest')) {
                 $this->donationService->acceptEmergencyRequest($donor, $bloodRequest);
             } else {
@@ -51,7 +51,7 @@ class DonationController extends Controller
     /**
      * المستشفى تؤكد نجاح سحب الدم
      */
-    public function store(Request $request)
+    public function store(DonationRequest $request)
     {
         // التحقق من صلاحية المستشفى
         $hospitalId = $request->user()->hospital->id ?? null;
@@ -59,19 +59,13 @@ class DonationController extends Controller
             return $this->unauthorizedResponse('غير مصرح لك بالوصول.');
         }
 
-        // التحقق من البيانات المرسلة
-        $validated = $request->validate([
-            'donor_id'         => 'required|exists:donors,id',
-            'blood_request_id' => 'nullable|exists:blood_requests,id',
-            'units_donated'    => 'required|integer|min:1',
-            'donation_date'    => 'required|date',
-        ]);
+        $validated = $request->validated();
 
         // إضافة معرف المستشفى للبيانات المعتمدة
         $validated['hospital_id'] = $hospitalId;
 
         // تسجيل عملية التبرع وتحديث المخزون
-        $donation = $this->donationService->recordSuccessfulDonation($validated);
+        $donation = $this->donationService->recordDonation($validated);
 
         return $this->successResponse($donation, 'تم تسجيل التبرع ومنح النقاط للمتبرع بنجاح.', 201);
     }

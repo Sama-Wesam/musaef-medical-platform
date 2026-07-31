@@ -6,7 +6,7 @@
       <!-- متوسط وقت الاستجابة -->
       <div class="p-2.5 p-md-3 bg-light-subtle rounded-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
         <div class="d-flex align-items-center gap-2 gap-md-3 min-w-0">
-          <img :src="getImageUrl('mingcute_time-line.png')" alt="time icon" width="32" height="32" class="flex-shrink-0" />
+          <img :src="getIconUrl('mingcute_time-line.png')" alt="time icon" width="32" height="32" class="flex-shrink-0" />
           <div class="text-start min-w-0">
             <span class="fw-bold text-danger fs-8 d-block mb-0.5 text-truncate">متوسط وقت الاستجابة</span>
             <small class="text-muted fs-9 text-truncate d-block">مستشفى شهداء الأقصى - دير البلح</small>
@@ -18,7 +18,7 @@
       <!-- نسبة تلبية الطلبات -->
       <div class="p-2.5 p-md-3 bg-light-subtle rounded-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
         <div class="d-flex align-items-center gap-2 gap-md-3 min-w-0">
-          <img :src="getImageUrl('ei_check.png')" alt="check icon" width="32" height="32" class="flex-shrink-0" />
+          <img :src="getIconUrl('ei_check.png')" alt="check icon" width="32" height="32" class="flex-shrink-0" />
           <div class="text-start min-w-0">
             <span class="fw-bold text-dark fs-8 d-block mb-0.5 text-truncate">نسبة تلبية الطلبات</span>
             <small class="text-muted fs-9 text-truncate d-block">المستشفى الأمريكي - غزة</small>
@@ -30,7 +30,7 @@
       <!-- معدل التبرع اليومي -->
       <div class="p-2.5 p-md-3 bg-light-subtle rounded-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
         <div class="d-flex align-items-center gap-2 gap-md-3 min-w-0">
-          <img :src="getImageUrl('mdi_drop.png')" alt="drop icon" width="32" height="32" class="flex-shrink-0" />
+          <img :src="getIconUrl('mdi_drop.png')" alt="drop icon" width="32" height="32" class="flex-shrink-0" />
           <div class="text-start min-w-0">
             <span class="fw-bold text-dark fs-8 d-block mb-0.5 text-truncate">معدل التبرع اليومي</span>
             <small class="text-muted fs-9 text-truncate d-block">المتبرع : أحمد محمد</small>
@@ -50,8 +50,14 @@ defineProps({
   }
 });
 
-const getImageUrl = (fileName) => {
-  return new URL(`../../../assets/images/${fileName}`, import.meta.url).href;
+const getIconUrl = (fileName) => {
+  if (!fileName) return '';
+  if (fileName.startsWith('http') || fileName.startsWith('data:')) return fileName;
+  try {
+    return new URL(`../../../assets/icons/${fileName}`, import.meta.url).href;
+  } catch (e) {
+    return '';
+  }
 };
 </script>
 

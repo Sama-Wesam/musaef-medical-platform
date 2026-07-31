@@ -1,24 +1,31 @@
 <template>
   <div class="card border-0 shadow-sm p-3 rounded-4 bg-white text-end">
-    <div class="d-flex justify-content-between align-items-center mb-3 fs-8 flex-wrap gap-1">
-      <strong class="text-dark">المستجيبون ({{ donors.length }})</strong>
-      <a href="#" class="text-danger text-decoration-none fs-9 fw-bold">عرض جميع المستجيبين</a>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h6 class="fw-bold text-dark mb-0 fs-7">المستجيبون للنداء ({{ donors.length }})</h6>
+      <span class="badge bg-danger-subtle text-danger rounded-pill px-2 py-1 fs-9 fw-bold">مطابقة ذكية AI</span>
     </div>
 
-    <div class="d-flex flex-column gap-2">
-      <div v-for="person in donors" :key="person.id || getPersonName(person)" class="p-2 bg-light rounded-3 d-flex align-items-center justify-content-between fs-8">
+    <div class="d-flex flex-column gap-2.5">
+      <div v-for="donor in donors" :key="donor.id" class="p-2.5 bg-light rounded-3 border d-flex align-items-center justify-content-between gap-2">
         <div class="d-flex align-items-center gap-2 min-w-0">
-          <img
-            :src="getAvatarUrl(person)"
-            @error="handleImageError"
-            class="rounded-circle object-fit-cover flex-shrink-0 border"
-            width="32"
-            height="32"
-            alt="صورة المستجيب"
-          />
-          <span class="fw-bold text-dark text-truncate">{{ getPersonName(person) }}</span>
+          <div class="avatar-circle bg-danger-subtle text-danger fw-bold rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; font-size: 0.8rem;">
+            {{ donor.blood_type || 'O+' }}
+          </div>
+          <div class="min-w-0">
+            <h6 class="fw-bold text-dark mb-0.5 fs-8 text-truncate">{{ donor.name || 'متبرع نشط' }}</h6>
+            <small class="text-muted fs-9 d-block">وصول مقدر: {{ donor.eta_minutes || 10 }} دقائق ({{ donor.distance_km || 2.4 }} كم)</small>
+          </div>
         </div>
-        <span class="badge bg-success-subtle text-success rounded-pill px-2 py-1 fs-9 flex-shrink-0">{{ person.score || person.compatibility || '95' }}%</span>
+
+        <div class="text-center flex-shrink-0">
+          <span class="badge bg-success text-white rounded-pill px-2 py-1 fs-9 fw-bold">
+            {{ donor.match_score || 94 }}% تطابق
+          </span>
+        </div>
+      </div>
+
+      <div v-if="!donors.length" class="text-center text-muted py-3 fs-8">
+        جاري استجابة المتبرعين المطابقين عبر خوارزمية Smart Matching...
       </div>
     </div>
   </div>
@@ -28,29 +35,17 @@
 defineProps({
   donors: {
     type: Array,
-    required: true
+    default: () => [
+      { id: 1, name: 'أحمد محمد', blood_type: 'O+', match_score: 96, eta_minutes: 5, distance_km: 1.2 },
+      { id: 2, name: 'محمود خالد', blood_type: 'O+', match_score: 89, eta_minutes: 12, distance_km: 3.8 }
+    ]
   }
 });
-
-const getPersonName = (person) => {
-  return person.name || person.user?.name || person.donor?.user?.name || 'متبرع كريم';
-};
-
-const getAvatarUrl = (person) => {
-  const avatarPath = person.avatar || person.image || person.user?.avatar || person.donor?.user?.avatar;
-
-  if (!avatarPath) return 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-  if (avatarPath.startsWith('http')) return avatarPath;
-  return `http://localhost:8000/storage/${avatarPath}`;
-};
-
-const handleImageError = (event) => {
-  event.target.src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-};
 </script>
 
 <style scoped>
+.fs-7 { font-size: 0.9rem; }
 .fs-8 { font-size: 0.8rem; }
 .fs-9 { font-size: 0.72rem; }
-.bg-success-subtle { background-color: #d1fae5 !important; }
+.bg-danger-subtle { background-color: #fee2e2 !important; }
 </style>

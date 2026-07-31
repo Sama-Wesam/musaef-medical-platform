@@ -1,5 +1,5 @@
 <script setup>
-import logoWhite from '@/assets/images/logo-white.png';
+import logoWhite from '@/assets/icons/logo-white.png';
 import { useAuthStore } from '@/stores/authStore';
 
 const authStore = useAuthStore();

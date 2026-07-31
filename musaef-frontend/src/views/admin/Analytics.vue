@@ -5,10 +5,10 @@
       <!-- 1. المربعات الإحصائية العلوية -->
       <AnalyticsStatsCards :kpi="analyticsStore.kpi || {}" />
 
-      <!-- 2. مخطط الطلب حسب فصيلة الدم -->
+      <!-- 2. مخطط الطلب حسب فصيلة الدم (Donation Analytics AI) -->
       <BloodDemandChart :bloodDemand="analyticsStore.bloodDemand || []" />
 
-      <!-- 3. قسم آخر التنبيهات (يمين) + أكثر المستشفيات احتياجاً (يسار) -->
+      <!-- 3. قسم آخر التنبيهات (يمين) + أكثر المستشفيات احتياجاً (يسار - Facility Recommendation AI) -->
       <div class="row g-3 g-lg-4 mb-3 mb-md-4">
         <div class="col-12 col-lg-6">
           <RecentAlertsTable :alertsList="analyticsStore.recentAlerts || []" />
@@ -18,7 +18,7 @@
         </div>
       </div>
 
-      <!-- 4. قسم خريطة مستشفيات قطاع غزة (يمين) + إحصائيات الأداء (يسار) -->
+      <!-- 4. قسم خريطة مستشفيات قطاع غزة (يمين) + إحصائيات الأداء (يسار - أوقات الاستجابة ونسبة التلبية) -->
       <div class="row g-3 g-lg-4">
         <div class="col-12 col-lg-7">
           <HospitalsGazaMap />

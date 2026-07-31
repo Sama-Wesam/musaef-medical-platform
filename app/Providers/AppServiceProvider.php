@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Database\Eloquent\Model;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -11,7 +13,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // قم بتسجيل الخدمات (Services)، المستودعات (Repositories)، 
+        // قم بتسجيل الخدمات (Services)، المستودعات (Repositories)،
         // أو أي ارتباطات (Bindings) بداخل حاوية التطبيق (Service Container) هنا.
     }
 
@@ -20,8 +22,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // ضع هنا أي أكواد تحتاج للعمل عند بدء التطبيق، 
-        // مثل مشاركة البيانات مع جميع الـ Views، أو تسجيل الـ Observers، 
-        // أو إعداد المكونات الإضافية (Macros).
+        // 1. فرض رابط الأمان HTTPS عند رفع المشروع على سيرفر الإنتاج
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
+
+        // 2. منع التحميل المتأخر (Lazy Loading) في البيئة المحلية للتأكد من أداء الاستعلامات العالي (N+1 Query Assurance)
+        Model::preventLazyLoading(! $this->app->isProduction());
+
+        // ضع هنا أي أكواد تحتاج للعمل عند بدء التطبيق
+        // مثل مشاركة البيانات مع جميع الـ Views، أو تسجيل الـ Observers
+        // أو إعداد المكونات الإضافية (Macros)
     }
 }

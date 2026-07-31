@@ -23,6 +23,7 @@ apiClient.interceptors.request.use(
       return config;
     }
 
+    // قراءة التوكن الموحد بنظافة
     const token = localStorage.getItem('token') || localStorage.getItem('musaef_token');
 
     if (token && token !== 'null' && token !== 'undefined') {
@@ -42,17 +43,19 @@ apiClient.interceptors.response.use(
     const isAuthRequest = error.config?.url?.includes('/login') || error.config?.url?.includes('/register');
 
     if (error.response?.status === 401 && !isAuthRequest) {
+      // تفريغ كافة بيانات التوكن والجلسة لمنع التكرار
       localStorage.removeItem('token');
       localStorage.removeItem('musaef_token');
       localStorage.removeItem('user');
       localStorage.removeItem('musaef_user');
+      localStorage.removeItem('user_role');
 
+      // توجيه لصفحة اللوجن فقط إذا لم تكن الصفحة الحالية هي اللوجن لمنع الحلقة التكرارية
       if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
         window.location.href = '/login';
       }
     }
 
-    // إرجاع كائن الخطأ بشكل مضمون كي يتوفر رسالة واضحة للفرونت إند
     const extractMessage = error.response?.data?.message || error.message || 'حدث خطأ في الاتصال بالشبكة';
     const normalizedError = new Error(extractMessage);
     normalizedError.response = error.response;

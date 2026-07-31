@@ -4,7 +4,7 @@
     <div class="header-container">
 
       <!-- ==========================================
-           1. أقصى اليمين : زر القائمة (للجوال) + بيانات وصورة الطبيب
+           1. أقصى اليمين : (صورة المستشفى واسمه) + زر القائمة للجوال
       =========================================== -->
       <div class="d-flex align-items-center gap-2 gap-sm-3">
         <!-- زر فتح القائمة الجانبية في الشاشات الصغيرة -->
@@ -33,7 +33,7 @@
       </div>
 
       <!-- ==========================================
-           2. المنتصف : شريط البحث + الإشعارات + منخفض O-
+           2. المنتصف : مستطيل البحث + زر إنشاء طلب طارئ
       =========================================== -->
       <div class="header-center">
 
@@ -54,29 +54,11 @@
           />
         </div>
 
-        <!-- زر الإشعارات -->
-        <button class="notification-btn" @click="openNotifications">
-          <img
-            :src="bellIcon"
-            alt="Notifications"
-            class="notification-icon"
-          />
-
-          <span class="notification-badge" v-if="notificationsCount > 0">
-            {{ notificationsCount }}
-          </span>
+        <!-- زر بارز لإنشاء طلب طارئ فوري -->
+        <button class="btn btn-danger fw-bold rounded-pill px-3 py-2 fs-8 d-flex align-items-center gap-1.5 shadow-sm text-nowrap create-emergency-btn" @click="openCreateEmergencyModal">
+          <i class="bi bi-plus-circle-fill"></i>
+          <span>+ إنشاء طلب طارئ</span>
         </button>
-
-        <!-- بطاقة انخفاض فصيلة الدم -->
-        <div class="blood-alert d-none d-sm-flex">
-          <span class="blood-text">
-            {{ bloodStatus.status }}
-          </span>
-
-          <span class="blood-type">
-            {{ bloodStatus.type }}
-          </span>
-        </div>
 
       </div>
 
@@ -105,9 +87,8 @@ import { useAuthStore } from "@/stores/authStore";
 import { useHospitalStore } from "@/stores/hospitalStore";
 
 import logoImage from '@/assets/images/logo.png';
-import bellIcon from '@/assets/images/solar_bell-outline.png';
-import searchIcon from '@/assets/images/Search Icon Container.png';
-import doctorAvatarImg from '@/assets/images/Ellipse 1086.png';
+import searchIcon from '@/assets/icons/Search Icon Container.png';
+import doctorAvatarImg from '@/assets/icons/Ellipse 1086.png';
 
 const authStore = useAuthStore();
 const hospitalStore = useHospitalStore();
@@ -120,16 +101,14 @@ const doctor = computed(() => ({
 }));
 
 const doctorAvatar = computed(() => authStore.user?.avatar || doctorAvatarImg);
-const notificationsCount = computed(() => hospitalStore.notificationsCount || 2);
 
-const bloodStatus = computed(() => hospitalStore.criticalBloodStatus || {
-  type: "O-",
-  status: "منخفض"
-});
-
-const openNotifications = () => {
-  if (hospitalStore.toggleNotifications) {
-    hospitalStore.toggleNotifications();
+const openCreateEmergencyModal = () => {
+  const bloodType = prompt("أدخل فصيلة الدم المطلوبة (مثال: O-):", "O-");
+  if (bloodType) {
+    const units = prompt("أدخل عدد الوحدات المطلوبة:", "3");
+    if (units) {
+      alert(`تم إطلاق النداء الطارئ بنجاح لفصيلة (${bloodType}) وتم تنبيه كافة المتبرعين القريبين عبر نظام Smart Matching AI!`);
+    }
   }
 };
 
@@ -243,13 +222,13 @@ const handleImageError = (e, fallback) => {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 12px;
+    gap: 16px;
 }
 
 @media (min-width: 992px) { .header-center { flex: 1; gap: 24px; } }
 
 .search-box {
-    width: 260px;
+    width: 220px;
     height: 42px;
     background: #f8f8fb;
     border-radius: 14px;
@@ -259,7 +238,7 @@ const handleImageError = (e, fallback) => {
     overflow: hidden;
 }
 
-@media (min-width: 1200px) { .search-box { width: 480px; height: 46px; } }
+@media (min-width: 1200px) { .search-box { width: 380px; height: 46px; } }
 
 .search-input {
     width: 100%;
@@ -284,63 +263,15 @@ const handleImageError = (e, fallback) => {
     opacity: .7;
 }
 
-.notification-btn {
-    width: 38px;
-    height: 38px;
-    background: transparent;
+.create-emergency-btn {
+    background-color: #dc2626;
     border: none;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
-
-.notification-btn:hover {
-    background: #fafafa;
-    border-radius: 50%;
-}
-
-.notification-icon {
-    width: 22px;
-    height: 22px;
-    object-fit: contain;
-}
-
-.notification-badge {
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 16px;
-    height: 16px;
-    background: #ef4444;
     color: #ffffff;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 9px;
-    font-weight: 700;
-    border: 2px solid #ffffff;
+    transition: background-color 0.2s ease;
 }
-
-.blood-alert {
-    width: 110px;
-    height: 38px;
-    background: #dc2626;
-    border-radius: 999px;
-    color: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    font-weight: 700;
-    font-size: 14px;
+.create-emergency-btn:hover {
+    background-color: #b91c1c;
 }
-
-@media (min-width: 992px) { .blood-alert { width: 150px; height: 44px; font-size: 18px; } }
-
-.blood-type { direction: ltr; }
 
 .header-logo {
     display: flex;

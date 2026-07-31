@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Http\Controllers\API;
+
+use App\Http\Requests\CreateBloodRequest;
 use App\Services\EmergencyService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
@@ -17,23 +19,17 @@ class EmergencyController extends Controller
         $this->emergencyService = $emergencyService;
     }
 
-    public function store(Request $request)
+    public function store(CreateBloodRequest $request)
     {
         // يجب أن يكون المستخدم مستشفى للقيام بهذا
-        $hospital = $request->user()->hospital;
-        
+        $hospital = $request->user()->hospital ?? null;
+
         if (!$hospital || !$hospital->is_verified) {
             return $this->unauthorizedResponse('فقط المستشفيات الموثقة يمكنها إنشاء نداء طوارئ.');
         }
 
-        $validated = $request->validate([
-            'blood_type_id' => 'required|exists:blood_types,id',
-            'units_required' => 'required|integer|min:1',
-            'emergency_level' => 'required|in:normal,high,critical',
-        ]);
-
         try {
-            $emergency = $this->emergencyService->createEmergencyRequest($validated, $hospital);
+            $emergency = $this->emergencyService->createEmergencyRequest($request->validated(), $hospital);
             return $this->successResponse($emergency, 'تم إطلاق نداء الطوارئ بنجاح، جاري البحث عن متبرعين.', 201);
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage());

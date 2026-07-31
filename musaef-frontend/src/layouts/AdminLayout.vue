@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-// استدعاء المكونين بالمسار الصحيح بناءً على هيكل المشروع[cite: 66]
+// استدعاء المكونين بالمسار الصحيح بناءً على هيكل المشروع
 import AdminHeader from '@/components/admin/AdminHeader.vue';
 import AdminSidebar from '@/components/admin/AdminSidebar.vue';
 import { useAuthStore } from '@/stores/authStore';
@@ -58,6 +58,8 @@ const authStore = useAuthStore();
 @media (max-width: 992px) {
   .admin-container {
     flex-direction: column;
+    overflow-y: auto;
+    max-height: calc(100vh - 96px);
   }
 }
 </style>

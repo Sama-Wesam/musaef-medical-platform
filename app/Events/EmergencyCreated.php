@@ -5,7 +5,6 @@ namespace App\Events;
 use App\Models\BloodRequest;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -22,7 +21,7 @@ class EmergencyCreated implements ShouldBroadcast
      */
     public function __construct(BloodRequest $bloodRequest)
     {
-        $this->bloodRequest = $bloodRequest;
+        $this->bloodRequest = $bloodRequest; 
     }
 
     /**
@@ -44,6 +43,6 @@ class EmergencyCreated implements ShouldBroadcast
      */
     public function broadcastAs(): string
     {
-        return 'new.emergency';
+        return 'new.emergency'; //
     }
 }

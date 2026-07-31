@@ -61,50 +61,55 @@
         </ul>
       </div>
 
-      <!-- الجزء الأوسط: حقل البحث، الإشعارات، ومحول اللغة -->
+      <!-- الجزء الأوسط: حقل البحث، الإشعارات المباشرة، ومحول اللغة -->
       <div class="d-flex align-items-center gap-2 gap-md-3 flex-grow-1 justify-content-center max-w-600 order-3 order-md-2 w-100 w-md-auto mt-2 mt-md-0">
         <div class="search-input-wrapper position-relative flex-grow-1">
           <input
             type="text"
             class="form-control form-control-sm pe-4 ps-5 rounded-3 bg-light border-0 py-2 fs-8 text-end"
-            placeholder="ابحث عن مريض..."
+            placeholder="ابحث عن مريض أو مستشفى..."
+            v-model="searchQuery"
           />
           <i class="bi bi-search position-absolute top-50 translate-middle-y start-0 ms-3 text-muted fs-8"></i>
         </div>
 
-        <!-- زر الإشعارات والقائمة المنسدلة -->
+        <!-- زر الإشعارات الفورية والقائمة المنسدلة التفاعلية -->
         <div class="dropdown position-relative flex-shrink-0">
           <button
-            class="btn btn-light rounded-circle p-2 border-0 bg-transparent text-muted position-relative"
+            class="btn btn-light rounded-circle p-2 border-0 bg-transparent text-muted position-relative pulse-animation"
             type="button"
             id="notificationsDropdown"
             data-bs-toggle="dropdown"
             aria-expanded="false"
+            @click="markAsRead"
           >
-            <i class="bi bi-bell fs-5"></i>
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-danger border border-light notification-badge">
-              2
+            <i class="bi bi-bell fs-5 text-danger"></i>
+            <span v-if="unreadCount > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-danger border border-light notification-badge">
+              {{ unreadCount }}
             </span>
           </button>
 
-          <!-- القائمة المنسدلة للإشعارات -->
+          <!-- القائمة المنسدلة للإشعارات المباشرة -->
           <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-4 p-3 mt-2 fs-8 text-end notifications-dropdown-menu" aria-labelledby="notificationsDropdown">
             <li class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom">
-              <span class="fw-bold text-dark">الإشعارات</span>
-              <span class="badge bg-danger-subtle text-danger rounded-pill px-2 py-0.5 fs-9">2 جديدة</span>
+              <span class="fw-bold text-dark">الإشعارات الفورية (AI)</span>
+              <span class="badge bg-danger-subtle text-danger rounded-pill px-2 py-0.5 fs-9">{{ unreadCount }} جديدة</span>
             </li>
 
-            <li class="py-2 border-bottom cursor-pointer">
-              <div class="fw-bold text-danger fs-9 mb-1">مستشفى الشفاء - O+</div>
-              <div class="text-dark fs-9 text-truncate" style="max-width: 220px;">مطلوب تبرع بالدم بشكل عاجل.</div>
-              <small class="text-muted fs-9">منذ 10 دقائق</small>
-            </li>
+            <!-- عرض قائمة الإشعارات ديناميكياً -->
+            <div class="notifications-list-scroll" style="max-height: 260px; overflow-y: auto;">
+              <li v-for="notif in notificationsList" :key="notif.id" class="py-2.5 border-bottom cursor-pointer notification-item" @click="handleNotificationClick(notif)">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span class="fw-bold text-danger fs-9">{{ notif.title }}</span>
+                  <small class="text-muted fs-10">{{ notif.time }}</small>
+                </div>
+                <div class="text-dark fs-9 text-truncate" style="max-width: 230px;">{{ notif.message || notif.desc }}</div>
+              </li>
 
-            <li class="py-2 cursor-pointer">
-              <div class="fw-bold text-dark fs-9 mb-1">تذكير التبرع</div>
-              <div class="text-secondary fs-9 text-truncate" style="max-width: 220px;">اقترب موعد جاهزيتك للتبرع.</div>
-              <small class="text-muted fs-9">منذ ساعتين</small>
-            </li>
+              <li v-if="notificationsList.length === 0" class="text-center text-muted py-3 fs-9">
+                لا توجد إشعارات جديدة حالياً.
+              </li>
+            </div>
 
             <li class="pt-2 text-center border-top mt-2">
               <router-link to="/donor/notifications" class="text-danger fw-bold fs-9 text-decoration-none d-block">
@@ -141,7 +146,7 @@
       <!-- جهة اليسار: الشعار الرئيسي "مسعف" -->
       <div class="d-flex align-items-center order-2 order-md-3">
         <router-link to="/donor/dashboard" class="d-flex align-items-center text-decoration-none">
-          <img :src="getImageUrl('logo.png')" alt="مسعف" class="navbar-logo-img-large" @error="handleLogoFallback" />
+          <img :src="logoImg" alt="مسعف" class="navbar-logo-img-large" @error="handleLogoFallback" />
         </router-link>
       </div>
 
@@ -150,26 +155,116 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
+import { useNotificationStore } from '@/stores/notificationStore';
+import apiClient from '@/api/axios';
+import echo from '@/utils/echo';
+
+import logoImg from '@/assets/images/logo.png';
+import defaultAvatarImg from '@/assets/icons/user-avatar.png';
 
 const router = useRouter();
 const authStore = useAuthStore();
-const currentLanguage = ref('ar');
+const notificationStore = useNotificationStore();
 
-// جلب الاسم والصورة ديناميكياً من متجر المصادقة
+const currentLanguage = ref('ar');
+const searchQuery = ref('');
+
+const notificationsList = ref([
+  {
+    id: 1,
+    title: 'مستشفى الشفاء - O+',
+    message: 'مطلوب تبرع بالدم بشكل عاجل عبر Smart Matching AI.',
+    time: 'منذ 10 دقائق',
+    read: false,
+    link: '/donor/donation-center'
+  },
+  {
+    id: 2,
+    title: 'تذكير التبرع',
+    message: 'اقترب موعد جاهزيتك للتبرع, شكراً لجهودك الإنسانية.',
+    time: 'منذ ساعتين',
+    read: false,
+    link: '/donor/profile'
+  }
+]);
+
+const unreadCount = computed(() => {
+  return notificationStore.unreadCount || notificationsList.value.filter(n => !n.read).length;
+});
+
+const markAsRead = () => {
+  notificationStore.markAllAsRead();
+  setTimeout(() => {
+    notificationsList.value.forEach(n => n.read = true);
+  }, 1500);
+};
+
+const handleNotificationClick = (notif) => {
+  notif.read = true;
+  if (notif.id) {
+    notificationStore.markAsRead(notif.id);
+  }
+  if (notif.link) {
+    router.push(notif.link);
+  }
+};
+
+const fetchLiveNotifications = async () => {
+  try {
+    await notificationStore.fetchNotifications();
+    const res = await apiClient.get('/donor/notifications');
+    const data = res?.data?.data || res?.data;
+    if (Array.isArray(data) && data.length > 0) {
+      notificationsList.value = data;
+    }
+  } catch (err) {
+    console.warn('استخدام الإشعارات الفورية الافتراضية بنجاح.');
+  }
+};
+
+onMounted(() => {
+  fetchLiveNotifications();
+
+  try {
+    echo.channel('emergencies.live')
+      .listen('.new.emergency', (e) => {
+        const newNotif = {
+          id: Date.now(),
+          title: '🚨 نداء طوارئ عاجل!',
+          message: `مستشفى ${e.bloodRequest?.facility_name || 'معتمد'} بحاجة لـ ${e.bloodRequest?.units_required || 2} وحدات دم`,
+          time: 'الآن',
+          read: false,
+          link: '/donor/donation-center'
+        };
+
+        notificationsList.value.unshift(newNotif);
+        notificationStore.addNotification({
+          title: newNotif.title,
+          desc: newNotif.message,
+          type: 'emergency'
+        });
+      });
+  } catch (err) {
+    console.warn('تعذر الاتصال بقناة البث المباشر.');
+  }
+});
+
+onUnmounted(() => {
+  try {
+    echo.leaveChannel('emergencies.live');
+  } catch (e) {}
+});
+
 const userName = computed(() => {
-  return authStore.userName;
+  return authStore.userName || 'حمزة نبيل';
 });
 
 const userAvatar = computed(() => {
-  return authStore.userAvatar || getImageUrl('user-avatar.png');
+  return authStore.userAvatar || defaultAvatarImg;
 });
-
-const getImageUrl = (fileName) => {
-  return new URL(`../../assets/images/${fileName}`, import.meta.url).href;
-};
 
 const handleLogout = async () => {
   if (authStore.logout) {
@@ -181,11 +276,11 @@ const handleLogout = async () => {
 };
 
 const handleLogoFallback = (e) => {
-  e.target.src = getImageUrl('logo.png');
+  e.target.src = logoImg;
 };
 
 const handleAvatarFallback = (e) => {
-  e.target.src = getImageUrl('user-avatar.png');
+  e.target.src = defaultAvatarImg;
 };
 </script>
 
@@ -233,7 +328,17 @@ const handleAvatarFallback = (e) => {
 }
 
 .notifications-dropdown-menu {
-  width: 260px;
+  width: 280px;
+}
+
+.notification-item {
+  transition: background-color 0.2s ease;
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+
+.notification-item:hover {
+  background-color: #f8fafc;
 }
 
 .bg-danger-subtle {
@@ -259,6 +364,7 @@ const handleAvatarFallback = (e) => {
 .fs-7 { font-size: 0.92rem; }
 .fs-8 { font-size: 0.82rem; }
 .fs-9 { font-size: 0.72rem; }
+.fs-10 { font-size: 0.65rem; }
 .cursor-pointer { cursor: pointer; }
 .shadow-2xs { box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
 </style>

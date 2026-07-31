@@ -3,7 +3,7 @@
     <!-- Navbar -->
     <Navbar />
 
-    <!-- 1. الهيرو العلوي (مع الحفاظ على حجم وتنسيق الصورة الأصلي) -->
+    <!-- 1. الهيرو العلوي -->
     <section class="hero-guide-section py-5">
       <div class="container-fluid p-0">
         <div class="row g-0 align-items-center hero-row">
@@ -19,7 +19,7 @@
             </div>
           </div>
 
-          <!-- صورة الهيرو (يسار) بنفس الحجم والتنسيق الأصلي تماماً -->
+          <!-- صورة الهيرو (يسار) - تجلب من src/assets/images -->
           <div class="col-lg-6 hero-image-col">
             <div class="hero-image-wrapper">
               <img
@@ -35,7 +35,7 @@
       </div>
     </section>
 
-    <!-- 2. جدول توافق فصائل الدم -->
+    <!-- 2. جدول توافق فصائل الدم + ميزة الذكاء الاصطناعي (Facility Recommendation AI) -->
     <section class="py-4 py-md-5 bg-light-gray">
       <div class="container px-3 px-md-4">
         <div class="text-center mb-4 mb-md-5">
@@ -46,10 +46,10 @@
         <div class="row g-3 g-lg-4 align-items-stretch">
           <!-- البطاقات الجانبية للجدول -->
           <div class="col-12 col-lg-4 d-flex flex-column gap-3">
-            <!-- بطاقة التبرع لمن -->
+            <!-- بطاقة التبرع لمن - تجلب من src/assets/icons -->
             <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white flex-fill d-flex flex-row align-items-center justify-content-start gap-3 text-end">
               <div class="card-icon-box flex-shrink-0">
-                <img :src="getImageUrl('Frame 2147225421.png')" alt="التوافق في التبرع" class="icon-img" />
+                <img :src="getIconUrl('Frame 2147225421.png')" alt="التوافق في التبرع" class="icon-img" />
               </div>
               <div class="text-end">
                 <h6 class="fw-bold text-dark mb-1 fs-6">التوافق في التبرع (من يستطيع التبرع لمن؟)</h6>
@@ -57,10 +57,10 @@
               </div>
             </div>
 
-            <!-- بطاقة الاستقبال من من -->
+            <!-- بطاقة الاستقبال من من - تجلب من src/assets/icons -->
             <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white flex-fill d-flex flex-row align-items-center justify-content-start gap-3 text-end">
               <div class="card-icon-box flex-shrink-0">
-                <img :src="getImageUrl('streamline-sharp_blood-bag-donation-remix.png')" alt="التوافق في الاستقبال" class="icon-img" />
+                <img :src="getIconUrl('streamline-sharp_blood-bag-donation-remix.png')" alt="التوافق في الاستقبال" class="icon-img" />
               </div>
               <div class="text-end">
                 <h6 class="fw-bold text-dark mb-1 fs-6">التوافق في الاستقبال (من يستطيع استقبال الدم؟)</h6>
@@ -120,10 +120,78 @@
             </div>
           </div>
         </div>
+
+        <!-- مربع الذكاء الاصطناعي (Facility Recommendation AI) -->
+        <div class="row mt-4 mt-md-5">
+          <div class="col-12">
+            <div class="card border-0 shadow-sm p-4 rounded-4 bg-white ai-finder-card">
+              <div class="d-flex align-items-center gap-3 mb-3 flex-wrap justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="ai-badge-icon bg-pink-light text-danger rounded-circle p-2">
+                    <i class="bi bi-geo-alt-fill fs-5"></i>
+                  </div>
+                  <div>
+                    <h5 class="fw-bold text-dark mb-0 fs-6">ابحث عن أقرب مركز تبرع في منطقتك (الذكاء الاصطناعي)</h5>
+                    <small class="text-muted fs-8">يحدد النظام أقرب المراكز المسجلة بها مخزون متوفر وزمن الوصول المتوقع (ETA)</small>
+                  </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                  <select v-model="selectedBloodType" class="form-select form-select-sm rounded-3 border-light-subtle fs-8">
+                    <option value="O+">فصيلة O+</option>
+                    <option value="O-">فصيلة O-</option>
+                    <option value="A+">فصيلة A+</option>
+                    <option value="A-">فصيلة A-</option>
+                    <option value="B+">فصيلة B+</option>
+                    <option value="B-">فصيلة B-</option>
+                    <option value="AB+">فصيلة AB+</option>
+                    <option value="AB-">فصيلة AB-</option>
+                  </select>
+
+                  <button @click="searchNearbyFacilities" class="btn btn-danger btn-sm rounded-3 px-3 fw-bold text-white flex-shrink-0 d-flex align-items-center gap-1">
+                    <i class="bi bi-search"></i>
+                    <span>بحث بالأقرب</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- نتائج البحث والتوصيات الذكية -->
+              <div v-if="isLoadingFacilities" class="text-center py-4 text-muted fs-8">
+                <div class="spinner-border spinner-border-sm text-danger me-2" role="status"></div>
+                جاري حساب المسافة والبحث عن أقرب المراكز...
+              </div>
+
+              <div v-else-if="nearbyFacilities.length > 0" class="row g-3 mt-1">
+                <div v-for="(center, idx) in nearbyFacilities" :key="idx" class="col-12 col-md-4">
+                  <div class="p-3 rounded-3 bg-light-gray border border-light-subtle text-end h-100 d-flex flex-column justify-content-between">
+                    <div>
+                      <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-danger-subtle text-danger rounded-pill fs-8 px-2 py-1">{{ center.facility_type }}</span>
+                        <small class="text-muted fs-8"><i class="bi bi-clock me-1"></i>{{ center.eta_minutes }} دقيقة وصول</small>
+                      </div>
+                      <h6 class="fw-bold text-dark mb-1 fs-7">{{ center.facility_name }}</h6>
+                      <p class="text-muted fs-8 mb-2">{{ center.recommendation_message }}</p>
+                    </div>
+
+                    <div class="pt-2 border-top border-light-subtle d-flex justify-content-between align-items-center">
+                      <small class="text-secondary fs-8"><i class="bi bi-droplet-fill text-danger me-1"></i>متوفر: <strong>{{ center.available_units }} وحدات</strong></small>
+                      <small class="text-danger fw-bold fs-8"><i class="bi bi-cursor-fill me-1"></i>{{ center.distance_km }} كم</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div v-else class="text-center py-3 text-muted fs-8 bg-light-gray rounded-3">
+                اضغطي على "بحث بالأقرب" لعرض التوصيات والمسافات الزمانية لأقرب 3 بنوك دم أو مستشفيات بها مخزون.
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </section>
 
-    <!-- 3. قسم نصائح وإرشادات التبرع -->
+    <!-- 3. قسم نصائح وإرشادات التبرع - تجلب الأيقونات من src/assets/icons -->
     <section id="medical-tips" class="py-4 py-md-5 bg-white">
       <div class="container text-center px-3 px-md-4">
         <h3 class="fw-bold text-dark section-title mb-1">قسم النصائح والإرشادات</h3>
@@ -133,7 +201,7 @@
           <div class="col-12 col-md-4">
             <div class="p-4 bg-light-gray rounded-4 h-100 tip-card shadow-sm">
               <div class="tip-icon-box mb-3 mx-auto">
-                <img :src="getImageUrl('mdi_user.png')" alt="العمر المناسب" class="tip-icon-img" />
+                <img :src="getIconUrl('mdi_user.png')" alt="العمر المناسب" class="tip-icon-img" />
               </div>
               <h5 class="fw-bold text-dark mb-2 fs-6">العمر المناسب</h5>
               <p class="text-muted fs-7 mb-0 lh-lg">يجب أن يكون عمرك بين 18 و 65 عاماً للتبرع بالدم.</p>
@@ -143,7 +211,7 @@
           <div class="col-12 col-md-4">
             <div class="p-4 bg-light-gray rounded-4 h-100 tip-card shadow-sm">
               <div class="tip-icon-box mb-3 mx-auto">
-                <img :src="getImageUrl('game-icons_weight-scale.png')" alt="الوزن المناسب" class="tip-icon-img" />
+                <img :src="getIconUrl('game-icons_weight-scale.png')" alt="الوزن المناسب" class="tip-icon-img" />
               </div>
               <h5 class="fw-bold text-dark mb-2 fs-6">الوزن المناسب</h5>
               <p class="text-muted fs-7 mb-0 lh-lg">يجب أن يكون وزنك 50 كجم على الأقل للتبرع بالدم.</p>
@@ -153,7 +221,7 @@
           <div class="col-12 col-md-4">
             <div class="p-4 bg-light-gray rounded-4 h-100 tip-card shadow-sm">
               <div class="tip-icon-box mb-3 mx-auto">
-                <img :src="getImageUrl('material-symbols_credit-card-clock-outline-rounded.png')" alt="مدة التبرع" class="tip-icon-img" />
+                <img :src="getIconUrl('material-symbols_credit-card-clock-outline-rounded.png')" alt="مدة التبرع" class="tip-icon-img" />
               </div>
               <h5 class="fw-bold text-dark mb-2 fs-6">متى يمكن التبرع مرة أخرى؟</h5>
               <p class="text-muted fs-7 mb-0 lh-lg">يمكنك التبرع كل 8 أسابيع (56 يوماً) للرجال، وكل 12 أسبوعاً (84 يوماً) للنساء.</p>
@@ -217,7 +285,8 @@
           <div class="col-12 col-lg-6">
             <div class="bg-white p-3 p-md-4 rounded-4 shadow-sm h-100">
               <div class="d-flex align-items-center gap-3 mb-4">
-                <img :src="getImageUrl('stash_headset-solid.png')" alt="تواصل معنا" class="support-icon-img" />
+                <!-- أيقونة تواصل معنا تجلب من src/assets/icons -->
+                <img :src="getIconUrl('stash_headset-solid.png')" alt="تواصل معنا" class="support-icon-img" />
                 <div>
                   <h6 class="fw-bold text-dark mb-1">إذا لم تجد الإجابة</h6>
                   <small class="text-muted fs-8">تواصل معنا وفريقنا جاهز للرد على استفساراتك.</small>
@@ -295,8 +364,14 @@ import apiClient from '@/api/axios'
 import Navbar from '@/components/common/Navbar.vue'
 import Footer from '@/components/common/Footer.vue'
 
+// دالة لجلب الصور من مجلد src/assets/images
 const getImageUrl = (fileName) => {
   return new URL(`../../assets/images/${fileName}`, import.meta.url).href
+}
+
+// دالة لجلب الأيقونات من مجلد src/assets/icons
+const getIconUrl = (fileName) => {
+  return new URL(`../../assets/icons/${fileName}`, import.meta.url).href
 }
 
 const handleScrollToHash = () => {
@@ -311,6 +386,7 @@ const handleScrollToHash = () => {
 
 onMounted(() => {
   handleScrollToHash()
+  searchNearbyFacilities()
 })
 
 onUpdated(() => {
@@ -327,6 +403,54 @@ const compatibilityMatrix = ref({
   '+O':  { '-O': true,  '+O': false, '-AB': true,  '+AB': false, '-B': false, '+B': false, '-A': false, '+A': false },
   '-O':  { '-O': true,  '+O': false, '-AB': true,  '+AB': false, '-B': false, '+B': false, '-A': false, '+A': false }
 })
+
+/* ========================================================
+   ميزة الذكاء الاصطناعي (Facility Recommendation AI)
+======================================================== */
+const selectedBloodType = ref('O+')
+const nearbyFacilities = ref([])
+const isLoadingFacilities = ref(false)
+
+const searchNearbyFacilities = async () => {
+  isLoadingFacilities.value = true
+  try {
+    let lat = 31.5017
+    let lng = 34.4668
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          lat = pos.coords.latitude
+          lng = pos.coords.longitude
+          fetchFacilitiesApi(lat, lng)
+        },
+        () => {
+          fetchFacilitiesApi(lat, lng)
+        },
+        { timeout: 3000 }
+      )
+    } else {
+      fetchFacilitiesApi(lat, lng)
+    }
+  } catch (error) {
+    console.error('خطأ في تحديد المراكز القريبة:', error)
+    isLoadingFacilities.value = false
+  }
+}
+
+const fetchFacilitiesApi = async (lat, lng) => {
+  try {
+    const res = await apiClient.get('/public/nearby-facilities', {
+      params: { lat, lng, blood_type: selectedBloodType.value }
+    })
+    const data = Array.isArray(res) ? res : (res?.data || [])
+    nearbyFacilities.value = data
+  } catch (err) {
+    console.error('خطأ الاستجابة:', err)
+  } finally {
+    isLoadingFacilities.value = false
+  }
+}
 
 const searchQuery = ref('')
 const activeFaqIndex = ref(3)
@@ -449,9 +573,6 @@ const handleSubmit = async () => {
   margin-bottom: 28px;
 }
 
-/* ==========================================
-   Hero Image (Identical to Home Section)
-========================================== */
 .hero-image-col {
   height: 500px;
 }
@@ -547,6 +668,16 @@ const handleSubmit = async () => {
   object-fit: contain;
 }
 
+/* بطاقة ميزة الذكاء الاصطناعي AI Finder */
+.ai-finder-card {
+  border: 1px solid #f1f5f9;
+  border-top: 3px solid #dc2626 !important;
+}
+
+.bg-pink-light {
+  background-color: #fdecec !important;
+}
+
 .tip-card {
   border: 1px solid #f1f5f9;
   transition: transform 0.3s ease;
@@ -587,10 +718,6 @@ const handleSubmit = async () => {
 
 .accordion-button.active-faq-btn {
   color: #dc2626 !important;
-  background-color: #fdecec !important;
-}
-
-.bg-pink-light {
   background-color: #fdecec !important;
 }
 

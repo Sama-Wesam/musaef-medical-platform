@@ -40,13 +40,13 @@
 
         <div class="d-flex align-items-center justify-content-center gap-2 gap-sm-3">
           <div class="badge-icon-item yellow-circle shadow-sm">
-            <img :src="getImageUrl('star.png')" alt="نجمة" class="badge-img" />
+            <img :src="starIcon" alt="نجمة" class="badge-img" />
           </div>
           <div class="badge-icon-item pink-circle shadow-sm">
-            <img :src="getImageUrl('blood-icon.png')" alt="قطرة" class="badge-img" />
+            <img :src="bloodIcon" alt="قطرة" class="badge-img" />
           </div>
           <div class="badge-icon-item pink-circle shadow-sm">
-            <img :src="getImageUrl('heart.png')" alt="قلب" class="badge-img" />
+            <img :src="heartIcon" alt="قلب" class="badge-img" />
           </div>
         </div>
       </div>
@@ -54,8 +54,8 @@
       <!-- جهة اليسار: قطرة الدم والشعار -->
       <div class="col-12 col-md-4 col-lg-3 text-center text-md-end order-3">
         <div class="hero-left-drop-wrapper position-relative d-inline-block">
-          <img :src="getImageUrl('Vector 9.png')" alt="نبض" class="pulse-vector-bg" />
-          <img :src="getImageUrl('blood.png')" alt="مؤهل" class="drop-shield-img position-relative z-2" @error="handleHeroDropFallback" />
+          <img :src="vectorIcon" alt="نبض" class="pulse-vector-bg" />
+          <img :src="bloodShieldImg" alt="مؤهل" class="drop-shield-img position-relative z-2" @error="handleHeroDropFallback" />
         </div>
       </div>
     </div>
@@ -64,6 +64,13 @@
 
 <script setup>
 import { useDonorStore } from '@/stores/donorStore';
+
+// استيراد الأيقونات مباشرة لضمان تحميلها بدون مشاكل المسارات في Vite
+import starIcon from '@/assets/icons/star.png';
+import bloodIcon from '@/assets/icons/blood-icon.png';
+import heartIcon from '@/assets/icons/heart.png';
+import vectorIcon from '@/assets/icons/Vector 9.png';
+import bloodShieldImg from '@/assets/icons/blood.png';
 
 defineProps({
   stats: {
@@ -74,11 +81,7 @@ defineProps({
 
 const donorStore = useDonorStore();
 
-const getImageUrl = (fileName) => {
-  return new URL(`../../../assets/images/${fileName}`, import.meta.url).href;
-};
-
-const handleHeroDropFallback = (e) => { e.target.src = getImageUrl('blood.png'); };
+const handleHeroDropFallback = (e) => { e.target.src = bloodShieldImg; };
 </script>
 
 <style scoped>

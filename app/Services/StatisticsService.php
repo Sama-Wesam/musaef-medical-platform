@@ -9,7 +9,10 @@ use App\Models\Donation;
 
 class StatisticsService
 {
-    public function getAdminDashboardStats()
+    /**
+     * إحصائيات لوحة تحكم المسؤول (Admin Dashboard)
+     */
+    public function getAdminDashboardStats(): array
     {
         return [
             'total_donors' => Donor::count(),
@@ -19,7 +22,10 @@ class StatisticsService
         ];
     }
 
-    public function getHospitalDashboardStats(int $hospitalId)
+    /**
+     * إحصائيات لوحة تحكم المستشفى (Hospital Dashboard)
+     */
+    public function getHospitalDashboardStats(int $hospitalId): array
     {
         return [
             'my_active_requests' => BloodRequest::where('hospital_id', $hospitalId)
@@ -29,11 +35,21 @@ class StatisticsService
         ];
     }
 
-    public function getDonorDashboardStats(int $donorId)
+    /**
+     * إحصائيات لوحة تحكم المتبرع (Donor Dashboard)
+     * تحسين الأداء عبر بناء الاستعلام مرة واحدة لاستخراج الإحصائيات
+     */
+    public function getDonorDashboardStats(int $donorId): array
     {
+        $successfulDonations = Donation::where('donor_id', $donorId)
+            ->where('status', 'successful');
+
+        $totalDonations = $successfulDonations->count();
+        $unitsDonated = $successfulDonations->sum('units_donated');
+
         return [
-            'total_donations' => Donation::where('donor_id', $donorId)->where('status', 'successful')->count(),
-            'lives_saved' => Donation::where('donor_id', $donorId)->where('status', 'successful')->sum('units_donated') * 3, // كل وحدة قد تنقذ 3 أرواح
+            'total_donations' => $totalDonations,
+            'lives_saved'     => $unitsDonated * 3, // تقدير حسابي: كل وحدة قد تنقذ 3 أرواح
         ];
     }
 }

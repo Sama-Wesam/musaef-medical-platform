@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegisterRequest;
 use App\Services\AuthService;
+use App\Services\HealthScreeningService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -13,59 +16,36 @@ class AuthController extends Controller
     use ApiResponseTrait;
 
     protected $authService;
+    protected $healthScreeningService;
 
-    public function __construct(AuthService $authService)
+    public function __construct(AuthService $authService, HealthScreeningService $healthScreeningService)
     {
         $this->authService = $authService;
+        $this->healthScreeningService = $healthScreeningService;
     }
 
     /**
      * تسجيل الدخول الموحد
      */
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
-
         try {
             $data = $this->authService->login($request->email, $request->password);
             return $this->successResponse($data, 'تم تسجيل الدخول بنجاح');
         } catch (ValidationException $e) {
-            return response()->json([
-                'status'  => 'error',
-                'message' => 'بيانات الاعتماد غير صحيحة.',
-                'errors'  => $e->errors(),
-            ], 401);
+            return $this->errorResponse('بيانات الاعتماد غير صحيحة.', 401, $e->errors());
         } catch (\Throwable $e) {
-            return response()->json([
-                'status'  => 'error',
-                'message' => 'حدث خطأ في السيرفر: ' . $e->getMessage(),
-            ], 500);
+            return $this->errorResponse('حدث خطأ في السيرفر: ' . $e->getMessage(), 500);
         }
     }
 
     /**
      * تسجيل متبرع جديد وتقييم أهليته الصحية
      */
-    public function registerDonor(Request $request)
+    public function registerDonor(RegisterRequest $request)
     {
-        $validated = $request->validate([
-            'name'             => 'required|string|max:255',
-            'email'            => 'required|string|email|unique:users',
-            'password'         => 'required|string|min:8',
-            'blood_type_id'    => 'required|exists:blood_types,id',
-            'birth_date'       => 'required|date',
-            'gender'           => 'required|in:male,female',
-            'has_symptoms'     => 'nullable|boolean',
-            'had_surgery'      => 'nullable|boolean',
-            'takes_medication' => 'nullable|boolean',
-            'is_pregnant'      => 'nullable|boolean',
-        ]);
-
         try {
-            $result = $this->authService->registerDonor($validated);
+            $result = $this->authService->registerDonor($request->validated());
 
             $user = $result['user'];
             $donor = $result['donor'];
@@ -77,7 +57,7 @@ class AuthController extends Controller
                 'is_pregnant'
             ]);
 
-            $eligibilityResult = $this->authService->evaluateHealthScreening($donor, $healthAnswers);
+            $eligibilityResult = $this->healthScreeningService->evaluateHealthScreening($donor, $healthAnswers);
             $token = $user->createToken('musaef_auth_token')->plainTextToken;
 
             return $this->successResponse([
@@ -88,10 +68,59 @@ class AuthController extends Controller
             ], 'تم تسجيل حساب المتبرع وتقييم حالته بنجاح', 201);
 
         } catch (\Throwable $e) {
-            return response()->json([
-                'status'  => 'error',
-                'message' => 'حدث خطأ أثناء إنشاء الحساب: ' . $e->getMessage(),
-            ], 500);
+            return $this->errorResponse('حدث خطأ أثناء إنشاء الحساب: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * تسجيل مستشفى / بنك دم جديد
+     */
+    public function registerHospital(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'name'                  => 'required|string|max:255',
+                'email'                 => 'required|string|email|max:255|unique:users,email',
+                'phone'                 => 'required|string|max:20',
+                'password'              => 'required|string|min:8|confirmed',
+                'license_number'        => 'required|string|max:100',
+                'address'               => 'required|string|max:255',
+                'latitude'              => 'required|numeric',
+                'longitude'             => 'required|numeric',
+                'facility_type'         => 'nullable|string|max:50',
+            ]);
+
+            $user = \App\Models\User::create([
+                'name'     => $validated['name'],
+                'email'    => $validated['email'],
+                'password' => bcrypt($validated['password']),
+                'role'     => 'hospital',
+            ]);
+
+            $hospital = \App\Models\Hospital::create([
+                'user_id'        => $user->id,
+                'facility_name'  => $validated['name'],
+                'facility_type'  => $request->input('facility_type', 'hospital'),
+                'license_number' => $validated['license_number'],
+                'phone'          => $validated['phone'],
+                'address'        => $validated['address'],
+                'latitude'       => $validated['latitude'],
+                'longitude'      => $validated['longitude'],
+                'is_verified'    => true,
+            ]);
+
+            $token = $user->createToken('musaef_auth_token')->plainTextToken;
+
+            return $this->successResponse([
+                'user'     => $user,
+                'hospital' => $hospital,
+                'token'    => $token
+            ], 'تم تسجيل حساب المستشفى بنجاح', 201);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return $this->errorResponse('خطأ في البيانات المرفقة', 422, $e->errors());
+        } catch (\Throwable $e) {
+            return $this->errorResponse('حدث خطأ أثناء إنشاء حساب المستشفى: ' . $e->getMessage(), 500);
         }
     }
 

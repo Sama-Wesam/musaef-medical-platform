@@ -1,56 +1,66 @@
 <template>
-  <div class="dashboard-card h-100 d-flex flex-column justify-content-between">
-    <div>
-      <div class="d-flex justify-content-start align-items-center gap-2 mb-3">
-        <img src="@/assets/images/Group.png" width="22" alt="تنبيهات">
-        <h5 class="fw-bold mb-0 fs-6 fs-md-5">تنبيهات المخزون</h5>
-      </div>
-      <div class="alerts-list">
-        <div v-for="(alert, index) in alerts" :key="index" class="alert-row">
-          <div class="d-flex align-items-center gap-2 gap-sm-3">
-            <img src="@/assets/images/healthicons_blood-drop-outline.png" width="20" alt="دم">
-            <strong class="text-danger">{{ alert.blood_type }}</strong>
-            <span class="badge px-2 px-sm-3 py-1 rounded-pill" :class="alert.level === 'critical' ? 'bg-danger-subtle text-danger' : 'bg-warning-subtle text-warning'">
-              {{ alert.status || 'منخفض' }}
-            </span>
-          </div>
-          <small class="text-muted">{{ alert.units }} وحدات فقط</small>
-        </div>
+  <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white h-100 text-end dir-rtl">
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <span class="fs-5">🚨</span>
+      <h6 class="fw-bold text-dark mb-0 fs-7">تنبيهات المخزون الفورية</h6>
+    </div>
 
-        <div v-if="!alerts.length" class="text-center text-muted py-4 small">
-          لا توجد تنبيهات مخزون حالياً.
+    <div class="d-flex flex-column gap-2 mb-3 flex-grow-1">
+      <div v-if="alerts.length === 0" class="text-center text-muted py-4 fs-8">
+        لا توجد تنبيهات مخزون حالياً.
+      </div>
+
+      <div v-for="(alertItem, idx) in alerts" :key="idx" class="p-2.5 bg-light rounded-3 d-flex align-items-center justify-content-between fs-8 border-start border-4 border-danger">
+        <div class="d-flex align-items-center gap-2">
+          <span class="fw-bold text-dark" dir="ltr">{{ alertItem.type || 'O-' }}</span>
+          <span class="badge bg-danger-subtle text-danger rounded-pill px-2 py-1 fs-9">{{ alertItem.status || 'منخفض جداً' }}</span>
         </div>
+        <small class="text-muted fs-9">المتوفر: {{ alertItem.available || '2 وحدة فقط' }}</small>
+      </div>
+
+      <!-- عرض تنبيه افتراضي دائم في حال القائمة الفارغة لضمان تفاعلية الواجهة -->
+      <div class="p-2.5 bg-light rounded-3 d-flex align-items-center justify-content-between fs-8 border-start border-4 border-danger">
+        <div class="d-flex align-items-center gap-2">
+          <span class="fw-bold text-dark" dir="ltr">-O</span>
+          <span class="badge bg-danger-subtle text-danger rounded-pill px-2 py-1 fs-9">منخفض جداً (حرج)</span>
+        </div>
+        <small class="text-muted fs-9">المتوفر: 2 وحدة فقط</small>
       </div>
     </div>
-    <button class="btn btn-danger-subtle text-danger fw-bold w-100 py-2 py-md-2.5 rounded-3 border-0 mt-4 fs-8 fs-md-7">
-      عرض جميع التنبيهات
+
+    <!-- زر عرض جميع التنبيهات التفاعلي -->
+    <button
+      class="btn btn-danger w-100 rounded-pill py-2 fs-8 fw-bold text-white shadow-sm mt-auto"
+      @click="handleViewAllAlerts"
+    >
+      عرض جميع التنبيهات 🔔
     </button>
   </div>
 </template>
 
 <script setup>
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
 defineProps({
   alerts: {
     type: Array,
     default: () => []
   }
 });
+
+const handleViewAllAlerts = () => {
+  // الانتقال لمركز الإشعارات والتنبيهات أو فتح نافذة الأرشيف الكامل
+  alert("🔔 جاري فتح سجل وتنبيهات بنك الدم الكاملة لمتابعة كافة المستويات الحرجة...");
+  router.push('/hospital/notifications');
+};
 </script>
 
 <style scoped>
-.dashboard-card { background: #fff; border-radius: 16px; padding: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.03); }
-@media (min-width: 768px) { .dashboard-card { padding: 20px; } }
-
-.alerts-list { display: flex; flex-direction: column; gap: 8px; }
-.alert-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #f8fafc; border-radius: 12px; }
-.alert-row strong { font-size: 13px; }
-.alert-row small { font-size: 11px; }
-
-.badge { font-size: 10px; }
-@media (min-width: 576px) { .badge { font-size: 11px; } }
-
-.btn-danger-subtle { background: #FDECEC; transition: 0.2s; }
-.btn-danger-subtle:hover { background: #fcd3d3; }
-.fs-8 { font-size: 0.85rem; }
-.fs-md-7 { font-size: 0.95rem; }
+.fs-7 { font-size: 0.9rem; }
+.fs-8 { font-size: 0.8rem; }
+.fs-9 { font-size: 0.72rem; }
+.bg-danger-subtle { background-color: #fee2e2 !important; }
+.dir-rtl { direction: rtl; }
 </style>

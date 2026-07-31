@@ -1,34 +1,20 @@
 <template>
   <div class="card border-0 shadow-sm p-3 rounded-4 bg-white text-end">
-    <!-- الهيدر الداخلي للمربع[cite: 40] -->
-    <div class="d-flex align-items-center justify-content-start gap-2 mb-3 flex-wrap">
-      <span class="text-danger fs-6">🏷️</span>
-      <span class="fw-bold text-dark fs-8">تفاصيل الطلب:</span>
-      <h6 class="fw-bold text-dark mb-0 fs-8">{{ request.request_code || request.code }}</h6>
-      <span class="badge bg-danger text-white rounded-pill px-3 py-1 fs-9 ms-auto">{{ request.status || 'نشط' }}</span>
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <span class="badge bg-danger text-white rounded-pill px-2.5 py-1 fs-9 fw-bold">أولوية قصوى (Emergency Priority AI)</span>
+      <span class="text-muted fs-9">{{ request.created_at || 'منذ قليل' }}</span>
     </div>
+    <h5 class="fw-bold text-dark mb-1 fs-6">{{ request.hospital_name || 'مجمع الشفاء الطبي' }}</h5>
+    <p class="text-muted fs-8 mb-3">📍 {{ request.location || 'غزة - الرمال' }}</p>
 
-    <!-- تفاصيل الطلب السفلية جهة اليمين[cite: 40] -->
-    <div class="p-3 bg-light rounded-3 fs-8 d-flex flex-column gap-2 text-end">
-      <div class="d-flex align-items-center justify-content-start gap-2 text-dark">
-        <span>🏥</span>
-        <span class="fw-medium text-break">{{ request.hospital_name || 'مستشفى الشفاء الطبي' }}</span>
+    <div class="row g-2 text-center bg-light p-2.5 rounded-3 fs-8 mb-2">
+      <div class="col-6 border-end">
+        <small class="text-muted d-block fs-9">الفصيلة المطلوبة</small>
+        <strong class="text-danger fs-6" dir="ltr">{{ request.bloodType || request.blood_type }}</strong>
       </div>
-      <div class="d-flex align-items-center justify-content-start gap-2 text-dark flex-wrap">
-        <span>🩸</span>
-        <span>الفصيلة:</span>
-        <span class="fw-bold text-danger">{{ request.blood_type?.name || request.bloodType }}</span>
-        <span class="mx-1">|</span>
-        <span>عدد الوحدات:</span>
-        <span class="fw-bold text-dark">{{ request.units }}</span>
-      </div>
-      <div class="d-flex align-items-center justify-content-start gap-2 text-dark">
-        <span>🕒</span>
-        <span class="fw-medium" dir="ltr">{{ request.time || '14:30 - 15-05-2026' }}</span>
-      </div>
-      <div class="d-flex align-items-center justify-content-start gap-2 text-danger">
-        <span>⚠️</span>
-        <span class="fw-medium text-break">{{ request.description || 'حالة طارئة عاجلة' }}</span>
+      <div class="col-6">
+        <small class="text-muted d-block fs-9">الوحدات المطلوبة</small>
+        <strong class="text-dark fs-6">{{ request.units || request.units_required }} وحدات</strong>
       </div>
     </div>
   </div>

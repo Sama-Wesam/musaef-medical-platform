@@ -13,12 +13,14 @@ class HospitalFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => User::factory(['role' => 'hospital']),
+            'user_id'        => User::factory(['role' => 'hospital']),
+            'facility_name'  => 'مستشفى ' . fake()->company(),
+            'facility_type'  => 'مستشفى عام',
             'license_number' => 'LIC-' . fake()->unique()->numberBetween(100000, 999999),
-            'address' => fake()->address(),
-            'latitude' => fake()->latitude(24.0, 26.0), // إحداثيات قريبة لحساب المسافات عبر الـ Trait
-            'longitude' => fake()->longitude(43.0, 45.0),
-            'is_verified' => true, // توثيق تلقائي لتسهيل عمليات الفحص الفوري للطلبات
+            'address'        => fake()->address(),
+            'latitude'       => fake()->latitude(31.2, 31.6),
+            'longitude'      => fake()->longitude(34.2, 34.6),
+            'is_verified'    => true,
         ];
     }
 }

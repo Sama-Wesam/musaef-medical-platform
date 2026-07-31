@@ -2,39 +2,42 @@
 
 namespace App\Http\Controllers\Donor;
 
-use App\Services\QRCardService;
+use App\Http\Controllers\Controller;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
 
 class QRCardController extends Controller
 {
     use ApiResponseTrait;
 
-    protected $qrCardService;
-
-    public function __construct(QRCardService $qrCardService)
-    {
-        $this->qrCardService = $qrCardService;
-    }
-
+    /**
+     * عرض بيانات بطاقة المتبرع الرقمية ورابط الـ QR Code
+     */
     public function show(Request $request)
     {
-        // 1. حماية من الأخطاء في حال لم يكن المستخدم متبرعاً
-        $donor = $request->user()->donor;
+        $user = $request->user();
+        $donor = $user->donor ?? null;
 
         if (!$donor) {
-            // افتراض وجود دالة errorResponse في الـ Trait الخاص بك
-            return $this->errorResponse('لم يتم العثور على حساب متبرع مرتبط بهذا المستخدم', 404);
+            return $this->notFoundResponse('بيانات المتبرع غير موجودة');
         }
 
-        // 2. تمرير الـ ID بأمان
-        $cardData = $this->qrCardService->generateDonorCard($donor->id);
+        // تحميل علاقة فصيلة الدم
+        $donor->load('bloodType');
 
-        if (!$cardData) {
-            return $this->errorResponse('حدث خطأ أثناء جلب بيانات البطاقة', 400);
-        }
+        $qrData = [
+            'card_id' => 'DONOR-' . str_pad($donor->id, 6, '0', STR_PAD_LEFT),
+            'donor_name' => $user->name,
+            'blood_type' => $donor->bloodType->type ?? 'غير محدد',
+            'phone' => $donor->phone ?? $user->phone,
+            'qr_code_data' => json_encode([
+                'donor_id' => $donor->id,
+                'user_id' => $user->id,
+                'verified' => true
+            ]),
+            'status' => 'active'
+        ];
 
-        return $this->successResponse($cardData, 'تم توليد بيانات البطاقة الذكية بنجاح');
+        return $this->successResponse($qrData, 'تم جلب بيانات بطاقة المتبرع بنجاح');
     }
 }

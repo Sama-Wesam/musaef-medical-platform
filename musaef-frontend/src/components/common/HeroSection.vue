@@ -26,7 +26,8 @@
                 استكشف المنصة
               </RouterLink>
 
-              <RouterLink :to="authStore.isAuthenticated ? '/cases' : '/donate'" class="btn hero-btn-primary">
+              <!-- تم تعديل الرابط ليتجه مباشرة إلى صفحة تسجيل الدخول /login -->
+              <RouterLink to="/login" class="btn hero-btn-primary">
                 <i class="bi bi-heart-fill"></i>
                 <span>تبرع الآن</span>
               </RouterLink>

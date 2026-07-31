@@ -6,7 +6,7 @@
         <div class="d-flex justify-content-between align-items-center mb-2">
           <span class="text-muted fs-8 fw-semibold">الحالات الحرجة</span>
           <div class="icon-badge bg-purple-subtle rounded-circle p-2 d-flex align-items-center justify-content-center">
-            <img :src="getImageUrl('Frame 2147225613 (2).png')" alt="الحالات الحرجة" class="stat-icon" />
+            <img :src="getIconUrl('Frame 2147225613 (2).png')" alt="الحالات الحرجة" class="stat-icon" />
           </div>
         </div>
         <h3 class="fw-black text-dark mb-1 fs-3">{{ kpi?.critical_cases || 236 }}</h3>
@@ -23,7 +23,7 @@
         <div class="d-flex justify-content-between align-items-center mb-2">
           <span class="text-muted fs-8 fw-semibold">نسبة الاستجابة</span>
           <div class="icon-badge bg-primary-subtle text-primary rounded-circle p-2 d-flex align-items-center justify-content-center">
-            <img :src="getImageUrl('Frame 2147225866 (2).png')" alt="نسبة الاستجابة" class="stat-icon" />
+            <img :src="getIconUrl('Frame 2147225866 (2).png')" alt="نسبة الاستجابة" class="stat-icon" />
           </div>
         </div>
         <h3 class="fw-black text-dark mb-1 fs-3">{{ kpi?.response_rate || '92.7%' }}</h3>
@@ -40,7 +40,7 @@
         <div class="d-flex justify-content-between align-items-center mb-2">
           <span class="text-muted fs-8 fw-semibold">إجمالي الطلبات</span>
           <div class="icon-badge bg-danger-subtle text-danger rounded-circle p-2 d-flex align-items-center justify-content-center">
-            <img :src="getImageUrl('Frame 2147225871 (2).png')" alt="إجمالي الطلبات" class="stat-icon" />
+            <img :src="getIconUrl('Frame 2147225871 (2).png')" alt="إجمالي الطلبات" class="stat-icon" />
           </div>
         </div>
         <h3 class="fw-black text-dark mb-1 fs-3">{{ kpi?.total_requests || '1,248' }}</h3>
@@ -57,7 +57,7 @@
         <div class="d-flex justify-content-between align-items-center mb-2">
           <span class="text-muted fs-8 fw-semibold">إجمالي المتبرعين</span>
           <div class="icon-badge bg-success-subtle text-success rounded-circle p-2 d-flex align-items-center justify-content-center">
-            <img :src="getImageUrl('Frame 2147225868 (2).png')" alt="إجمالي المتبرعين" class="stat-icon" />
+            <img :src="getIconUrl('Frame 2147225868 (2).png')" alt="إجمالي المتبرعين" class="stat-icon" />
           </div>
         </div>
         <h3 class="fw-black text-dark mb-1 fs-3">{{ kpi?.total_donors || '8,765' }}</h3>
@@ -78,8 +78,14 @@ defineProps({
   }
 });
 
-const getImageUrl = (fileName) => {
-  return new URL(`../../../assets/images/${fileName}`, import.meta.url).href;
+const getIconUrl = (fileName) => {
+  if (!fileName) return '';
+  if (fileName.startsWith('http') || fileName.startsWith('data:')) return fileName;
+  try {
+    return new URL(`../../../assets/icons/${fileName}`, import.meta.url).href;
+  } catch (e) {
+    return '';
+  }
 };
 </script>
 

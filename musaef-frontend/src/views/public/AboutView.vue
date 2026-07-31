@@ -3,7 +3,7 @@
     <!-- Navbar -->
     <Navbar />
 
-    <!-- 1. قسم الهيرو (من نحن - بتنسيق وحجم أبعاد أصلي مطابق تماماً) -->
+    <!-- 1. قسم الهيرو (من نحن) -->
     <section class="hero-about-section py-5">
       <div class="container-fluid p-0">
         <div class="row g-0 align-items-center hero-row">
@@ -23,7 +23,7 @@
             </div>
           </div>
 
-          <!-- صورة الطبيب والواجهة البرمجية (يسار) بنفس العرض والتنسيق الأصلي -->
+          <!-- صورة الهيرو (يسار) -->
           <div class="col-lg-6 hero-image-col">
             <div class="hero-image-wrapper">
               <img
@@ -75,7 +75,7 @@
             <div class="card border-0 shadow-sm p-4 text-center rounded-4 h-100 bg-white main-info-card">
               <div class="icon-circle bg-pink-light mx-auto mb-3">
                 <img
-                  :src="getImageUrl('Frame 2147225414.png')"
+                  :src="getIconUrl('Frame 2147225414.png')"
                   alt="أهدافنا"
                   class="goal-icon"
                 />
@@ -91,7 +91,7 @@
       </div>
     </section>
 
-    <!-- 3. مميزات المنصة (شبكة متجاوبة) -->
+    <!-- 3. مميزات المنصة -->
     <section id="features" class="py-4 py-md-5 bg-white">
       <div class="container text-center px-3 px-md-4">
         <h3 class="fw-bold text-dark section-title-center mb-1 fs-4 fs-md-3">مميزات المنصة؟!</h3>
@@ -140,23 +140,33 @@
       </div>
     </section>
 
-    <!-- 5. بالتعاون مع (شركاء النجاح - جلب ديناميكي من قاعدة البيانات) -->
-    <section id="partners" class="py-4 py-md-5 bg-white">
+    <!-- 5. بالتعاون مع (المستشفيات والجهات الشريكة) -->
+    <section id="partners" class="py-5 bg-white">
       <div class="container text-center px-3 px-md-4">
-        <h4 class="fw-bold text-dark mb-1 fs-5 fs-md-4">بالتعاون مع</h4>
-        <div class="title-red-line mx-auto mb-4"></div>
+        <h3 class="fw-bold text-dark section-title-center mb-1 fs-4 fs-md-3">بالتعاون مع</h3>
+        <div class="title-red-line mx-auto mb-4 mb-md-5"></div>
 
-        <div class="row g-2 g-md-3 justify-content-center align-items-center" v-if="partners.length > 0">
-          <div v-for="partner in partners" :key="partner.id" class="col-6 col-sm-4 col-lg-2">
-            <div class="partner-box p-2 border rounded-4 bg-white shadow-sm d-flex align-items-center justify-content-center gap-2 h-100">
-              <i class="bi bi-hospital text-danger fs-5"></i>
-              <span class="fw-bold fs-8 text-dark text-truncate" :title="partner.name">{{ partner.name }}</span>
+        <div class="row g-3 justify-content-center align-items-stretch" v-if="partners.length > 0">
+          <div v-for="partner in partners" :key="partner.id || partner.facility_name" class="col-12 col-sm-6 col-md-4 col-lg-3">
+            <div class="partner-card p-3 border rounded-4 bg-white shadow-sm d-flex align-items-center gap-3 h-100">
+              <div class="partner-icon-wrapper rounded-circle bg-pink-light text-danger flex-shrink-0 d-flex align-items-center justify-content-center">
+                <i class="bi bi-hospital fs-4"></i>
+              </div>
+              <div class="text-end min-w-0 flex-grow-1">
+                <h6 class="fw-bold fs-7 text-dark mb-1 text-truncate" :title="partner.facility_name || partner.name">
+                  {{ partner.facility_name || partner.name }}
+                </h6>
+                <small class="text-muted fs-8 d-block text-truncate">
+                  <i class="bi bi-geo-alt me-1 text-danger"></i>{{ partner.address || 'قطاع غزة' }}
+                </small>
+              </div>
             </div>
           </div>
         </div>
 
-        <div v-else class="text-muted py-3">
-          جاري تحميل الجهات الشريكة...
+        <div v-else class="text-muted py-4">
+          <div class="spinner-border text-danger spinner-border-sm me-2" role="status"></div>
+          <span>جاري تحميل الجهات الشريكة...</span>
         </div>
       </div>
     </section>
@@ -168,13 +178,16 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import apiClient from '@/api/axios'; // استدعاء مثيل الـ Axios المخصص
+import apiClient from '@/api/axios';
 import Navbar from '@/components/common/Navbar.vue';
 import Footer from '@/components/common/Footer.vue';
 
-// دالة لجلب مسار الصورة ديناميكياً
 const getImageUrl = (name) => {
   return new URL(`../../assets/images/${name}`, import.meta.url).href;
+};
+
+const getIconUrl = (name) => {
+  return new URL(`../../assets/icons/${name}`, import.meta.url).href;
 };
 
 const features = ref([
@@ -186,7 +199,6 @@ const features = ref([
   { title: 'المطابقة الذكية', desc: 'نظام ذكي يطابق بين المتبرع والمحتاج بدقة وسرعة.', icon: 'bi bi-magic' }
 ]);
 
-/* التقييمات والآراء */
 const reviews = ref([
   {
     name: 'أحمد سامي',
@@ -208,17 +220,32 @@ const reviews = ref([
   }
 ]);
 
-/* بالتعاون مع (يتم جلبها ديناميكياً من الباك إند) */
+// قائمة افتراضية احتياطية تعتمد على المستشفيات المسجلة لديك
+const defaultHospitals = [
+  { id: 1, facility_name: 'مجمع الشفاء الطبي', address: 'غزة - الرمال' },
+  { id: 2, facility_name: 'جمعية بنك الدم المركزي', address: 'غزة - شارع الوحدة' },
+  { id: 3, facility_name: 'بنك الدم المركزي - وزارة الصحة', address: 'غزة - النصر' },
+  { id: 4, facility_name: 'مستشفى الأهلي العربي (المعمداني)', address: 'غزة - الزيتون' },
+  { id: 5, facility_name: 'مستشفى القدس - الهلال الأحمر', address: 'غزة - تل الهوى' },
+  { id: 6, facility_name: 'مستشفى كمال عدوان', address: 'شمال غزة - بيت لاهيا' },
+  { id: 7, facility_name: 'المستشفى الإندونيسي', address: 'شمال غزة - بيت لاهيا' },
+  { id: 8, facility_name: 'مجمع ناصر الطبي', address: 'خانيونس - وسط المدينة' },
+  { id: 9, facility_name: 'مستشفى أبو يوسف النجار', address: 'رفح - الجنينة' }
+];
+
 const partners = ref([]);
 
 const fetchPartners = async () => {
   try {
     const res = await apiClient.get('/public/partners');
-    if (res && res.data) {
-      partners.value = res.data;
+    if (res && res.data && (Array.isArray(res.data) ? res.data.length > 0 : res.data.data?.length > 0)) {
+      partners.value = Array.isArray(res.data) ? res.data : res.data.data;
+    } else {
+      partners.value = defaultHospitals;
     }
   } catch (error) {
-    console.error('خطأ في جلب المستشفيات الشريكة:', error);
+    console.warn('استخدام القائمة الافتراضية للمستشفيات الشريكة:', error);
+    partners.value = defaultHospitals;
   }
 };
 
@@ -226,7 +253,6 @@ onMounted(() => {
   fetchPartners();
 });
 
-// صور بديلة في حالة عدم وجود الصورة المطلوبة في المجلد
 const handleImgFallback = (e) => {
   e.target.src = getImageUrl('hero-drop.png');
 };
@@ -242,9 +268,6 @@ const handleAvatarFallback = (e) => {
   font-family: Arial, sans-serif;
 }
 
-/* ==========================================
-   Hero Section Styles (Matching Homepage Exactly)
-========================================== */
 .hero-about-section {
   background: #f8fafc;
   height: 500px;
@@ -293,9 +316,6 @@ const handleAvatarFallback = (e) => {
   margin-bottom: 28px;
 }
 
-/* ==========================================
-   Hero Image (Identical to Home Section)
-========================================== */
 .hero-image-col {
   height: 500px;
 }
@@ -319,9 +339,6 @@ const handleAvatarFallback = (e) => {
   margin-left: 40px;
 }
 
-/* ==========================================
-   General Sections
-========================================== */
 .bg-light-gray {
   background-color: #f8fafc;
 }
@@ -333,7 +350,6 @@ const handleAvatarFallback = (e) => {
   border-radius: 2px;
 }
 
-/* بطاقات المعلومات الثلاثية */
 .main-info-card {
   transition: transform 0.3s ease;
   border: 1px solid #f1f5f9 !important;
@@ -356,7 +372,6 @@ const handleAvatarFallback = (e) => {
   justify-content: center;
 }
 
-/* أيقونة أهدافنا */
 .goal-icon {
   width: 28px;
   height: 28px;
@@ -364,7 +379,6 @@ const handleAvatarFallback = (e) => {
   display: block;
 }
 
-/* بطاقات المميزات */
 .feature-card {
   transition: all 0.3s ease;
   border: 1px solid #f1f5f9;
@@ -375,7 +389,6 @@ const handleAvatarFallback = (e) => {
   border-color: #fca5a5;
 }
 
-/* بطاقات التقييمات */
 .review-card {
   border: 1px solid #f1f5f9;
 }
@@ -388,17 +401,26 @@ const handleAvatarFallback = (e) => {
   border: 1px solid #e2e8f0;
 }
 
-/* شركاء النجاح */
-.partner-box {
-  min-height: 55px;
+/* تنسيق بطاقات المستشفيات الشريكة */
+.partner-card {
   border: 1px solid #e2e8f0 !important;
+  transition: all 0.3s ease;
 }
 
-/* الأحجام */
+.partner-card:hover {
+  transform: translateY(-3px);
+  border-color: #fca5a5 !important;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.08) !important;
+}
+
+.partner-icon-wrapper {
+  width: 45px;
+  height: 45px;
+}
+
 .fs-7 { font-size: 0.9rem; }
 .fs-8 { font-size: 0.8rem; }
 
-/* Responsive adjustments */
 @media (max-width: 1200px) {
   .hero-text-wrapper {
     margin-left: 0;

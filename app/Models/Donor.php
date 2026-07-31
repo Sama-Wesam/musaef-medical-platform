@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use App\Traits\LocationTrait;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Donor extends Model
 {
-    use LocationTrait;
+    use HasFactory, LocationTrait;
 
     protected $table = 'donors';
 
@@ -20,7 +21,6 @@ class Donor extends Model
         'longitude',
         'address',
         'is_available',
-        'is_eligible',
         'eligibility_status',
         'deferral_date',
         'last_donation_date',
@@ -28,11 +28,26 @@ class Donor extends Model
 
     protected $casts = [
         'is_available'       => 'boolean',
-        'is_eligible'        => 'boolean',
         'birth_date'         => 'date',
         'deferral_date'      => 'date',
         'last_donation_date' => 'date',
     ];
+
+    // -----------------------------------------------------------------
+    // Accessors (المُعاملات المحسوبة)
+    // -----------------------------------------------------------------
+
+    /**
+     * حساب عمر المتبرع تلقائياً من تاريخ الميلاد
+     */
+    public function getAgeAttribute()
+    {
+        return $this->birth_date ? $this->birth_date->age : null;
+    }
+
+    // -----------------------------------------------------------------
+    // العلاقات (Relationships)
+    // -----------------------------------------------------------------
 
     public function user()
     {
@@ -57,5 +72,10 @@ class Donor extends Model
     public function responses()
     {
         return $this->hasMany(DonorResponse::class);
+    }
+
+    public function matchingResults()
+    {
+        return $this->hasMany(MatchingResult::class);
     }
 }

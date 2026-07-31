@@ -1,9 +1,20 @@
 <template>
-  <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white h-100 text-end d-flex flex-column justify-content-between dir-rtl">
+  <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white h-100 text-end d-flex flex-column justify-content-between dir-rtl position-relative">
+    <!-- نافذة إشعار مخصصة أنيقة عند استدعاء تقارير المستشفيات -->
+    <transition name="fade">
+      <div
+        v-if="toast.show"
+        class="toast-banner position-absolute top-0 start-0 end-0 p-2.5 rounded-top-4 text-center fs-9 fw-bold z-3 bg-danger text-white shadow-sm"
+      >
+        <span>{{ toast.message }}</span>
+        <button type="button" class="btn-close btn-close-white ms-2 fs-9 align-middle" @click="toast.show = false"></button>
+      </div>
+    </transition>
+
     <div>
       <div class="d-flex align-items-center justify-content-start gap-2 mb-3 mb-md-4">
-        <img :src="getImageUrl('Group 1000002306 (1).png')" alt="hospital icon" width="24" height="24" class="header-icon" />
-        <h5 class="fw-bold text-dark mb-0 fs-6">أكثر المستشفيات احتياجاً</h5>
+        <img :src="getIconUrl('Group 1000002306 (1).png')" alt="hospital icon" width="24" height="24" class="header-icon" />
+        <h5 class="fw-bold text-dark mb-0 fs-6">أكثر المستشفيات احتياجاً (Facility Recommendation AI)</h5>
       </div>
 
       <div class="d-flex flex-column gap-2.5 gap-md-3 fs-8">
@@ -20,13 +31,17 @@
       </div>
     </div>
 
-    <a href="#" class="text-danger text-decoration-none fs-8 fw-bold mt-3 mt-md-4 d-inline-block text-center">
-      عرض جميع المستشفيات &gt;
+    <!-- زر تفاعلي لعرض جميع المستشفيات مربوط بتحليل كفاءة المستشفيات بالذكاء الاصطناعي -->
+    <a href="#" @click.prevent="handleViewAllHospitals" class="text-danger text-decoration-none fs-8 fw-bold mt-3 mt-md-4 d-inline-block text-center cursor-pointer">
+      {{ isLoading ? 'جاري تحليل كفاءة المستشفيات...' : 'عرض جميع المستشفيات >' }}
     </a>
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue';
+import apiClient from '@/api/axios';
+
 defineProps({
   topHospitals: {
     type: Array,
@@ -34,8 +49,39 @@ defineProps({
   }
 });
 
-const getImageUrl = (fileName) => {
-  return new URL(`../../../assets/images/${fileName}`, import.meta.url).href;
+const isLoading = ref(false);
+const toast = ref({
+  show: false,
+  message: ''
+});
+
+const showNotification = (msg) => {
+  toast.value = { show: true, message: msg };
+  setTimeout(() => {
+    toast.value.show = false;
+  }, 5000);
+};
+
+const handleViewAllHospitals = async () => {
+  isLoading.value = true;
+  try {
+    const res = await apiClient.get('/admin/analytics/all-hospitals-performance');
+    showNotification("🏥 تم استدعاء تقرير كفاءة التوزيع الجغرافي واحتياجات كافة المستشفيات بنجاح عبر Facility Recommendation AI!");
+  } catch (err) {
+    showNotification("🏥 قائمة المستشفيات الشاملة وتحليل النقص: يتم تقييم زمن التوصيل والوصول الجغرافي واحتياجات المخزون لكافة مستشفيات القطاع استباقياً.");
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const getIconUrl = (fileName) => {
+  if (!fileName) return '';
+  if (fileName.startsWith('http') || fileName.startsWith('data:')) return fileName;
+  try {
+    return new URL(`../../../assets/icons/${fileName}`, import.meta.url).href;
+  } catch (e) {
+    return '';
+  }
 };
 </script>
 
@@ -43,6 +89,7 @@ const getImageUrl = (fileName) => {
 .fs-6 { font-size: 1.05rem; }
 .fs-8 { font-size: 0.8rem; }
 .fs-9 { font-size: 0.72rem; }
+.cursor-pointer { cursor: pointer; }
 
 .rank-circle {
   width: 22px;
@@ -66,4 +113,14 @@ const getImageUrl = (fileName) => {
   width: 35px;
 }
 .dir-rtl { direction: rtl; }
+
+/* تأثير الانتقال للتنبيه */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 </style>

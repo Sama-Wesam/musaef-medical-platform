@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Hospital;
 use App\Services\EmergencyService;
 use App\Repositories\EmergencyRepository;
 use App\Traits\ApiResponseTrait;
+use App\Enums\RequestStatus;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
@@ -22,7 +23,7 @@ class EmergencyRequestController extends Controller
     }
 
     /**
-     * جلب سجل جميع الطلبات التي أنشأها المستشفى[cite: 32]
+     * جلب سجل جميع الطلبات التي أنشأها المستشفى
      */
     public function index(Request $request)
     {
@@ -32,7 +33,7 @@ class EmergencyRequestController extends Controller
     }
 
     /**
-     * إنشاء طلب طوارئ جديد[cite: 32]
+     * إنشاء طلب طوارئ جديد
      */
     public function store(Request $request)
     {
@@ -57,7 +58,7 @@ class EmergencyRequestController extends Controller
     }
 
     /**
-     * عرض تفاصيل طلب محدد[cite: 32]
+     * عرض تفاصيل طلب محدد
      */
     public function show($id)
     {
@@ -68,29 +69,37 @@ class EmergencyRequestController extends Controller
     }
 
     /**
-     * قبول الطلب الطارئ[cite: 32]
+     * قبول الطلب الطارئ
      */
     public function accept($id)
     {
         $request = $this->emergencyRepo->findById($id);
         if (!$request) return $this->notFoundResponse();
 
-        // استخدام قيمة قصيرة جداً أو رقمية تتوافق مع قاعدة البيانات
-        $request->update(['status' => '1']);
+        // اعتماد Enum المقبول متوافقاً مع قاعدة البيانات ونظام CleanExpiredEmergencies
+        $acceptedStatus = class_exists(RequestStatus::class) && defined(RequestStatus::class . '::ACCEPTED')
+            ? RequestStatus::ACCEPTED->value
+            : 'accepted';
+
+        $request->update(['status' => $acceptedStatus]);
 
         return $this->successResponse($request, 'تم قبول الطلب بنجاح');
     }
 
     /**
-     * رفض الطلب الطارئ[cite: 32]
+     * رفض الطلب الطارئ
      */
     public function reject($id)
     {
         $request = $this->emergencyRepo->findById($id);
         if (!$request) return $this->notFoundResponse();
 
-        // استخدام قيمة قصيرة جداً أو رقمية تتوافق مع قاعدة البيانات
-        $request->update(['status' => '0']);
+        // اعتماد Enum الملغى/المرقوض متوافقاً مع قاعدة البيانات
+        $cancelledStatus = class_exists(RequestStatus::class) && defined(RequestStatus::class . '::CANCELLED')
+            ? RequestStatus::CANCELLED->value
+            : 'cancelled';
+
+        $request->update(['status' => $cancelledStatus]);
 
         return $this->successResponse($request, 'تم رفض الطلب');
     }

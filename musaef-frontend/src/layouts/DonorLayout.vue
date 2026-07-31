@@ -5,7 +5,7 @@
       <div class="container">
         <div class="d-flex align-items-center justify-content-between gap-3">
 
-          <!-- الشعار والرابط الرئيسي -->
+          <!-- الشعار والرابط الرئيسي للمتبرع المسجل -->
           <router-link to="/donor/dashboard" class="d-flex align-items-center text-decoration-none">
             <span class="fs-3 me-2">🩸</span>
             <span class="fw-bold text-danger fs-4">مُسْـعِـف</span>

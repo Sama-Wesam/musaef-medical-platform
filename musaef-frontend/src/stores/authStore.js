@@ -28,6 +28,9 @@ export const useAuthStore = defineStore('auth', {
         localStorage.setItem('musaef_token', token);
         localStorage.setItem('user', JSON.stringify(user));
         localStorage.setItem('musaef_user', JSON.stringify(user));
+        if (user.role) {
+          localStorage.setItem('user_role', user.role);
+        }
       }
     },
 
@@ -75,7 +78,13 @@ export const useAuthStore = defineStore('auth', {
         this.token = null;
         this.user = null;
         this.error = null;
-        localStorage.clear();
+
+        // تطهير مستهدف للمفاتيح الأمنية دون مسح تفضيلات اللغة أو الإعدادات العامة
+        localStorage.removeItem('token');
+        localStorage.removeItem('musaef_token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('musaef_user');
+        localStorage.removeItem('user_role');
       }
     }
   }

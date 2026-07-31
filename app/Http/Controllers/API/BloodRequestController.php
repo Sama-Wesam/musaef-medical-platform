@@ -11,7 +11,7 @@ class BloodRequestController extends Controller
 {
     use ApiResponseTrait;
 
-    // عرض طلبات التبرع ذات الحالة pending للعامة وللمتبرعين[cite: 14]
+    // عرض طلبات التبرع ذات الحالة pending للعامة وللمتبرعين
     public function index()
     {
         $requests = BloodRequest::with(['hospital', 'bloodType'])

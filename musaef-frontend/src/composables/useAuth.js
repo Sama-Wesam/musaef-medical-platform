@@ -135,13 +135,15 @@ export function useAuth() {
         redirectUserByRole(authStore.userRole);
       } else if (accountType === 'hospital') {
         payload.append('facility_name', formData.facilityName);
-        payload.append('hospital_type', formData.facilityType);
+        // التعديل: تعديل اسم الحقل ليكون facility_type لمطابقة الـ Form Request في الباك إند
+        payload.append('facility_type', formData.facilityType);
         payload.append('license_number', formData.licenseNumber);
 
         if (formData.licenseFile) {
           payload.append('license_file', formData.licenseFile);
         }
 
+        // تسجيل حساب المستشفى دون توجيه مباشر ينتظر اعتماد الإدارة (is_verified)
         await authStore.registerHospital(payload);
       }
 

@@ -18,7 +18,7 @@ class User extends Authenticatable
         'name',
         'email',
         'phone',
-        'role', // admin, donor, hospital
+        'role', // admin, donor, hospital, guest
         'is_active',
         'password',
     ];
@@ -41,6 +41,25 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_active' => 'boolean',
         ];
+    }
+
+    // -----------------------------------------------------------------
+    // Helper Methods (دوال مساعدة لفحص الصلاحيات والأدوار)
+    // -----------------------------------------------------------------
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isHospital(): bool
+    {
+        return $this->role === 'hospital';
+    }
+
+    public function isDonor(): bool
+    {
+        return $this->role === 'donor';
     }
 
     // -----------------------------------------------------------------

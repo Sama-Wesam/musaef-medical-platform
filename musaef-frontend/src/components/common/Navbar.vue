@@ -2,7 +2,7 @@
   <header class="header-wrapper dir-rtl">
     <!-- 1. الشريط الأحمر العلوي -->
     <div class="top-announcement-bar bg-danger text-white text-center py-2 px-3 fw-bold">
-      <span class="announcement-text">تم إنقاذ 3,580 مريضاً بفضل المتبرعين.</span>
+      <span class="announcement-text">تم إنقاذ 3,580 مريضاً بفضل الله ثم المتبرعين.</span>
     </div>
 
     <!-- 2. الناف بار الرئيسي -->

@@ -24,7 +24,6 @@ class AIService
 
     public function getHospitalDemandForecast(int $hospitalId, int $bloodTypeId)
     {
-        // تم التعديل إلى predictShortage لتتطابق مع دالة محرك الذكاء الاصطناعي الفعلي
         return $this->demandForecast->predictShortage($hospitalId, $bloodTypeId);
     }
 

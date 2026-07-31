@@ -23,7 +23,7 @@ class DonationAccepted implements ShouldBroadcast
      */
     public function __construct(Donor $donor, BloodRequest $bloodRequest)
     {
-        $this->donor = $donor;
+        $this->donor = $donor; 
         $this->bloodRequest = $bloodRequest;
     }
 
@@ -34,7 +34,7 @@ class DonationAccepted implements ShouldBroadcast
     {
         // بث على قناة خاصة بالمستشفى لتحديث لوحة التحكم (Dashboard) لديهم فوراً
         $hospitalUserId = $this->bloodRequest->hospital->user_id;
-        
+
         return [
             new PrivateChannel('hospital.' . $hospitalUserId),
         ];
