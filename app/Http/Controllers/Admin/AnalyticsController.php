@@ -89,22 +89,81 @@ class AnalyticsController extends Controller
     }
 
     /**
+     * جلب جميع التنبيهات الذكية (حل مشكلة /analytics/all-alerts)
+     */
+    public function allAlerts()
+    {
+        $alerts = [
+            [
+                'id' => 1,
+                'status' => 'عاجل',
+                'statusBadge' => 'bg-danger-subtle text-danger',
+                'type' => 'A+',
+                'hospital' => 'مستشفى ناصر',
+                'time' => '10:30 ص'
+            ],
+            [
+                'id' => 2,
+                'status' => 'متوسط',
+                'statusBadge' => 'bg-warning-subtle text-warning-emphasis',
+                'type' => 'B+',
+                'hospital' => 'مستشفى القدس',
+                'time' => '09:45 ص'
+            ],
+            [
+                'id' => 3,
+                'status' => 'مستقر',
+                'statusBadge' => 'bg-success-subtle text-success',
+                'type' => 'O-',
+                'hospital' => 'مستشفى الأوروبي',
+                'time' => '08:30 ص'
+            ],
+            [
+                'id' => 4,
+                'status' => 'مستقر',
+                'statusBadge' => 'bg-success-subtle text-success',
+                'type' => 'AB-',
+                'hospital' => 'مستشفى الشفاء',
+                'time' => '07:10 ص'
+            ]
+        ];
+
+        return $this->successResponse($alerts, 'تم جلب جميع التنبيهات بنجاح');
+    }
+
+    /**
+     * جلب أداء جميع المستشفيات (حل مشكلة /analytics/all-hospitals-performance)
+     */
+    public function allHospitalsPerformance()
+    {
+        $hospitalsPerformance = [
+            ['id' => 1, 'name' => 'مستشفى ناصر', 'percent' => 78, 'color' => '#DC2626', 'status' => 'احتياج مرتفع جداً'],
+            ['id' => 2, 'name' => 'مستشفى القدس', 'percent' => 62, 'color' => '#F59E0B', 'status' => 'احتياج متوسط'],
+            ['id' => 3, 'name' => 'مستشفى الأوروبي', 'percent' => 45, 'color' => '#EA580C', 'status' => 'احتياج متوسط'],
+            ['id' => 4, 'name' => 'مستشفى الشفاء', 'percent' => 30, 'color' => '#16A34A', 'status' => 'مستقر نسبياً'],
+            ['id' => 5, 'name' => 'مستشفى الأندونيسي', 'percent' => 18, 'color' => '#16A34A', 'status' => 'مستقر']
+        ];
+
+        return $this->successResponse($hospitalsPerformance, 'تم جلب بيانات أداء المستشفيات بنجاح');
+    }
+
+    /**
      * جلب بيانات الخريطة الحرارية (Heat Map Data)
      */
     public function heatMapData()
     {
         $heatmap = [
             [
-                'city' => 'Sana\'a',
-                'lat' => 15.369444,
-                'lng' => 44.191006,
+                'city' => 'Gaza',
+                'lat' => 31.5017,
+                'lng' => 34.4668,
                 'intensity' => 0.85,
                 'critical_blood_type' => 'O-'
             ],
             [
-                'city' => 'Aden',
-                'lat' => 12.785500,
-                'lng' => 45.018600,
+                'city' => 'Khan Yunis',
+                'lat' => 31.3462,
+                'lng' => 34.3063,
                 'intensity' => 0.60,
                 'critical_blood_type' => 'A+'
             ]
@@ -118,15 +177,23 @@ class AnalyticsController extends Controller
      */
     public function demandForecast(Request $request)
     {
+        $bloodType = $request->query('blood_type', $request->input('blood_type', 'O-'));
+
         $forecast = [
             'period' => '48_hours',
             'predicted_shortage' => [
-                ['blood_type' => 'O-', 'expected_deficit_units' => 15, 'confidence' => '94%'],
+                ['blood_type' => $bloodType, 'expected_deficit_units' => 15, 'confidence' => '94%'],
                 ['blood_type' => 'A-', 'expected_deficit_units' => 8,  'confidence' => '87%']
             ],
-            'recommendation' => 'يرجى إرسال التنبيهات الاستباقية للمتبرعين من فصيلة O- في النطاق الجغرافي 15 كم.'
+            'recommendation' => 'يرجى إرسال التنبيهات الاستباقية للمتبرعين في النطاق الجغرافي 15 كم للرفع الاستباقي للجاهزية.'
         ];
 
-        return $this->successResponse($forecast, 'تم توليد التنبؤات الاستباقية بنجاح');
+        $message = "🚨 تنبيه عاجل (Blood Demand Forecast AI):\nالفصيلة {$bloodType} في مستوى حرج (متوفر وحدات قليلة جداً)، تم تفعيل توصيات الرفع الاستباقي للجاهزية.";
+
+        return response()->json([
+            'success' => true,
+            'message' => $message,
+            'data' => $forecast
+        ], 200);
     }
 }

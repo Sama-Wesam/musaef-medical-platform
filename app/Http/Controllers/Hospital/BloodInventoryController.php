@@ -23,10 +23,10 @@ class BloodInventoryController extends Controller
      */
     public function index(Request $request)
     {
-        $hospitalId = $request->user()->hospital->id;
+        $hospitalId = $request->user()->hospital ? $request->user()->hospital->id : $request->user()->id;
         $inventory = $this->hospitalService->getInventory($hospitalId);
-        
-        return $this->successResponse($inventory, 'تم جلب مخزون الدم الخاص بالمستشفى');
+
+        return $this->successResponse($inventory, 'تم جلب مخزون الدم الخاص بالمستشفى بنجاح');
     }
 
     /**
@@ -36,12 +36,12 @@ class BloodInventoryController extends Controller
     {
         $validated = $request->validate([
             'blood_type_id' => 'required|exists:blood_types,id',
-            'units' => 'required|integer|min:1',
-            'operation' => 'required|in:add,sub' // add للإضافة، sub للخصم
+            'units'         => 'required|integer|min:1',
+            'operation'     => 'required|in:add,sub' // add للإضافة، sub للخصم
         ]);
 
-        $hospitalId = $request->user()->hospital->id;
-        
+        $hospitalId = $request->user()->hospital ? $request->user()->hospital->id : $request->user()->id;
+
         $success = $this->hospitalService->manualInventoryUpdate(
             $hospitalId,
             $validated['blood_type_id'],
@@ -50,9 +50,13 @@ class BloodInventoryController extends Controller
         );
 
         if ($success) {
-            return $this->successResponse(null, 'تم تحديث المخزون بنجاح');
+            $actionText = $validated['operation'] === 'add' ? 'إضافة' : 'خصم';
+            return $this->successResponse(null, "تم {$actionText} الوحدات بنجاح");
         }
 
-        return $this->errorResponse('فشل في تحديث المخزون، تأكد من وجود كمية كافية للخصم');
+        return response()->json([
+            'success' => false,
+            'message' => 'لا توجد كمية كافية للخصم من المخزون، تأكد من وجود كمية كافية للخصم'
+        ], 400);
     }
 }

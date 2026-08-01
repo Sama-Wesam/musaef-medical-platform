@@ -13,36 +13,61 @@ use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\MedicalGuidelineController;
 use App\Http\Controllers\Admin\EmergencyRadarController;
 use App\Http\Controllers\Admin\AccountManagementController;
+use App\Http\Controllers\Admin\MessageController;
+use App\Http\Controllers\Admin\NotificationController;
 
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index']);
 
+    // مسارات الإشعارات
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+
     // مسارات رادار الطوارئ المباشر
     Route::get('/emergency-radar', [EmergencyRadarController::class, 'index']);
     Route::post('/emergency-radar/{id}/trigger-response', [EmergencyRadarController::class, 'triggerResponse']);
 
-    // مركز التحليلات الذكية
+    // مركز التحليلات الذكية والتقارير
     Route::get('/analytics', [AnalyticsController::class, 'index']);
     Route::get('/analytics/heatmap', [AnalyticsController::class, 'heatMapData']);
-    Route::post('/analytics/forecast', [AnalyticsController::class, 'demandForecast']);
+    Route::get('/analytics/all-alerts', [AnalyticsController::class, 'allAlerts']);
+    Route::get('/analytics/alerts', [AnalyticsController::class, 'allAlerts']);
 
-    // مسارات إدارة الحسابات
+    // مسار أداء جميع المستشفيات 
+    Route::get('/analytics/all-hospitals-performance', [AnalyticsController::class, 'allHospitalsPerformance']);
+    Route::get('/analytics/hospitals-performance', [AnalyticsController::class, 'allHospitalsPerformance']);
+
+    // مسارات التنبؤ بالطلب بالذكاء الاصطناعي
+    Route::match(['get', 'post'], '/analytics/forecast', [AnalyticsController::class, 'demandForecast']);
+    Route::match(['get', 'post'], '/analytics/demand-forecast', [AnalyticsController::class, 'demandForecast']);
+    Route::match(['get', 'post'], '/demand-forecast', [AnalyticsController::class, 'demandForecast']);
+    Route::get('/reports', [AnalyticsController::class, 'index']);
+
+    // مسارات إدارة الحسابات والتعيينات الشاملة
+    Route::get('/users', [AccountManagementController::class, 'getDonors']);
     Route::get('/accounts/donors', [AccountManagementController::class, 'getDonors']);
     Route::get('/accounts/hospitals', [AccountManagementController::class, 'getHospitals']);
     Route::get('/accounts/roles', [AccountManagementController::class, 'getRoles']);
     Route::get('/accounts/audit-logs', [AccountManagementController::class, 'getAuditLogs']);
     Route::delete('/accounts/{id}', [AccountManagementController::class, 'deleteAccount']);
 
-    // إدارة المتبرعين والمستشفيات
+    // إدارة المتبرعين والمستشفيات وبنوك الدم
     Route::apiResource('donors', DonorManagementController::class)->only(['index', 'show', 'destroy']);
     Route::apiResource('hospitals', HospitalManagementController::class)->only(['index', 'show', 'destroy']);
+    Route::get('/hospitals-management', [HospitalManagementController::class, 'index']);
     Route::post('/hospitals/{id}/verify', [HospitalManagementController::class, 'verifyHospital']);
+    Route::get('/blood-banks', [HospitalManagementController::class, 'index']);
 
-    // إدارة الطوارئ
+    // إدارة الطوارئ والتبرعات
     Route::get('/requests', [RequestManagementController::class, 'index']);
     Route::get('/requests/{id}', [RequestManagementController::class, 'show']);
     Route::post('/requests/{id}/cancel', [RequestManagementController::class, 'cancelRequest']);
+    Route::get('/donations', [RequestManagementController::class, 'index']);
+
+    // الرسائل والتواصل
+    Route::apiResource('messages', MessageController::class)->only(['index', 'show', 'destroy']);
+    Route::post('/messages/{id}/reply', [MessageController::class, 'reply']);
 
     // الذكاء الاصطناعي ومركز التبرع
     Route::post('/fraud/analyze', [FraudDetectionController::class, 'analyzeHospital']);

@@ -1,0 +1,480 @@
+{
+  "info": {
+    "name": "Musaef API - منصة مسعف",
+    "description": "مجموعة مسارات API الخاصة بمشروع منصة مسعف متوافقة 100% مع مسارات Laravel Backend ومصنفة حسب الهيكلية المطلوبة.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01_Authentication",
+      "item": [
+        {
+          "name": "Login_Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.environment.set('admin_token', jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@musaef.com\",\n  \"password\": \"admin123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/login", "host": ["{{base_url}}"], "path": ["login"] }
+          }
+        },
+        {
+          "name": "Login_Donor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.environment.set('donor_token', jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ahmed@donor.com\",\n  \"password\": \"password123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/login", "host": ["{{base_url}}"], "path": ["login"] }
+          }
+        },
+        {
+          "name": "Login_Hospital",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.environment.set('hospital_token', jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"shifa@musaef.com\",\n  \"password\": \"password123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/login", "host": ["{{base_url}}"], "path": ["login"] }
+          }
+        },
+        {
+          "name": "Register_Donor",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"أحمد المتبرع\",\n  \"email\": \"ahmed@donor.com\",\n  \"phone\": \"770000000\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\",\n  \"role\": \"donor\",\n  \"blood_type_id\": 1,\n  \"birth_date\": \"1995-05-20\",\n  \"gender\": \"male\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/register/donor", "host": ["{{base_url}}"], "path": ["register", "donor"] }
+          }
+        },
+        {
+          "name": "Register_Hospital",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"مستشفى النهضة النموذجي\",\n  \"email\": \"alnahdah3@musaef.com\",\n  \"phone\": \"773334455\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\",\n  \"role\": \"hospital\",\n  \"facility_type\": \"hospital\",\n  \"license_number\": \"HOSP-55612\",\n  \"address\": \"شارع الزبيري - صنعاء\",\n  \"latitude\": 15.352100,\n  \"longitude\": 44.204500\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/register/hospital", "host": ["{{base_url}}"], "path": ["register", "hospital"] }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{donor_token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/logout", "host": ["{{base_url}}"], "path": ["logout"] }
+          }
+        },
+        {
+          "name": "Forgot_Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ahmed@donor.com\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/forgot-password", "host": ["{{base_url}}"], "path": ["forgot-password"] }
+          }
+        },
+        {
+          "name": "Reset_Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"example_reset_token_here\",\n  \"email\": \"ahmed@donor.com\",\n  \"password\": \"newpassword123\",\n  \"password_confirmation\": \"newpassword123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/reset-password", "host": ["{{base_url}}"], "path": ["reset-password"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02_Donor",
+      "item": [
+        {
+          "name": "Donor_Profile",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{donor_token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/donor/profile", "host": ["{{base_url}}"], "path": ["donor", "profile"] }
+          }
+        },
+        {
+          "name": "Nearby_Campaigns",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{donor_token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/donor/campaigns/nearby", "host": ["{{base_url}}"], "path": ["donor", "campaigns", "nearby"] }
+          }
+        },
+        {
+          "name": "Donation_History",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{donor_token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/history", "host": ["{{base_url}}"], "path": ["history"] }
+          }
+        },
+        {
+          "name": "Confirm_Donation",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{donor_token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"donor_id\": 19,\n  \"emergency_request_id\": 1,\n  \"units_donated\": 1,\n  \"donation_date\": \"2026-07-30 10:00:00\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/donations/confirm", "host": ["{{base_url}}"], "path": ["donations", "confirm"] }
+          }
+        },
+        {
+          "name": "QR_Card",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{donor_token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/donor/qr-card", "host": ["{{base_url}}"], "path": ["donor", "qr-card"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03_Hospital",
+      "item": [
+        {
+          "name": "Emergency_Requests",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{hospital_token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"blood_type_id\": 1,\n  \"units_required\": 5,\n  \"emergency_level\": \"critical\",\n  \"description\": \"حالة نزيف حاد في قسم الطوارئ\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/hospital/requests", "host": ["{{base_url}}"], "path": ["hospital", "requests"] }
+          }
+        },
+        {
+          "name": "Respond_To_Emergency",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{hospital_token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/hospital/requests/1/accept", "host": ["{{base_url}}"], "path": ["hospital", "requests", "1", "accept"] }
+          }
+        },
+        {
+          "name": "Blood_Inventory",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{hospital_token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/hospital/inventory", "host": ["{{base_url}}"], "path": ["hospital", "inventory"] }
+          }
+        },
+        {
+          "name": "Inventory_Update",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{hospital_token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"blood_type_id\": 1,\n  \"units\": 10,\n  \"operation\": \"add\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/hospital/inventory/update", "host": ["{{base_url}}"], "path": ["hospital", "inventory", "update"] }
+          }
+        },
+        {
+          "name": "Hospital_Profile",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{hospital_token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/hospital/settings/profile", "host": ["{{base_url}}"], "path": ["hospital", "settings", "profile"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04_Admin",
+      "item": [
+        {
+          "name": "Dashboard",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/admin/dashboard", "host": ["{{base_url}}"], "path": ["admin", "dashboard"] }
+          }
+        },
+        {
+          "name": "Users_Management",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/admin/users", "host": ["{{base_url}}"], "path": ["admin", "users"] }
+          }
+        },
+        {
+          "name": "Hospitals_Management",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/admin/hospitals", "host": ["{{base_url}}"], "path": ["admin", "hospitals"] }
+          }
+        },
+        {
+          "name": "Blood_Banks_Management",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/admin/blood-banks", "host": ["{{base_url}}"], "path": ["admin", "blood-banks"] }
+          }
+        },
+        {
+          "name": "Donations_Management",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/admin/donations", "host": ["{{base_url}}"], "path": ["admin", "donations"] }
+          }
+        },
+        {
+          "name": "Reports",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/admin/reports", "host": ["{{base_url}}"], "path": ["admin", "reports"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05_Blood_Banks",
+      "item": [
+        {
+          "name": "Register_Blood_Bank",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"بنك الدم المركزي الرئيسي\",\n  \"email\": \"bloodbank1@musaef.com\",\n  \"phone\": \"775556677\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\",\n  \"role\": \"hospital\",\n  \"facility_type\": \"blood_bank\",\n  \"license_number\": \"BANK-10022\",\n  \"address\": \"شارع المستشفى الجمهوري - صنعاء\",\n  \"latitude\": 15.348900,\n  \"longitude\": 44.206700\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/register/hospital", "host": ["{{base_url}}"], "path": ["register", "hospital"] }
+          }
+        },
+        {
+          "name": "Blood_Inventory",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{hospital_token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/hospital/inventory", "host": ["{{base_url}}"], "path": ["hospital", "inventory"] }
+          }
+        },
+        {
+          "name": "Blood_Requests",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{hospital_token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/hospital/requests", "host": ["{{base_url}}"], "path": ["hospital", "requests"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06_AI_Features",
+      "item": [
+        {
+          "name": "AI_Settings",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/admin/settings", "host": ["{{base_url}}"], "path": ["admin", "settings"] }
+          }
+        },
+        {
+          "name": "Recommendation_System",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{hospital_token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/donation-center/ai-recommendations", "host": ["{{base_url}}"], "path": ["donation-center", "ai-recommendations"] }
+          }
+        },
+        {
+          "name": "Prediction_Results",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/admin/analytics/heatmap", "host": ["{{base_url}}"], "path": ["admin", "analytics", "heatmap"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "07_General",
+      "item": [
+        {
+          "name": "Home",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/public/home-stats", "host": ["{{base_url}}"], "path": ["public", "home-stats"] }
+          }
+        },
+        {
+          "name": "Medical_Guidelines",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/medical-guidelines", "host": ["{{base_url}}"], "path": ["medical-guidelines"] }
+          }
+        },
+        {
+          "name": "Emergency_Status",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/emergencies/active", "host": ["{{base_url}}"], "path": ["emergencies", "active"] }
+          }
+        },
+        {
+          "name": "Nearby_Hospitals",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{donor_token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"latitude\": 15.369444,\n  \"longitude\": 44.191006\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/donor/nearby-hospitals", "host": ["{{base_url}}"], "path": ["donor", "nearby-hospitals"] }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:8000/api", "type": "string" }
+  ]
+}

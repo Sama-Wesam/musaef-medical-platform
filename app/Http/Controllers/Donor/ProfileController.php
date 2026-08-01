@@ -91,7 +91,7 @@ class ProfileController extends Controller
             return $this->notFoundResponse('بيانات المتبرع غير موجودة');
         }
 
-        $answers = $request->input('answers', []);
+        $answers = $request->input('answers', $request->all());
 
         // التقييم الطبي وحفظ سجل الأهلية عبر خدمة الفحص الطبي الموحدة
         $evaluation = $this->healthScreeningService->evaluateHealthScreening($donor, $answers);

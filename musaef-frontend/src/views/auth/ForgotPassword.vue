@@ -136,7 +136,7 @@
 import { ref } from 'vue';
 import { useAuth } from '@/composables/useAuth';
 
-// استيراد الصور والأيقونات مباشرة لضمان ربط Vite لها
+// استيراد الصور والأيقونات المباشرة
 import heroBgImg from '@/assets/images/login.jpeg';
 import authLogoImg from '@/assets/images/auth-logo.png';
 
@@ -155,7 +155,9 @@ const handleReset = async () => {
   sent.value = false;
   if (sendPasswordResetEmail) {
     const result = await sendPasswordResetEmail(email.value);
-    if (result.success) sent.value = true;
+    if (result && result.success) {
+      sent.value = true;
+    }
   } else {
     sent.value = true;
   }

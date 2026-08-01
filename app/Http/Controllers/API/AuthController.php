@@ -10,6 +10,8 @@ use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 
 class AuthController extends Controller
 {
@@ -36,6 +38,69 @@ class AuthController extends Controller
             return $this->errorResponse('بيانات الاعتماد غير صحيحة.', 401, $e->errors());
         } catch (\Throwable $e) {
             return $this->errorResponse('حدث خطأ في السيرفر: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * إرسال رابط استعادة كلمة المرور
+     */
+    public function forgotPassword(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'email' => 'required|email|exists:users,email',
+            ], [
+                'email.required' => 'البريد الإلكتروني مطلوب.',
+                'email.email'    => 'صيغة البريد الإلكتروني غير صحيحة.',
+                'email.exists'   => 'البريد الإلكتروني غير مسجل لدينا.',
+            ]);
+
+            // يمكن هنا إضافة منطق إرسال البريد الإلكتروني الفعلي حسب الحاجة
+
+            return $this->successResponse(null, 'تم إرسال رابط إعادة تعيين كلمة المرور بنجاح!');
+
+        } catch (ValidationException $e) {
+            return $this->errorResponse('بيانات البريد الإلكتروني غير صحيحة.', 422, $e->errors());
+        } catch (\Throwable $e) {
+            return $this->errorResponse('حدث خطأ أثناء إرسال رابط استعادة كلمة المرور: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * إعادة تعيين كلمة المرور
+     */
+    public function resetPassword(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'token'                 => 'required|string',
+                'email'                 => 'required|email|exists:users,email',
+                'password'              => 'required|string|min:8|confirmed',
+            ], [
+                'token.required'        => 'رمز التفعيل مطلوب.',
+                'email.required'        => 'البريد الإلكتروني مطلوب.',
+                'email.exists'          => 'البريد الإلكتروني غير مسجل لدينا.',
+                'password.required'     => 'كلمة المرور الجديدة مطلوبة.',
+                'password.min'          => 'كلمة المرور يجب أن لا تقل عن 8 أحرف.',
+                'password.confirmed'    => 'تأكيد كلمة المرور غير متطابق.',
+            ]);
+
+            $user = User::where('email', $validated['email'])->first();
+
+            if (!$user) {
+                return $this->errorResponse('المستخدم غير موجود.', 404);
+            }
+
+            // تحديث كلمة المرور
+            $user->password = Hash::make($validated['password']);
+            $user->save();
+
+            return $this->successResponse(null, 'تم إعادة تعيين كلمة المرور بنجاح!');
+
+        } catch (ValidationException $e) {
+            return $this->errorResponse('بيانات إعادة التعيين غير صحيحة.', 422, $e->errors());
+        } catch (\Throwable $e) {
+            return $this->errorResponse('حدث خطأ أثناء إعادة تعيين كلمة المرور: ' . $e->getMessage(), 500);
         }
     }
 

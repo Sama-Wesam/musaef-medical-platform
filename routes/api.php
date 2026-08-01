@@ -20,13 +20,15 @@ use App\Http\Controllers\Donor\DonationHistoryController;
 Route::prefix('public')->group(function () {
     Route::get('/home-stats', [PublicController::class, 'getHomeStats']);
     Route::get('/urgent-requests', [PublicController::class, 'getUrgentRequests']);
-    Route::get('/partners', [PublicController::class, 'getPartnersHospitals']); // مسار المستشفيات الشريكة
+    Route::get('/partners', [PublicController::class, 'getPartnersHospitals']);
     Route::post('/contact', [PublicController::class, 'sendContactMessage']);
     Route::get('/nearby-facilities', [PublicController::class, 'getNearbyFacilities']);
 });
 
 // 2. مسارات المصادقة العامة (Guest Auth Routes)
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 Route::post('/register/donor', [AuthController::class, 'registerDonor']);
 Route::post('/register/hospital', [AuthController::class, 'registerHospital']);
 

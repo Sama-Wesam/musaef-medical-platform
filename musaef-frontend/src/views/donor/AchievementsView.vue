@@ -30,7 +30,7 @@
 
               <div class="text-center w-100">
                 <small class="text-white-50 fs-9 d-block mb-0.5 text-center">المستوى الحالي</small>
-                <span class="fw-bold text-white fs-8 d-block text-center">{{ cardData.level || 'متبرع مبتدئ' }}</span>
+                <span class="fw-bold text-white fs-8 d-block text-center">{{ cardData?.level || 'متبرع مبتدئ' }}</span>
               </div>
             </div>
 
@@ -39,7 +39,7 @@
             <!-- اسم المتبرع والموقع -->
             <div class="text-center text-md-end ps-xl-3 flex-grow-1 w-100 w-md-auto">
               <h3 class="fw-black text-white mb-1 fs-5 fs-md-4 text-truncate">{{ donorName }}</h3>
-              <small class="text-white-50 fs-8 d-block"><i class="bi bi-geo-alt-fill me-1 text-white-50"></i> {{ cardData.location || 'غزة - فلسطين' }}</small>
+              <small class="text-white-50 fs-8 d-block"><i class="bi bi-geo-alt-fill me-1 text-white-50"></i> {{ cardData?.location || 'غزة - فلسطين' }}</small>
             </div>
 
             <!-- صورة المتبرع (الدائرة البرتقالية) -->
@@ -61,11 +61,11 @@
             <div class="d-flex flex-column align-items-center align-items-md-end text-center text-md-end flex-grow-1 pe-xl-3 w-100 w-md-auto">
               <h4 class="fw-bold text-white mb-1 fs-6 fs-md-5">بطاقة متبرع ذكية</h4>
               <small class="text-white-50 fs-9 d-block mb-1">رقم المتبرع</small>
-              <strong class="fs-7 font-monospace tracking-wider mb-2 text-white">{{ cardData.donor_code || 'BD123456789' }}</strong>
+              <strong class="fs-7 font-monospace tracking-wider mb-2 text-white">{{ cardData?.donor_code || 'BD123456789' }}</strong>
 
               <div class="badge-status-pill border border-warning border-opacity-75 rounded-pill px-3 py-1 fs-9 fw-bold text-warning d-inline-flex align-items-center gap-1 shadow-2xs">
                 <i class="bi bi-star-fill text-warning"></i>
-                <span>{{ cardData.status_text || 'متبرع نشط' }}</span>
+                <span>{{ cardData?.status_text || 'متبرع نشط' }}</span>
               </div>
             </div>
 
@@ -92,7 +92,7 @@
                 <div class="row align-items-center text-center gy-3">
                   <div class="col-6 border-start">
                     <div class="d-flex align-items-center justify-content-center gap-2 gap-md-3 mb-1">
-                      <h2 class="fw-black text-danger mb-0 fs-3 fs-md-2">{{ cardData.units_donated || 8 }}</h2>
+                      <h2 class="fw-black text-danger mb-0 fs-3 fs-md-2">{{ cardData?.units_donated || 8 }}</h2>
                       <img :src="getImageUrl('22 (2).png')" alt="وحدات الدم" class="impact-icon-img-large" @error="handleImageFallback" />
                     </div>
                     <small class="text-muted fs-8 d-block fw-bold mt-1">وحدات الدم المتبرع بها</small>
@@ -100,7 +100,7 @@
 
                   <div class="col-6">
                     <div class="d-flex align-items-center justify-content-center gap-2 gap-md-3 mb-1">
-                      <h2 class="fw-black text-danger mb-0 fs-3 fs-md-2">{{ cardData.cases_supported || 12 }}</h2>
+                      <h2 class="fw-black text-danger mb-0 fs-3 fs-md-2">{{ cardData?.cases_supported || 12 }}</h2>
                       <img :src="getIconUrl('hands.png')" alt="حالات" class="impact-icon-img-large" @error="handleImageFallback" />
                     </div>
                     <small class="text-muted fs-8 d-block fw-bold mt-1">حالة تم دعمها</small>
@@ -122,17 +122,17 @@
                 <div class="d-flex align-items-center justify-content-between gap-3 mb-3 mb-md-4 flex-wrap flex-sm-nowrap">
                   <div class="text-start flex-grow-1 min-w-0 w-100">
                     <div class="d-flex align-items-baseline justify-content-start gap-2 mb-1">
-                      <h2 class="fw-black text-danger mb-0 fs-2 fs-md-1">{{ cardData.points || 350 }}</h2>
+                      <h2 class="fw-black text-danger mb-0 fs-2 fs-md-1">{{ cardData?.points || 350 }}</h2>
                       <span class="text-muted fs-8 fw-bold">نقطة إجمالية</span>
                     </div>
 
                     <div class="progress my-2 bg-light rounded-pill" style="height: 10px;">
-                      <div class="progress-bar bg-warning rounded-pill" role="progressbar" :style="{ width: (cardData.points_progress || 70) + '%' }"></div>
+                      <div class="progress-bar bg-warning rounded-pill" role="progressbar" :style="{ width: (cardData?.points_progress || 70) + '%' }"></div>
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center fs-9 text-muted fw-bold">
-                      <span class="text-truncate">{{ cardData.points_needed || 150 }} نقطة حتى المستوى الثاني</span>
-                      <span>{{ cardData.target_points || 500 }}</span>
+                      <span class="text-truncate">{{ cardData?.points_needed || 150 }} نقطة حتى المستوى الثاني</span>
+                      <span>{{ cardData?.target_points || 500 }}</span>
                     </div>
                   </div>
 
@@ -170,19 +170,27 @@
               </thead>
               <tbody class="fs-8">
                 <tr v-for="(item, index) in donationHistory" :key="index" class="border-bottom text-nowrap">
-                  <td class="text-dark fw-bold text-end pe-3">{{ item.date || item.created_at?.substring(0, 10) || '2026-06-01' }}</td>
-                  <td class="text-dark fw-medium text-end">{{ item.hospital_name || item.hospital?.name || item.facility_name || 'مستشفى الشفاء الطبي' }}</td>
-                  <td class="fw-bold text-dark text-center" dir="ltr">{{ item.blood_type || item.blood_type_name || '+O' }}</td>
-                  <td class="fw-bold text-dark text-center">{{ item.units || item.units_donated || 1 }}</td>
+                  <td class="text-dark fw-bold text-end pe-3">
+                    {{ item?.date || item?.created_at?.substring(0, 10) || '2026-06-01' }}
+                  </td>
+                  <td class="text-dark fw-medium text-end">
+                    {{ item?.hospital_name || item?.hospital?.name || item?.facility_name || 'مستشفى الشفاء الطبي' }}
+                  </td>
+                  <td class="fw-bold text-dark text-center" dir="ltr">
+                    {{ item?.blood_type || item?.blood_type_name || '+O' }}
+                  </td>
+                  <td class="fw-bold text-dark text-center">
+                    {{ item?.units || item?.units_donated || 1 }}
+                  </td>
                   <td class="text-center">
-                    <span :class="['badge px-3 px-md-4 py-2 rounded-3 fs-9 fw-bold', (item.status === 'عاجلة' || item.status === 'urgent') ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success']">
-                      {{ item.status === 'successful' || item.status === 'مكتمل' ? 'مكتمل' : (item.status || 'مكتمل') }}
+                    <span :class="['badge px-3 px-md-4 py-2 rounded-3 fs-9 fw-bold', (item?.status === 'عاجلة' || item?.status === 'urgent') ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success']">
+                      {{ item?.status === 'successful' || item?.status === 'مكتمل' ? 'مكتمل' : (item?.status || 'مكتمل') }}
                     </span>
                   </td>
-                  <td class="fw-bold text-secondary text-center pe-4">+{{ item.points_earned || 50 }}</td>
+                  <td class="fw-bold text-secondary text-center pe-4">+{{ item?.points_earned || 50 }}</td>
                 </tr>
 
-                <template v-if="!donationHistory.length">
+                <template v-if="!donationHistory || !donationHistory.length">
                   <tr class="border-bottom text-nowrap">
                     <td class="text-dark fw-bold text-end pe-3">2026-06-15</td>
                     <td class="text-dark fw-medium text-end">مجمع الشفاء الطبي</td>
@@ -218,11 +226,11 @@ const cardData = ref({});
 const donationHistory = ref([]);
 
 const donorName = computed(() => {
-  return authStore.user?.name || cardData.value.donor_name || 'Sama Wesam';
+  return authStore.user?.name || cardData.value?.donor_name || 'Sama Wesam';
 });
 
 const donorBloodType = computed(() => {
-  return authStore.user?.blood_type_name || authStore.user?.donor?.blood_type?.name || cardData.value.blood_type || 'O+';
+  return authStore.user?.blood_type_name || authStore.user?.donor?.blood_type?.name || cardData.value?.blood_type || 'O+';
 });
 
 // دالة جلب الصورة من مجلد icons بمسار نسبي دقيق من مجلد views
@@ -272,15 +280,22 @@ const fetchAchievementsData = async () => {
     const res = await donor.getRewardsAndCard();
     const payload = res?.data?.data || res?.data || res || {};
     cardData.value = payload;
-    if (payload.badges && payload.badges.length) {
-      badgesList.value = payload.badges;
+
+    if (payload.badges && Array.isArray(payload.badges) && payload.badges.length) {
+      badgesList.value = payload.badges.filter(b => b !== null);
     }
+
+    let history = [];
     if (payload.donation_history) {
-      donationHistory.value = payload.donation_history;
+      history = payload.donation_history;
     } else {
       const historyRes = await donor.getDonationHistory();
-      donationHistory.value = historyRes?.data?.data || historyRes?.data || [];
+      history = historyRes?.data?.data || historyRes?.data || [];
     }
+
+    // تصفية المصفوفة لضمان عدم وجود عناصر null تتسبب في توقف الـ Render
+    donationHistory.value = Array.isArray(history) ? history.filter(item => item !== null) : [];
+
   } catch (error) {
     console.error('خطأ في جلب البيانات:', error);
   } finally {
@@ -293,11 +308,15 @@ onMounted(() => {
 });
 
 const onAvatarError = (e) => {
-  e.target.src = getIconUrl('user-avatar.png');
+  if (e?.target) {
+    e.target.src = getIconUrl('user-avatar.png');
+  }
 };
 
 const handleImageFallback = (e) => {
-  e.target.style.display = 'none';
+  if (e?.target?.style) {
+    e.target.style.display = 'none';
+  }
 };
 </script>
 

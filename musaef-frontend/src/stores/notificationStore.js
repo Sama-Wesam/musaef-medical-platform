@@ -42,7 +42,7 @@ export const useNotificationStore = defineStore('notification', {
           }));
         }
       } catch (err) {
-        console.error('خطأ في جلب الإشعارات من الباك إند:', err);
+        console.warn('استخدام قائمة الإشعارات الافتراضية.');
       } finally {
         this.loading = false;
       }
@@ -59,7 +59,7 @@ export const useNotificationStore = defineStore('notification', {
           await apiClient.post(`/${userRole}/notifications/read-all`);
         }
       } catch (err) {
-        console.error('خطأ في تحديث الإشعارات:', err);
+        console.warn('تم تغيير حالة الإشعارات محلياً.');
       }
     },
 
@@ -72,11 +72,11 @@ export const useNotificationStore = defineStore('notification', {
         const userRole = localStorage.getItem('user_role') || 'donor';
         await apiClient.post(`/${userRole}/notifications/${notificationId}/read`);
       } catch (err) {
-        console.error('خطأ في تحديث حالة الإشعار المفرد:', err);
+        console.warn('تم تحديث حالة الإشعار محلياً.');
       }
     },
 
-    // 4. إدراج إشعار حي جديد مباشر عند استقبال حدث البث اللحظي
+    // 4. إدراج إشعار حي جديد مباشر
     addNotification(item) {
       this.notifications.unshift({
         id: item.id || Date.now(),

@@ -17,7 +17,6 @@
             @error="handleAvatarFallback"
           />
           <div class="text-start d-none d-sm-block">
-            <!-- عرض اسم المتبرع الديناميكي -->
             <h6 class="fw-bold text-dark mb-0 fs-7 text-truncate" style="max-width: 140px;">{{ userName }}</h6>
             <small class="text-success fs-9 d-flex align-items-center gap-1">
               <span class="active-dot"></span> متبرع نشط <i class="bi bi-chevron-down text-muted"></i>
@@ -25,7 +24,6 @@
           </div>
         </div>
 
-        <!-- القائمة المنسدلة للمستخدم -->
         <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-4 py-2 mt-2 fs-8 text-end" aria-labelledby="donorUserDropdown">
           <li>
             <router-link to="/donor/dashboard" class="dropdown-item py-2 px-3 d-flex align-items-center justify-content-start gap-2">
@@ -73,7 +71,6 @@
           <i class="bi bi-search position-absolute top-50 translate-middle-y start-0 ms-3 text-muted fs-8"></i>
         </div>
 
-        <!-- زر الإشعارات الفورية والقائمة المنسدلة التفاعلية -->
         <div class="dropdown position-relative flex-shrink-0">
           <button
             class="btn btn-light rounded-circle p-2 border-0 bg-transparent text-muted position-relative pulse-animation"
@@ -89,14 +86,12 @@
             </span>
           </button>
 
-          <!-- القائمة المنسدلة للإشعارات المباشرة -->
           <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-4 p-3 mt-2 fs-8 text-end notifications-dropdown-menu" aria-labelledby="notificationsDropdown">
             <li class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom">
               <span class="fw-bold text-dark">الإشعارات الفورية (AI)</span>
               <span class="badge bg-danger-subtle text-danger rounded-pill px-2 py-0.5 fs-9">{{ unreadCount }} جديدة</span>
             </li>
 
-            <!-- عرض قائمة الإشعارات ديناميكياً -->
             <div class="notifications-list-scroll" style="max-height: 260px; overflow-y: auto;">
               <li v-for="notif in notificationsList" :key="notif.id" class="py-2.5 border-bottom cursor-pointer notification-item" @click="handleNotificationClick(notif)">
                 <div class="d-flex justify-content-between align-items-center mb-1">
@@ -119,7 +114,6 @@
           </ul>
         </div>
 
-        <!-- محول اللغة -->
         <div class="dropdown flex-shrink-0">
           <button class="btn btn-light btn-sm rounded-3 border d-flex align-items-center gap-1 fs-8 px-2 px-sm-3 py-2 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-translate text-muted"></i>
@@ -199,7 +193,7 @@ const markAsRead = () => {
   notificationStore.markAllAsRead();
   setTimeout(() => {
     notificationsList.value.forEach(n => n.read = true);
-  }, 1500);
+  }, 1000);
 };
 
 const handleNotificationClick = (notif) => {
@@ -214,6 +208,7 @@ const handleNotificationClick = (notif) => {
 
 const fetchLiveNotifications = async () => {
   try {
+    localStorage.setItem('user_role', 'donor');
     await notificationStore.fetchNotifications();
     const res = await apiClient.get('/donor/notifications');
     const data = res?.data?.data || res?.data;
@@ -221,7 +216,7 @@ const fetchLiveNotifications = async () => {
       notificationsList.value = data;
     }
   } catch (err) {
-    console.warn('استخدام الإشعارات الفورية الافتراضية بنجاح.');
+    console.warn('استخدام الإشعارات الفورية الافتراضية.');
   }
 };
 
@@ -259,7 +254,7 @@ onUnmounted(() => {
 });
 
 const userName = computed(() => {
-  return authStore.userName || 'حمزة نبيل';
+  return authStore.userName || authStore.user?.name || 'حمزة نبيل';
 });
 
 const userAvatar = computed(() => {

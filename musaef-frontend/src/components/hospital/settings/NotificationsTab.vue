@@ -94,7 +94,7 @@ const notifSettings = ref({
 });
 
 const saveNotificationSettings = () => {
-  alert('تم حفظ إعدادات الإشعارات والتنبيهات الذكية بنجاح[cite: 67]');
+  alert('تم حفظ إعدادات الإشعارات والتنبيهات الذكية بنجاح');
 };
 
 const resetNotifSettings = () => {

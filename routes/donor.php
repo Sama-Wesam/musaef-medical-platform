@@ -13,28 +13,35 @@ use App\Http\Controllers\Donor\NotificationsController;
 Route::middleware(['auth:sanctum', 'donor'])->prefix('donor')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index']);
-    Route::get('/requests', [EmergencyNotificationsController::class, 'index']); // مسار عرض جميع الطلبات
-    Route::get('/ai-recommendations', [EmergencyNotificationsController::class, 'aiRecommendations']); // مسار التوصيات
-    Route::post('/requests/{id}/accept', [EmergencyNotificationsController::class, 'accept']); // مسار قبول الطلب
+    Route::get('/requests', [EmergencyNotificationsController::class, 'index']);
+    Route::get('/ai-recommendations', [EmergencyNotificationsController::class, 'aiRecommendations']);
+    Route::post('/requests/{id}/accept', [EmergencyNotificationsController::class, 'accept']);
 
-    // الملف الشخصي والصحي
+    // 1. الملف الشخصي
     Route::get('/profile', [ProfileController::class, 'show']);
-    Route::put('/profile', [ProfileController::class, 'update']);
-    Route::post('/profile/health', [ProfileController::class, 'updateHealthInfo']);
+    Route::match(['post', 'put'], '/profile', [ProfileController::class, 'update']);
+    Route::match(['post', 'put'], '/profile/update', [ProfileController::class, 'update']);
+
+    // 2. الاستبيان الصحي
+    Route::post('/profile/health', [ProfileController::class, 'updateHealthQuestionnaire']);
+    Route::post('/health-questionnaire', [ProfileController::class, 'updateHealthQuestionnaire']);
 
     // سجل التبرعات
     Route::get('/history', [DonationHistoryController::class, 'index']);
 
-    // نداءات الطوارئ الخاصة بالمتبرع
+    // نداءات الطوارئ
     Route::get('/emergencies', [EmergencyNotificationsController::class, 'index']);
     Route::post('/emergencies/{id}/respond', [EmergencyNotificationsController::class, 'update']);
 
-    // خدمات الموقع والبطاقة
+    // خدمات الموقع والحملات القريبة والبطاقة
+    Route::get('/campaigns/nearby', [NearbyHospitalsController::class, 'index']);
     Route::post('/nearby-hospitals', [NearbyHospitalsController::class, 'index']);
     Route::get('/qr-card', [QRCardController::class, 'show']);
 
     // النقاط والإشعارات
     Route::get('/rewards', [RewardsController::class, 'index']);
     Route::get('/notifications', [NotificationsController::class, 'index']);
+    Route::post('/notifications/read-all', [NotificationsController::class, 'markAllAsRead']);
+    Route::post('/notifications/mark-as-read', [NotificationsController::class, 'markAllAsRead']);
     Route::post('/notifications/{id}/read', [NotificationsController::class, 'update']);
 });

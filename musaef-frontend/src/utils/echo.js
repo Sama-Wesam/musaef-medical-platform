@@ -3,24 +3,15 @@ import Pusher from 'pusher-js';
 
 window.Pusher = Pusher;
 
-const token = localStorage.getItem('token') || localStorage.getItem('musaef_token');
-
+// إنشاء كائن الاتصال بخادم Reverb
 const echo = new Echo({
-  broadcaster: 'pusher',
-  key: import.meta.env.VITE_PUSHER_APP_KEY || 'musaef_key',
-  cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER || 'mt1',
-  wsHost: import.meta.env.VITE_PUSHER_HOST || window.location.hostname,
-  wsPort: import.meta.env.VITE_PUSHER_PORT || 6001,
-  wssPort: import.meta.env.VITE_PUSHER_PORT || 6001,
-  forceTLS: false,
-  disableStats: true,
+  broadcaster: 'reverb',
+  key: import.meta.env.VITE_REVERB_APP_KEY || 'uhdjqt7nwjkqmxifz2zp',
+  wsHost: import.meta.env.VITE_REVERB_HOST || window.location.hostname,
+  wsPort: import.meta.env.VITE_REVERB_PORT ? Number(import.meta.env.VITE_REVERB_PORT) : 8080,
+  wssPort: import.meta.env.VITE_REVERB_PORT ? Number(import.meta.env.VITE_REVERB_PORT) : 8080,
+  forceTLS: (import.meta.env.VITE_REVERB_SCHEME || 'http') === 'https',
   enabledTransports: ['ws', 'wss'],
-  authEndpoint: (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api') + '/broadcasting/auth',
-  auth: {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  }
 });
 
 export default echo;

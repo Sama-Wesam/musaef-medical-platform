@@ -1,0 +1,45 @@
+{
+  "id": "musaef-environment-001",
+  "name": "Musaef Environment",
+  "values": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000/api",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "admin_token",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "donor_token",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "hospital_token",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "latitude",
+      "value": "15.369444",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "longitude",
+      "value": "44.191006",
+      "type": "default",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment",
+  "_postman_exported_at": "2026-08-01T18:17:22.000Z",
+  "_postman_exported_using": "Postman/10.0.0"
+}

@@ -4,6 +4,15 @@ export default {
   getDashboardData() {
     return apiClient.get('/donor/profile');
   },
+  getProfile() {
+    return apiClient.get('/donor/profile');
+  },
+  updateProfile(formData) {
+    return apiClient.post('/donor/profile/update', formData);
+  },
+  updateHealthInfo(data) {
+    return apiClient.post('/donor/health-questionnaire', data);
+  },
   getUrgentRequests() {
     return apiClient.get('/emergencies/active');
   },
@@ -19,7 +28,6 @@ export default {
   getDonationHistory() {
     return apiClient.get('/donor/qr-card');
   },
-  // مسارات الإشعارات
   getNotifications() {
     return apiClient.get('/donor/notifications');
   },
