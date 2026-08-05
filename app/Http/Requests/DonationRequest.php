@@ -16,7 +16,7 @@ class DonationRequest extends FormRequest
         return [
             'donor_id' => 'required|exists:donors,id',
             'blood_request_id' => 'nullable|exists:blood_requests,id',
-            'units_donated' => 'required|integer|min:1|max:3', // عادة المتبرع يتبرع بوحدة واحدة أو اثنتين
+            'units_donated' => 'required|integer|min:1|max:3', 
             'donation_date' => 'required|date|before_or_equal:today',
         ];
     }

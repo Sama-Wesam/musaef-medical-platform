@@ -1,8 +1,8 @@
 <template>
-  <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white mb-3 mb-md-4 dir-rtl">
+  <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white mb-3 mb-md-4" :dir="langStore.dir">
     <div class="d-flex align-items-center justify-content-start gap-2 mb-3 mb-md-4">
       <img :src="getIconUrl('mdi_blood-plus-outline (2).png')" alt="blood icon" width="24" height="24" class="header-icon" />
-      <h5 class="fw-bold text-dark mb-0 fs-6 fs-md-5">الطلب حسب فصيلة الدم</h5>
+      <h5 class="fw-bold text-dark mb-0 fs-6 fs-md-5">{{ t('chartTitle') }}</h5>
     </div>
 
     <!-- الحاوية الملتفة التي تسمح بالتمرير في الجوال -->
@@ -53,12 +53,25 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
+import { useLangStore } from '@/stores/langStore';
+
 defineProps({
   bloodDemand: {
     type: Array,
     required: true
   }
 });
+
+const langStore = useLangStore();
+const currentLanguage = computed(() => langStore.currentLang);
+
+const dictionary = {
+  ar: { chartTitle: 'الطلب حسب فصيلة الدم' },
+  en: { chartTitle: 'Demand by Blood Type' }
+};
+
+const t = (key) => dictionary[currentLanguage.value === 'en' ? 'en' : 'ar'][key] || key;
 
 const getIconUrl = (fileName) => {
   if (!fileName) return '';
@@ -110,5 +123,4 @@ const getIconUrl = (fileName) => {
 .bar-column {
   transition: height 0.3s ease;
 }
-.dir-rtl { direction: rtl; }
 </style>

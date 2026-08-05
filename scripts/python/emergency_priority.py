@@ -37,7 +37,7 @@ def main():
         # حساب الأولوية والتصنيف لكل طلب
         for req in requests:
             req['priority_score'] = calculate_priority(req)
-            req['severity'] = classify_severity(req['priority_score']) # تم دمج التصنيف هنا
+            req['severity'] = classify_severity(req['priority_score']) 
 
         # ترتيب الطلبات تنازلياً
         requests.sort(key=lambda x: x['priority_score'], reverse=True)

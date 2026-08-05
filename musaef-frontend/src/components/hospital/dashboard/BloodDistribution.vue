@@ -1,14 +1,14 @@
 <template>
-  <div class="dashboard-card h-100 d-flex flex-column justify-content-between">
+  <div class="dashboard-card h-100 d-flex flex-column justify-content-between" :dir="currentLocale === 'ar' ? 'rtl' : 'ltr'">
     <div>
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <h5 class="fw-bold mb-0 fs-6 fs-md-5">توزيع فصائل الدم</h5>
+        <h5 class="fw-bold mb-0 fs-6 fs-md-5">{{ t('title') }}</h5>
         <select class="form-select form-select-sm chart-select">
-          <option>الشهر الحالي</option>
+          <option>{{ t('currentMonth') }}</option>
         </select>
       </div>
       <div class="row align-items-center g-3">
-        <div class="col-12 col-sm-6 text-right order-2 order-sm-1">
+        <div class="col-12 col-sm-6 order-2 order-sm-1" :class="currentLocale === 'ar' ? 'text-end' : 'text-start'">
           <div v-for="(type, index) in bloodTypes" :key="index" class="blood-row">
             <span class="text-muted small">{{ type.percentage }}</span>
             <div class="d-flex align-items-center gap-2">
@@ -21,7 +21,7 @@
           <div class="donut-chart-mock">
             <div class="donut-content">
               <h3>159</h3>
-              <small>اجمالي الوحدات</small>
+              <small>{{ t('totalUnits') }}</small>
             </div>
           </div>
         </div>
@@ -31,7 +31,24 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+
+const currentLocale = computed(() => localStorage.getItem('musaef_lang') || 'ar');
+
+const dictionary = {
+  ar: {
+    title: 'توزيع فصائل الدم',
+    currentMonth: 'الشهر الحالي',
+    totalUnits: 'اجمالي الوحدات'
+  },
+  en: {
+    title: 'Blood Group Distribution',
+    currentMonth: 'Current Month',
+    totalUnits: 'Total Units'
+  }
+};
+
+const t = (key) => dictionary[currentLocale.value === 'en' ? 'en' : 'ar'][key] || key;
 
 const bloodTypes = ref([
   { name: '+O', percentage: '(41%)', color: 'bg-danger' },

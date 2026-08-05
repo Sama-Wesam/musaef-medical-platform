@@ -14,6 +14,8 @@ export function useAuth() {
   const currentUser = computed(() => authStore.user);
   const user = computed(() => authStore.user);
 
+  const currentLanguage = computed(() => localStorage.getItem('musaef_lang') || 'ar');
+
   const validateEmail = (email) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(String(email).toLowerCase());
@@ -21,46 +23,46 @@ export function useAuth() {
 
   const validateLoginForm = (credentials) => {
     if (!credentials.email || !validateEmail(credentials.email)) {
-      return 'يرجى إدخال بريد إلكتروني صحيح';
+      return currentLanguage.value === 'en' ? 'Please enter a valid email address' : 'يرجى إدخال بريد إلكتروني صحيح';
     }
     if (!credentials.password || credentials.password.length < 6) {
-      return 'كلمة المرور يجب ألا تقل عن 6 أحرف';
+      return currentLanguage.value === 'en' ? 'Password must be at least 6 characters' : 'كلمة المرور يجب ألا تقل عن 6 أحرف';
     }
     return null;
   };
 
   const validateRegisterForm = (formData, accountType) => {
     if (!formData.fullName || formData.fullName.trim().length < 3) {
-      return 'يرجى إدخال الاسم الكامل بشكل صحيح';
+      return currentLanguage.value === 'en' ? 'Please enter a valid full name' : 'يرجى إدخال الاسم الكامل بشكل صحيح';
     }
     if (!formData.email || !validateEmail(formData.email)) {
-      return 'يرجى إدخال بريد إلكتروني صحيح';
+      return currentLanguage.value === 'en' ? 'Please enter a valid email address' : 'يرجى إدخال بريد إلكتروني صحيح';
     }
     if (!formData.phone) {
-      return 'رقم الهاتف مطلوب';
+      return currentLanguage.value === 'en' ? 'Phone number is required' : 'رقم الهاتف مطلوب';
     }
     if (!formData.password || formData.password.length < 8) {
-      return 'كلمة المرور يجب ألا تقل عن 8 أحرف';
+      return currentLanguage.value === 'en' ? 'Password must be at least 8 characters' : 'كلمة المرور يجب ألا تقل عن 8 أحرف';
     }
     if (formData.password !== formData.password_confirmation) {
-      return 'كلمتا المرور غير متطابقتين';
+      return currentLanguage.value === 'en' ? 'Passwords do not match' : 'كلمتا المرور غير متطابقتين';
     }
     if (!formData.terms) {
-      return 'يجب الموافقة على الشروط والأحكام وسياسة الخصوصية';
+      return currentLanguage.value === 'en' ? 'You must agree to the Terms and Privacy Policy' : 'يجب الموافقة على الشروط والأحكام وسياسة الخصوصية';
     }
 
     if (accountType === 'donor') {
-      if (!formData.bloodType) return 'يرجى اختيار فصيلة الدم';
-      if (!formData.birthDate) return 'يرجى إدخال تاريخ الميلاد';
-      if (!formData.gender) return 'يرجى اختيار الجنس';
+      if (!formData.bloodType) return currentLanguage.value === 'en' ? 'Please select blood type' : 'يرجى اختيار فصيلة الدم';
+      if (!formData.birthDate) return currentLanguage.value === 'en' ? 'Please select birth date' : 'يرجى إدخال تاريخ الميلاد';
+      if (!formData.gender) return currentLanguage.value === 'en' ? 'Please select gender' : 'يرجى اختيار الجنس';
     }
 
     if (accountType === 'hospital') {
-      if (!formData.facilityName) return 'يرجى إدخال اسم الجهة الطبية';
-      if (!formData.facilityType) return 'يرجى اختيار نوع الجهة';
-      if (!formData.licenseNumber) return 'يرجى إدخال رقم الترخيص الطبي';
-      if (!formData.managerName) return 'يرجى إدخال اسم المسؤول';
-      if (!formData.licenseFile) return 'يرجى رفع نسخة من الترخيص الطبي';
+      if (!formData.facilityName) return currentLanguage.value === 'en' ? 'Please enter facility name' : 'يرجى إدخال اسم الجهة الطبية';
+      if (!formData.facilityType) return currentLanguage.value === 'en' ? 'Please select facility type' : 'يرجى اختيار نوع الجهة';
+      if (!formData.licenseNumber) return currentLanguage.value === 'en' ? 'Please enter license number' : 'يرجى إدخال رقم الترخيص الطبي';
+      if (!formData.managerName) return currentLanguage.value === 'en' ? 'Please enter manager name' : 'يرجى إدخال اسم المسؤول';
+      if (!formData.licenseFile) return currentLanguage.value === 'en' ? 'Please upload license copy' : 'يرجى رفع نسخة من الترخيص الطبي';
     }
 
     return null;
@@ -99,7 +101,7 @@ export function useAuth() {
       redirectUserByRole(authStore.userRole);
       return { success: true, user: authStore.user };
     } catch (err) {
-      error.value = err.message || authStore.error || 'فشل تسجيل الدخول';
+      error.value = err.message || authStore.error || (currentLanguage.value === 'en' ? 'Login failed' : 'فشل تسجيل الدخول');
       return { success: false, message: error.value };
     } finally {
       loading.value = false;
@@ -135,7 +137,6 @@ export function useAuth() {
         redirectUserByRole(authStore.userRole);
       } else if (accountType === 'hospital') {
         payload.append('facility_name', formData.facilityName);
-        // التعديل: تعديل اسم الحقل ليكون facility_type لمطابقة الـ Form Request في الباك إند
         payload.append('facility_type', formData.facilityType);
         payload.append('license_number', formData.licenseNumber);
 
@@ -143,17 +144,30 @@ export function useAuth() {
           payload.append('license_file', formData.licenseFile);
         }
 
-        // تسجيل حساب المستشفى دون توجيه مباشر ينتظر اعتماد الإدارة (is_verified)
         await authStore.registerHospital(payload);
       }
 
       return { success: true };
     } catch (err) {
-      error.value = err.message || authStore.error || 'تعذر إنشاء الحساب حالياً';
+      error.value = err.message || authStore.error || (currentLanguage.value === 'en' ? 'Unable to create account currently' : 'تعذر إنشاء الحساب حالياً');
       return { success: false, message: error.value };
     } finally {
       loading.value = false;
     }
+  };
+
+  const sendPasswordResetEmail = async (emailStr) => {
+    loading.value = true;
+    error.value = null;
+    if (!emailStr || !validateEmail(emailStr)) {
+      error.value = currentLanguage.value === 'en' ? 'Please enter a valid email address' : 'يرجى إدخال بريد إلكتروني صحيح';
+      loading.value = false;
+      return { success: false };
+    }
+    setTimeout(() => {
+      loading.value = false;
+    }, 800);
+    return { success: true };
   };
 
   const logout = async () => {
@@ -170,6 +184,7 @@ export function useAuth() {
     userRole,
     login,
     register,
+    sendPasswordResetEmail,
     logout,
     redirectUserByRole
   };

@@ -1,6 +1,6 @@
 <template>
   <AdminLayout>
-    <div class="accounts-management-view container-fluid px-2 px-md-3" dir="rtl">
+    <div class="accounts-management-view container-fluid px-2 px-md-3" :dir="langStore.dir">
 
       <!-- 1. التبويبات العلوية الرئيسية -->
       <div class="main-tabs-header border-bottom mb-4 overflow-x-auto tabs-scroll-container">
@@ -13,7 +13,7 @@
             @click="switchTab('donors')"
           >
             <img :src="getIconUrl('Vector (2).png')" alt="donors icon" width="18" height="18" />
-            <span>المتبرعون</span>
+            <span>{{ t('donorsTab') }}</span>
           </button>
 
           <!-- 2. المستشفيات -->
@@ -23,7 +23,7 @@
             @click="switchTab('hospitals')"
           >
             <img :src="getIconUrl('solar_hospital-linear (2).png')" alt="hospitals icon" width="18" height="18" />
-            <span>المستشفيات</span>
+            <span>{{ t('hospitalsTab') }}</span>
           </button>
 
           <!-- 3. الصلاحيات -->
@@ -33,7 +33,7 @@
             @click="switchTab('roles')"
           >
             <img :src="getIconUrl('Vector (1).png')" alt="roles icon" width="18" height="18" />
-            <span>الصلاحيات</span>
+            <span>{{ t('rolesTab') }}</span>
           </button>
 
           <!-- 4. سجل العمليات -->
@@ -43,13 +43,13 @@
             @click="switchTab('logs')"
           >
             <img :src="getIconUrl('el_list-alt (2).png')" alt="logs icon" width="18" height="18" />
-            <span>سجل العمليات</span>
+            <span>{{ t('logsTab') }}</span>
           </button>
 
         </div>
       </div>
 
-      <!-- 2 & 3. التبويبات والمحتويات المصحوبة بالبيانات من الـ Store -->
+      <!-- 2. محتوى التبويبات -->
       <DonorsTab
         v-if="accountsStore.activeTab === 'donors'"
         v-model:searchQuery="accountsStore.searchQuery"
@@ -78,7 +78,7 @@
         :logsList="filteredLogs"
       />
 
-      <!-- 4. أرقام التنقل والصفحات (Pagination) -->
+      <!-- 3. أرقام التنقل والصفحات (Pagination) -->
       <AccountsPagination />
 
     </div>
@@ -89,6 +89,7 @@
 import { onMounted, computed, watch } from 'vue';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { useAccountsStore } from '@/stores/accountsStore';
+import { useLangStore } from '@/stores/langStore';
 
 import DonorsTab from '@/components/admin/accountsmanagement/DonorsTab.vue';
 import HospitalsTab from '@/components/admin/accountsmanagement/HospitalsTab.vue';
@@ -97,6 +98,25 @@ import LogsTab from '@/components/admin/accountsmanagement/LogsTab.vue';
 import AccountsPagination from '@/components/admin/accountsmanagement/AccountsPagination.vue';
 
 const accountsStore = useAccountsStore();
+const langStore = useLangStore();
+const currentLanguage = computed(() => langStore.currentLang);
+
+const dictionary = {
+  ar: {
+    donorsTab: 'المتبرعون',
+    hospitalsTab: 'المستشفيات',
+    rolesTab: 'الصلاحيات والأدوار',
+    logsTab: 'سجل العمليات'
+  },
+  en: {
+    donorsTab: 'Donors',
+    hospitalsTab: 'Hospitals',
+    rolesTab: 'Roles & Permissions',
+    logsTab: 'Audit Logs'
+  }
+};
+
+const t = (key) => dictionary[currentLanguage.value === 'en' ? 'en' : 'ar'][key] || key;
 
 const switchTab = (tab) => {
   accountsStore.activeTab = tab;
@@ -105,28 +125,38 @@ const switchTab = (tab) => {
   accountsStore.refreshCurrentTab();
 };
 
-// تصفية حية لحظية محلياً وفي الباك إند
 const filteredDonors = computed(() => {
   if (!accountsStore.searchQuery) return accountsStore.donors;
-  return accountsStore.donors.filter(d => d.name.includes(accountsStore.searchQuery) || d.phone.includes(accountsStore.searchQuery));
+  return accountsStore.donors.filter(d =>
+    (d.name && d.name.toLowerCase().includes(accountsStore.searchQuery.toLowerCase())) ||
+    (d.phone && d.phone.includes(accountsStore.searchQuery))
+  );
 });
 
 const filteredHospitals = computed(() => {
   if (!accountsStore.searchQuery) return accountsStore.hospitals;
-  return accountsStore.hospitals.filter(h => h.name.includes(accountsStore.searchQuery) || h.location.includes(accountsStore.searchQuery));
+  return accountsStore.hospitals.filter(h =>
+    (h.name && h.name.toLowerCase().includes(accountsStore.searchQuery.toLowerCase())) ||
+    (h.location && h.location.toLowerCase().includes(accountsStore.searchQuery.toLowerCase()))
+  );
 });
 
 const filteredRoles = computed(() => {
   if (!accountsStore.searchQuery) return accountsStore.roles;
-  return accountsStore.roles.filter(r => r.name.includes(accountsStore.searchQuery) || r.roleTitle.includes(accountsStore.searchQuery));
+  return accountsStore.roles.filter(r =>
+    (r.name && r.name.toLowerCase().includes(accountsStore.searchQuery.toLowerCase())) ||
+    (r.roleTitle && r.roleTitle.toLowerCase().includes(accountsStore.searchQuery.toLowerCase()))
+  );
 });
 
 const filteredLogs = computed(() => {
   if (!accountsStore.searchQuery) return accountsStore.auditLogs;
-  return accountsStore.auditLogs.filter(l => l.user.includes(accountsStore.searchQuery) || l.details.includes(accountsStore.searchQuery));
+  return accountsStore.auditLogs.filter(l =>
+    (l.user && l.user.toLowerCase().includes(accountsStore.searchQuery.toLowerCase())) ||
+    (l.details && l.details.toLowerCase().includes(accountsStore.searchQuery.toLowerCase()))
+  );
 });
 
-// دالة محدثة لجلب الأيقونات من المسار الصحيح للمجلد المطلوب
 const getIconUrl = (fileName) => {
   if (!fileName) return '';
   if (fileName.startsWith('http') || fileName.startsWith('data:')) return fileName;
@@ -175,6 +205,7 @@ onMounted(() => {
 .tab-item {
   position: relative;
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .tab-item.active-tab {
@@ -186,8 +217,8 @@ onMounted(() => {
   content: '';
   position: absolute;
   bottom: -1px;
+  left: 0;
   right: 0;
-  width: 100%;
   height: 3px;
   background-color: #dc2626;
   border-radius: 3px 3px 0 0;

@@ -1,10 +1,10 @@
 <template>
-  <div class="dashboard-card h-100">
+  <div class="dashboard-card h-100" :dir="currentLocale === 'ar' ? 'rtl' : 'ltr'">
     <div class="d-flex justify-content-between align-items-center mb-4">
-      <h5 class="fw-bold mb-0 fs-6 fs-md-5">الطلبات الشهرية</h5>
+      <h5 class="fw-bold mb-0 fs-6 fs-md-5">{{ t('title') }}</h5>
       <select class="form-select form-select-sm chart-select">
-        <option>الشهر الحالي</option>
-        <option>آخر 12 شهر</option>
+        <option>{{ t('currentMonth') }}</option>
+        <option>{{ t('last12Months') }}</option>
       </select>
     </div>
     <div class="chart-scroll-wrapper">
@@ -13,7 +13,7 @@
           <div class="chart-bar-wrapper">
             <div class="chart-bar" :style="{ height: month.height + '%' }"></div>
           </div>
-          <small>{{ month.name }}</small>
+          <small>{{ getMonthName(month.key) }}</small>
         </div>
       </div>
     </div>
@@ -21,14 +21,39 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+
+const currentLocale = computed(() => localStorage.getItem('musaef_lang') || 'ar');
+
+const dictionary = {
+  ar: {
+    title: 'الطلبات الشهرية',
+    currentMonth: 'الشهر الحالي',
+    last12Months: 'آخر 12 شهر',
+    jan: 'يناير', feb: 'فبراير', mar: 'مارس', apr: 'أبريل',
+    may: 'مايو', jun: 'يونيو', jul: 'يوليو', aug: 'أغسطس',
+    sep: 'سبتمبر', oct: 'أكتوبر', nov: 'نوفمبر', dec: 'ديسمبر'
+  },
+  en: {
+    title: 'Monthly Requests',
+    currentMonth: 'Current Month',
+    last12Months: 'Last 12 Months',
+    jan: 'Jan', feb: 'Feb', mar: 'Mar', apr: 'Apr',
+    may: 'May', jun: 'Jun', jul: 'Jul', aug: 'Aug',
+    sep: 'Sep', oct: 'Oct', nov: 'Nov', dec: 'Dec'
+  }
+};
+
+const t = (key) => dictionary[currentLocale.value === 'en' ? 'en' : 'ar'][key] || key;
 
 const monthlyRequests = ref([
-  { name: 'يناير', height: 55 }, { name: 'فبراير', height: 100 }, { name: 'مارس', height: 53 },
-  { name: 'أبريل', height: 90 }, { name: 'مايو', height: 90 }, { name: 'يونيو', height: 68 },
-  { name: 'يوليو', height: 100 }, { name: 'أغسطس', height: 55 }, { name: 'سبتمبر', height: 82 },
-  { name: 'نوفمبر', height: 30 }, { name: 'ديسمبر', height: 100 }
+  { key: 'jan', height: 55 }, { key: 'feb', height: 100 }, { key: 'mar', height: 53 },
+  { key: 'apr', height: 90 }, { key: 'may', height: 90 }, { key: 'jun', height: 68 },
+  { key: 'jul', height: 100 }, { key: 'aug', height: 55 }, { key: 'sep', height: 82 },
+  { key: 'oct', height: 45 }, { key: 'nov', height: 30 }, { key: 'dec', height: 100 }
 ]);
+
+const getMonthName = (key) => t(key);
 </script>
 
 <style scoped>

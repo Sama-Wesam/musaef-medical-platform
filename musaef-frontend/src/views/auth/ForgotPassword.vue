@@ -1,23 +1,31 @@
 <template>
-  <div class="auth-page-wrapper min-vh-100 d-flex align-items-center justify-content-center dir-rtl py-3 py-md-4">
+  <div
+    class="auth-page-wrapper min-vh-100 d-flex align-items-center justify-content-center py-3 py-md-4"
+    :dir="currentLanguage === 'ar' ? 'rtl' : 'ltr'"
+  >
     <div class="container px-2 px-md-3">
       <div class="row g-0 auth-main-card shadow-lg rounded-5 overflow-hidden bg-white mx-auto position-relative">
 
         <!-- ================= 1. القسم الأيمن: نموذج استعادة كلمة المرور ================= -->
         <div class="col-12 col-lg-6 form-section-col p-3 p-sm-4 p-md-5 d-flex flex-column justify-content-center position-relative bg-light-gray order-2 order-lg-1">
 
-          <!-- شعار قطرة الدم علوياً -->
-          <div class="top-logo-container position-absolute top-0 end-0 p-3 p-md-4 z-3">
+          <!-- شعار قطرة الدم علوياً مع زر تبديل اللغة -->
+          <div class="top-logo-container position-absolute top-0 p-3 p-md-4 z-3 d-flex align-items-center gap-2" :class="currentLanguage === 'ar' ? 'end-0' : 'start-0'">
             <img :src="authLogoImg" alt="مسعف" class="top-auth-logo" />
+
+            <button class="btn btn-sm btn-light rounded-pill border fs-9 fw-bold px-2 py-1 ms-2" @click="toggleLanguage">
+              <i class="bi bi-translate text-danger me-1"></i>
+              <span>{{ currentLanguage === 'ar' ? 'English' : 'العربية' }}</span>
+            </button>
           </div>
 
           <div class="auth-card-inner bg-white rounded-4 p-3 p-sm-4 shadow-sm mt-5 mt-lg-4 mx-auto w-100">
 
             <!-- العنوان الوصفي -->
-            <div class="text-end mb-4">
-              <h4 class="fw-bold text-dark mb-2 page-title">استعادة كلمة المرور</h4>
+            <div class="mb-4" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
+              <h4 class="fw-bold text-dark mb-2 page-title">{{ t('resetTitle') }}</h4>
               <p class="text-secondary fs-8 page-desc mb-0">
-                أدخل بريدك الإلكتروني، وسنرسل لك رابط استعادة كلمة المرور.
+                {{ t('resetDesc') }}
               </p>
             </div>
 
@@ -28,17 +36,18 @@
 
             <!-- النموذج -->
             <form @submit.prevent="handleReset">
-              <div class="mb-4 text-end">
-                <label class="form-label fs-8 text-dark fw-bold mb-1 d-block text-end">البريد الإلكتروني</label>
+              <div class="mb-4" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
+                <label class="form-label fs-8 text-dark fw-bold mb-1 d-block">{{ t('email') }}</label>
                 <div class="input-group custom-input-group">
-                  <span class="input-group-text bg-white text-muted border-start-0 order-2">
+                  <span class="input-group-text bg-white text-muted" :class="currentLanguage === 'ar' ? 'border-start-0 order-2' : 'border-end-0 order-1'">
                     <i class="bi bi-envelope"></i>
                   </span>
                   <input
                     v-model="email"
                     type="email"
-                    class="form-control border-end-0 text-end fs-8 order-1"
-                    placeholder="أدخل بريدك الإلكتروني"
+                    class="form-control fs-8"
+                    :class="currentLanguage === 'ar' ? 'border-end-0 text-end order-1' : 'border-start-0 text-start order-2'"
+                    :placeholder="t('emailPlaceholder')"
                     required
                   />
                 </div>
@@ -51,13 +60,13 @@
                 :disabled="loading"
               >
                 <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                إرسال رابط الاستعادة
+                {{ t('sendResetLinkBtn') }}
               </button>
 
               <!-- رابط العودة -->
               <div class="text-center mt-3">
                 <router-link to="/login" class="text-secondary fs-8 text-decoration-none hover-danger">
-                  العودة لصفحة تسجيل الدخول &gt;
+                  {{ t('backToLogin') }}
                 </router-link>
               </div>
             </form>
@@ -65,7 +74,7 @@
             <!-- رسالة إشعار النجاح -->
             <div v-if="sent" class="alert alert-success border-success rounded-3 mt-3 text-center fs-8 shadow-sm">
               <i class="bi bi-check-circle-fill text-success ms-1"></i>
-              تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني بنجاح!
+              {{ t('resetSuccessMsg') }}
             </div>
 
           </div>
@@ -82,7 +91,7 @@
 
           <div class="hero-content position-relative z-2 text-center pt-3 mx-auto">
             <h2 class="fw-bold hero-heading text-dark mb-1 text-center">
-              لأن الدقيقة تساوي <span class="text-danger">حياة</span>
+              {{ t('heroHeadingPart1') }} <span class="text-danger">{{ t('heroHeadingPart2') }}</span>
             </h2>
 
             <!-- صورة خط النبض -->
@@ -91,7 +100,7 @@
             </div>
 
             <p class="hero-description text-dark fw-bold mb-3 mb-md-4 text-center">
-              نوصلك بالمتبرع المناسب في أسرع وقت لإنقاذ حياة محتاجة.
+              {{ t('heroDesc') }}
             </p>
 
             <!-- الأيقونات الأربع -->
@@ -100,28 +109,28 @@
                 <div class="feature-icon-box mx-auto mb-2">
                   <img :src="iconLivesImg" alt="إنقاذ الأرواح" class="feature-img" />
                 </div>
-                <span class="d-block feature-label text-dark fw-bold">إنقاذ الأرواح</span>
+                <span class="d-block feature-label text-dark fw-bold">{{ t('featureSavingLives') }}</span>
               </div>
 
               <div class="col-3">
                 <div class="feature-icon-box mx-auto mb-2">
                   <img :src="iconResponseImg" alt="استجابة سريعة" class="feature-img" />
                 </div>
-                <span class="d-block feature-label text-dark fw-bold">استجابة سريعة</span>
+                <span class="d-block feature-label text-dark fw-bold">{{ t('featureFastResponse') }}</span>
               </div>
 
               <div class="col-3">
                 <div class="feature-icon-box mx-auto mb-2">
                   <img :src="iconCommunityImg" alt="مجتمع المتبرعين" class="feature-img" />
                 </div>
-                <span class="d-block feature-label text-dark fw-bold">مجتمع المتبرعين</span>
+                <span class="d-block feature-label text-dark fw-bold">{{ t('featureCommunity') }}</span>
               </div>
 
               <div class="col-3">
                 <div class="feature-icon-box mx-auto mb-2">
                   <img :src="iconSafeImg" alt="آمن وموثوق" class="feature-img" />
                 </div>
-                <span class="d-block feature-label text-dark fw-bold">آمن وموثوق</span>
+                <span class="d-block feature-label text-dark fw-bold">{{ t('featureSafe') }}</span>
               </div>
             </div>
           </div>
@@ -136,7 +145,6 @@
 import { ref } from 'vue';
 import { useAuth } from '@/composables/useAuth';
 
-// استيراد الصور والأيقونات المباشرة
 import heroBgImg from '@/assets/images/login.jpeg';
 import authLogoImg from '@/assets/images/auth-logo.png';
 
@@ -150,6 +158,56 @@ const email = ref('');
 const sent = ref(false);
 
 const { sendPasswordResetEmail, loading, error } = useAuth();
+
+const currentLanguage = ref(localStorage.getItem('musaef_lang') || 'ar');
+
+const toggleLanguage = () => {
+  const newLang = currentLanguage.value === 'ar' ? 'en' : 'ar';
+  currentLanguage.value = newLang;
+  localStorage.setItem('musaef_lang', newLang);
+  document.documentElement.setAttribute('dir', newLang === 'ar' ? 'rtl' : 'ltr');
+  document.documentElement.setAttribute('lang', newLang);
+};
+
+const translations = {
+  ar: {
+    resetTitle: 'استعادة كلمة المرور',
+    resetDesc: 'أدخل بريدك الإلكتروني، وسنرسل لك رابط استعادة كلمة المرور.',
+    email: 'البريد الإلكتروني',
+    emailPlaceholder: 'أدخل بريدك الإلكتروني',
+    sendResetLinkBtn: 'إرسال رابط الاستعادة',
+    backToLogin: 'العودة لصفحة تسجيل الدخول >',
+    resetSuccessMsg: 'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني بنجاح!',
+    heroHeadingPart1: 'لأن الدقيقة تساوي',
+    heroHeadingPart2: 'حياة',
+    heroDesc: 'نوصلك بالمتبرع المناسب في أسرع وقت لإنقاذ حياة محتاجة.',
+    featureSavingLives: 'إنقاذ الأرواح',
+    featureFastResponse: 'استجابة سريعة',
+    featureCommunity: 'مجتمع المتبرعين',
+    featureSafe: 'آمن وموثوق'
+  },
+  en: {
+    resetTitle: 'Password Recovery',
+    resetDesc: 'Enter your email address and we will send you a password reset link.',
+    email: 'Email Address',
+    emailPlaceholder: 'Enter your email',
+    sendResetLinkBtn: 'Send Recovery Link',
+    backToLogin: 'Back to Login >',
+    resetSuccessMsg: 'Password reset link has been sent to your email successfully!',
+    heroHeadingPart1: 'Because every minute equals',
+    heroHeadingPart2: 'Life',
+    heroDesc: 'Connecting you with the right donor quickly to save lives in need.',
+    featureSavingLives: 'Saving Lives',
+    featureFastResponse: 'Fast Response',
+    featureCommunity: 'Donor Community',
+    featureSafe: 'Safe & Trusted'
+  }
+};
+
+const t = (key) => {
+  const lang = currentLanguage.value === 'en' ? 'en' : 'ar';
+  return translations[lang][key] || key;
+};
 
 const handleReset = async () => {
   sent.value = false;
@@ -165,9 +223,9 @@ const handleReset = async () => {
 </script>
 
 <style scoped>
-.dir-rtl {
-  direction: rtl;
-  font-family: Arial, sans-serif;
+.auth-page-wrapper,
+.auth-page-wrapper * {
+  font-family: Arial, sans-serif !important;
 }
 
 .auth-page-wrapper {
@@ -334,4 +392,7 @@ const handleReset = async () => {
 }
 
 .fs-8 { font-size: 0.8rem; }
+.fs-9 { font-size: 0.72rem; }
+.dir-rtl { direction: rtl; }
+.dir-ltr { direction: ltr; }
 </style>

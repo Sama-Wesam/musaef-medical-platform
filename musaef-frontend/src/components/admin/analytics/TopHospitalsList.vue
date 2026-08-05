@@ -1,6 +1,6 @@
 <template>
-  <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white h-100 text-end d-flex flex-column justify-content-between dir-rtl position-relative">
-    <!-- نافذة إشعار مخصصة أنيقة عند استدعاء تقارير المستشفيات -->
+  <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white h-100 text-start d-flex flex-column justify-content-between position-relative" :dir="langStore.dir">
+    <!-- نافذة إشعار مخصصة -->
     <transition name="fade">
       <div
         v-if="toast.show"
@@ -14,7 +14,7 @@
     <div>
       <div class="d-flex align-items-center justify-content-start gap-2 mb-3 mb-md-4">
         <img :src="getIconUrl('Group 1000002306 (1).png')" alt="hospital icon" width="24" height="24" class="header-icon" />
-        <h5 class="fw-bold text-dark mb-0 fs-6">أكثر المستشفيات احتياجاً (Facility Recommendation AI)</h5>
+        <h5 class="fw-bold text-dark mb-0 fs-6">{{ t('title') }}</h5>
       </div>
 
       <div class="d-flex flex-column gap-2.5 gap-md-3 fs-8">
@@ -22,7 +22,9 @@
           <span class="rank-circle text-white fw-bold fs-9 rounded-circle d-flex align-items-center justify-content-center" :style="{ backgroundColor: h.color }">
             {{ i + 1 }}
           </span>
-          <span class="text-dark fw-bold text-start text-truncate" style="min-width: 90px; max-width: 120px;">{{ h.name }}</span>
+          <span class="text-dark fw-bold text-start text-truncate" style="min-width: 100px; max-width: 140px;">
+            {{ getHospitalName(h.name) }}
+          </span>
           <div class="progress flex-grow-1 bg-light rounded-pill" style="height: 8px;">
             <div class="progress-bar rounded-pill" :style="{ width: h.percent + '%', backgroundColor: h.color }"></div>
           </div>
@@ -31,16 +33,17 @@
       </div>
     </div>
 
-    <!-- زر تفاعلي لعرض جميع المستشفيات مربوط بتحليل كفاءة المستشفيات بالذكاء الاصطناعي -->
+    <!-- زر تفاعلي لعرض جميع المستشفيات -->
     <a href="#" @click.prevent="handleViewAllHospitals" class="text-danger text-decoration-none fs-8 fw-bold mt-3 mt-md-4 d-inline-block text-center cursor-pointer">
-      {{ isLoading ? 'جاري تحليل كفاءة المستشفيات...' : 'عرض جميع المستشفيات >' }}
+      {{ isLoading ? t('loading') : t('viewAll') }}
     </a>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import apiClient from '@/api/axios';
+import { useLangStore } from '@/stores/langStore';
 
 defineProps({
   topHospitals: {
@@ -49,11 +52,46 @@ defineProps({
   }
 });
 
+const langStore = useLangStore();
+const currentLanguage = computed(() => langStore.currentLang);
+
+const dictionary = {
+  ar: {
+    title: 'أكثر المستشفيات احتياجاً (Facility Recommendation AI)',
+    viewAll: 'عرض جميع المستشفيات >',
+    loading: 'جاري تحليل كفاءة المستشفيات...',
+    successToast: '🏥 تم استدعاء تقرير كفاءة التوزيع الجغرافي واحتياجات كافة المستشفيات بنجاح!',
+    fallbackToast: '🏥 قائمة المستشفيات الشاملة وتحليل النقص.'
+  },
+  en: {
+    title: 'Hospitals in Highest Need (Facility Recommendation AI)',
+    viewAll: 'View All Hospitals >',
+    loading: 'Analyzing hospital efficiency...',
+    successToast: '🏥 Hospital needs report retrieved successfully!',
+    fallbackToast: '🏥 Comprehensive hospital list & gap analysis.'
+  }
+};
+
+// قاموس لترجمة أسماء المستشفيات
+const hospitalNames = {
+  'مستشفى ناصر': { ar: 'مستشفى ناصر', en: 'Nasser Hospital' },
+  'مستشفى القدس': { ar: 'مستشفى القدس', en: 'Al-Quds Hospital' },
+  'مستشفى الأوروبي': { ar: 'مستشفى الأوروبي', en: 'European Hospital' },
+  'مستشفى الشفاء': { ar: 'مستشفى الشفاء', en: 'Al-Shifa Hospital' },
+  'مستشفى الأندونيسي': { ar: 'مستشفى الأندونيسي', en: 'Indonesian Hospital' }
+};
+
+const t = (key) => dictionary[currentLanguage.value === 'en' ? 'en' : 'ar'][key] || key;
+
+const getHospitalName = (name) => {
+  if (hospitalNames[name]) {
+    return hospitalNames[name][currentLanguage.value === 'en' ? 'en' : 'ar'];
+  }
+  return name;
+};
+
 const isLoading = ref(false);
-const toast = ref({
-  show: false,
-  message: ''
-});
+const toast = ref({ show: false, message: '' });
 
 const showNotification = (msg) => {
   toast.value = { show: true, message: msg };
@@ -65,10 +103,10 @@ const showNotification = (msg) => {
 const handleViewAllHospitals = async () => {
   isLoading.value = true;
   try {
-    const res = await apiClient.get('/admin/analytics/all-hospitals-performance');
-    showNotification("🏥 تم استدعاء تقرير كفاءة التوزيع الجغرافي واحتياجات كافة المستشفيات بنجاح عبر Facility Recommendation AI!");
+    await apiClient.get('/admin/analytics/all-hospitals-performance');
+    showNotification(t('successToast'));
   } catch (err) {
-    showNotification("🏥 قائمة المستشفيات الشاملة وتحليل النقص: يتم تقييم زمن التوصيل والوصول الجغرافي واحتياجات المخزون لكافة مستشفيات القطاع استباقياً.");
+    showNotification(t('fallbackToast'));
   } finally {
     isLoading.value = false;
   }
@@ -112,7 +150,6 @@ const getIconUrl = (fileName) => {
 .w-35px {
   width: 35px;
 }
-.dir-rtl { direction: rtl; }
 
 /* تأثير الانتقال للتنبيه */
 .fade-enter-active,

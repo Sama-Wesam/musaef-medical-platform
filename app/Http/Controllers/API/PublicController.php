@@ -11,6 +11,7 @@ use App\Models\Donation;
 use App\Models\ContactMessage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\App;
 use App\AI\FacilityRecommendationEngine;
 
 class PublicController extends Controller
@@ -151,21 +152,49 @@ class PublicController extends Controller
     }
 
     /**
-     * جلب قائمة المستشفيات والجهات الطبية الشريكة للواجهة العامة
+     * جلب قائمة المستشفيات والجهات الطبية الشريكة للواجهة العامة مع دعم اللغتين
      */
     public function getPartnersHospitals()
     {
         try {
+            $locale = App::getLocale();
+
+            // قاموس ترجمة أسماء ومواقع المستشفيات للغة الإنجليزية
+            $translationsEn = [
+                'مجمع الشفاء الطبي'                   => ['name' => 'Al-Shifa Medical Complex', 'address' => 'Gaza - Al-Rimal'],
+                'جمعية بنك الدم المركزي'              => ['name' => 'Central Blood Bank Society', 'address' => 'Gaza - Al-Rimal, Al-Wehda St.'],
+                'بنك الدم المركزي - وزارة الصحة'      => ['name' => 'Central Blood Bank - MOH', 'address' => 'Gaza - Al-Nasr'],
+                'مستشفى الأهلي العربي (المعمداني)'   => ['name' => 'Ahli Arab Hospital (Al-Ma\'madani)', 'address' => 'Gaza - Al-Zaytoun'],
+                'مستشفى القدس - الهلال الأحمر'       => ['name' => 'Al-Quds Hospital - PRCS', 'address' => 'Gaza - Tel Al-Hawa'],
+                'مستشفى القدس'                        => ['name' => 'Al-Quds Hospital', 'address' => 'Gaza - Tel Al-Hawa'],
+                'مستشفى أصدقاء المريض الخيري'         => ['name' => 'Patient\'s Friends Benevolent Society Hospital', 'address' => 'Gaza - Al-Rimal, Al-Shohada St.'],
+                'مستشفى كمال عدوان'                  => ['name' => 'Kamal Adwan Hospital', 'address' => 'North Gaza - Beit Lahia'],
+                'المستشفى الإندونيسي'                => ['name' => 'Indonesian Hospital', 'address' => 'North Gaza - Beit Lahia'],
+                'مستشفى العودة - النصيرات'           => ['name' => 'Al-Awda Hospital - Nuseirat', 'address' => 'Middle Area - Nuseirat'],
+                'مستشفى شهداء الأقصى'                => ['name' => 'Al-Aqsa Martyrs Hospital', 'address' => 'Middle Area - Deir Al-Balah'],
+                'مجمع ناصر الطبي'                    => ['name' => 'Nasser Medical Complex', 'address' => 'Khan Younis - City Center'],
+                'مستشفى أبو يوسف النجار'              => ['name' => 'Abu Yousef Al-Najjar Hospital', 'address' => 'Rafah - Al-Jnena'],
+            ];
+
             $hospitals = Hospital::where('is_verified', true)
-                ->get(['id', 'facility_name', 'facility_type', 'address', 'phone'])
-                ->map(function ($hospital) {
+                ->with('user:id,phone')
+                ->get(['id', 'user_id', 'facility_name', 'facility_type', 'address'])
+                ->map(function ($hospital) use ($locale, $translationsEn) {
+                    $facilityName = $hospital->facility_name;
+                    $address = $hospital->address;
+
+                    if ($locale === 'en' && isset($translationsEn[$facilityName])) {
+                        $facilityName = $translationsEn[$facilityName]['name'];
+                        $address = $translationsEn[$facilityName]['address'];
+                    }
+
                     return [
                         'id'            => $hospital->id,
-                        'name'          => $hospital->facility_name,
-                        'facility_name' => $hospital->facility_name,
-                        'facility_type' => $hospital->facility_type,
-                        'address'       => $hospital->address,
-                        'phone'         => $hospital->phone,
+                        'name'          => $facilityName,
+                        'facility_name' => $facilityName,
+                        'facility_type' => $locale === 'en' ? ($hospital->facility_type === 'حكومي' ? 'Governmental' : 'Charity/NGO') : $hospital->facility_type,
+                        'address'       => $address,
+                        'phone'         => $hospital->user->phone ?? null,
                     ];
                 });
 

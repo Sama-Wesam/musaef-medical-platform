@@ -1,70 +1,72 @@
 <template>
-  <!-- خلفية معتمة لإغلاق القائمة للجوال -->
+  <!-- خلفية معتمة لإغلاق القائمة في الجوال -->
   <div class="sidebar-backdrop d-lg-none" @click="closeMobileSidebar"></div>
 
   <aside class="hospital-sidebar d-flex flex-column justify-content-between" dir="rtl">
     <div>
       <!-- زر إغلاق القائمة في الجوال -->
       <div class="d-flex justify-content-between align-items-center mb-3 d-lg-none pb-2 border-bottom">
-        <h6 class="fw-bold mb-0 text-dark">لوحة التحكم الرئيسيّة</h6>
+        <h6 class="fw-bold mb-0 text-dark">{{ t('mainDashboard') }}</h6>
         <button class="btn-close text-reset shadow-none" @click="closeMobileSidebar"></button>
       </div>
 
+      <!-- قائمة التنقل الجانبية -->
       <nav class="sidebar-menu">
         <RouterLink to="/admin/dashboard" class="sidebar-item" active-class="sidebar-active" @click="closeMobileSidebar">
           <div class="sidebar-item-content">
-            <img :src="dashboardIcon" class="sidebar-icon" alt="لوحة التحكم" />
-            <span class="sidebar-text">لوحة التحكم</span>
+            <img :src="dashboardIcon" class="sidebar-icon" alt="Dashboard" />
+            <span class="sidebar-text">{{ t('dashboard') }}</span>
           </div>
         </RouterLink>
 
         <RouterLink to="/admin/radar" class="sidebar-item" active-class="sidebar-active" @click="closeMobileSidebar">
           <div class="sidebar-item-content">
-            <img :src="radarIcon" class="sidebar-icon" alt="رادار الطوارئ المباشر" />
-            <span class="sidebar-text">رادار الطوارئ المباشر</span>
+            <img :src="radarIcon" class="sidebar-icon" alt="Emergency Radar" />
+            <span class="sidebar-text">{{ t('emergencyRadar') }}</span>
           </div>
         </RouterLink>
 
         <RouterLink to="/admin/analytics" class="sidebar-item" active-class="sidebar-active" @click="closeMobileSidebar">
           <div class="sidebar-item-content">
-            <img :src="analyticsIcon" class="sidebar-icon" alt="مركز التحليلات الذكية" />
-            <span class="sidebar-text">مركز التحليلات الذكية</span>
+            <img :src="analyticsIcon" class="sidebar-icon" alt="Smart Analytics" />
+            <span class="sidebar-text">{{ t('smartAnalytics') }}</span>
           </div>
         </RouterLink>
 
         <RouterLink to="/admin/accounts" class="sidebar-item" active-class="sidebar-active" @click="closeMobileSidebar">
           <div class="sidebar-item-content">
-            <img :src="usersIcon" class="sidebar-icon" alt="إدارة الحسابات" />
-            <span class="sidebar-text">إدارة الحسابات</span>
+            <img :src="usersIcon" class="sidebar-icon" alt="Accounts Management" />
+            <span class="sidebar-text">{{ t('accountsManagement') }}</span>
           </div>
         </RouterLink>
 
         <RouterLink to="/admin/settings" class="sidebar-item" active-class="sidebar-active" @click="closeMobileSidebar">
           <div class="sidebar-item-content">
-            <img :src="settingsIcon" class="sidebar-icon" alt="الإعدادات المتقدمة" />
-            <span class="sidebar-text">الإعدادات المتقدمة</span>
+            <img :src="settingsIcon" class="sidebar-icon" alt="Advanced Settings" />
+            <span class="sidebar-text">{{ t('advancedSettings') }}</span>
           </div>
         </RouterLink>
       </nav>
 
+      <!-- بطاقة المساعدة السريعة -->
       <div class="support-card">
-        <h5 class="support-title">مساعدة سريعة</h5>
-        <p class="support-text">
-          تحتاج مساعدة؟ فريق الدعم متاح على<br />مدار الساعة
-        </p>
-        <button class="support-btn" @click="contactSupport">تواصل مع الدعم</button>
+        <h5 class="support-title">{{ t('quickHelp') }}</h5>
+        <p class="support-text">{{ t('quickHelpDesc') }}</p>
+        <button class="support-btn" @click="contactSupport">{{ t('contactSupport') }}</button>
       </div>
-    </div>
 
-    <div class="logout-wrapper">
-      <button class="logout-btn" @click="handleLogout">
-        تسجيل الخروج
-      </button>
+      <!-- زر تسجيل الخروج مباشرة تحت مربع مساعدة سريعة -->
+      <div class="logout-wrapper">
+        <button class="logout-btn" @click="handleLogout">
+          {{ t('logout') }}
+        </button>
+      </div>
     </div>
   </aside>
 </template>
 
 <script setup>
+import { computed } from 'vue';
 import { RouterLink, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -76,6 +78,37 @@ import settingsIcon from "@/assets/icons/solar_settings-linear.png";
 
 const router = useRouter();
 const authStore = useAuthStore();
+
+const currentLocale = computed(() => localStorage.getItem('musaef_lang') || 'ar');
+
+const dictionary = {
+  ar: {
+    mainDashboard: 'لوحة التحكم الرئيسيّة',
+    dashboard: 'لوحة التحكم',
+    emergencyRadar: 'رادار الطوارئ المباشر',
+    smartAnalytics: 'مركز التحليلات الذكية',
+    accountsManagement: 'إدارة الحسابات',
+    advancedSettings: 'الإعدادات المتقدمة',
+    quickHelp: 'مساعدة سريعة',
+    quickHelpDesc: 'تحتاج مساعدة؟ فريق الدعم متاح على مدار الساعة',
+    contactSupport: 'تواصل مع الدعم',
+    logout: 'تسجيل الخروج'
+  },
+  en: {
+    mainDashboard: 'Main Dashboard',
+    dashboard: 'Dashboard',
+    emergencyRadar: 'Live Emergency Radar',
+    smartAnalytics: 'Smart Analytics Center',
+    accountsManagement: 'Account Management',
+    advancedSettings: 'Advanced Settings',
+    quickHelp: 'Quick Support',
+    quickHelpDesc: 'Need help? Support team is available 24/7',
+    contactSupport: 'Contact Support',
+    logout: 'Logout'
+  }
+};
+
+const t = (key) => dictionary[currentLocale.value === 'en' ? 'en' : 'ar'][key] || key;
 
 const closeMobileSidebar = () => {
   const sidebar = document.querySelector('.hospital-sidebar');
@@ -91,7 +124,7 @@ const handleLogout = async () => {
 };
 
 const contactSupport = () => {
-  alert("جاري تحويلك لخياطة الدعم الفني الخاص بالمنصة...");
+  alert(currentLocale.value === 'en' ? "Redirecting to technical support..." : "جاري تحويلك لخياطة الدعم الفني الخاص بالمنصة...");
 };
 </script>
 
@@ -114,6 +147,7 @@ const contactSupport = () => {
   visibility: visible;
 }
 
+/* السايدبار مثبت تحت الهيدر وفي الجهة اليمنى بدقة في RTL */
 .hospital-sidebar {
   width: 280px;
   height: 100%;
@@ -130,7 +164,7 @@ const contactSupport = () => {
     right: -290px;
     height: 100vh;
     z-index: 1050;
-    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
     overflow-y: auto;
   }
 
@@ -206,33 +240,33 @@ const contactSupport = () => {
 @media (min-width: 1200px) { .sidebar-icon { width: 23px; height: 23px; } }
 
 .support-card {
-  margin-top: 24px;
+  margin-top: 20px;
   border: 1px solid #F5B4B4;
   border-radius: 18px;
   background: #FFFFFF;
-  padding: 18px 14px;
+  padding: 16px 14px;
   text-align: center;
 }
 
-@media (min-width: 1200px) { .support-card { margin-top: 32px; padding: 24px 18px; } }
+@media (min-width: 1200px) { .support-card { margin-top: 24px; padding: 20px 18px; } }
 
 .support-title {
   font-size: 18px;
   font-weight: 700;
   color: #111827;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
-@media (min-width: 1200px) { .support-title { font-size: 22px; margin-bottom: 14px; } }
+@media (min-width: 1200px) { .support-title { font-size: 20px; margin-bottom: 10px; } }
 
 .support-text {
   color: #8A8A8A;
   font-size: 12px;
-  line-height: 1.8;
-  margin-bottom: 16px;
+  line-height: 1.6;
+  margin-bottom: 14px;
 }
 
-@media (min-width: 1200px) { .support-text { font-size: 13px; line-height: 2; margin-bottom: 20px; } }
+@media (min-width: 1200px) { .support-text { font-size: 13px; line-height: 1.8; margin-bottom: 16px; } }
 
 .support-btn {
   width: 100%;
@@ -247,29 +281,33 @@ const contactSupport = () => {
   transition: .25s;
 }
 
-@media (min-width: 1200px) { .support-btn { height: 46px; font-size: 15px; } }
+@media (min-width: 1200px) { .support-btn { height: 44px; font-size: 15px; } }
 
 .support-btn:hover { background: #C71F1F; }
 
-.logout-wrapper { padding-top: 20px; }
+/* زر تسجيل الخروج مباشرة تحت بطاقة الدعم */
+.logout-wrapper {
+  margin-top: 14px;
+  margin-bottom: 12px;
+}
 
 .logout-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: 48px;
+  height: 46px;
   border-radius: 999px;
   border: 1px solid #DADADA;
   background: #FFFFFF;
   color: #111827;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   transition: .25s;
 }
 
-@media (min-width: 1200px) { .logout-btn { height: 56px; font-size: 18px; } }
+@media (min-width: 1200px) { .logout-btn { height: 50px; font-size: 16px; } }
 
 .logout-btn:hover { background: #F8F8F8; }
 </style>

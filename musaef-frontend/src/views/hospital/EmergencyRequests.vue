@@ -1,8 +1,8 @@
 <template>
   <HospitalLayout>
-    <div class="emergency-requests-page container-fluid px-2 px-md-3" dir="rtl">
+    <div class="emergency-requests-page container-fluid px-2 px-md-3" :dir="currentLanguage === 'ar' ? 'rtl' : 'ltr'">
 
-      <!-- أزرار الفلترة والهيدر مع دالة إنشاء طلب طارئ وحسابات الأعداد -->
+      <!-- أزرار الفلترة والهيدر -->
       <EmergencyFilters
         v-model:filter="filter"
         :counts="filterCounts"
@@ -13,11 +13,11 @@
       <!-- مؤشر التحميل -->
       <div v-if="loading" class="text-center py-5">
         <div class="spinner-border text-danger" role="status">
-          <span class="visually-hidden">جاري التحميل...</span>
+          <span class="visually-hidden">{{ currentLanguage === 'en' ? 'Loading...' : 'جاري التحميل...' }}</span>
         </div>
       </div>
 
-      <!-- محتوى الصفحة: الجدول المليء بالبيانات والمربعات الجانبية التفاعلية -->
+      <!-- محتوى الصفحة -->
       <div v-else class="row g-3 g-lg-4">
 
         <!-- الجدول الرئيسي -->
@@ -29,16 +29,11 @@
           />
         </div>
 
-        <!-- المربعات الجانبية عند تحديد طلب -->
+        <!-- المربعات الجانبية -->
         <div v-if="selectedRequest" class="col-12 col-lg-5 col-xl-4">
           <div class="d-flex flex-column gap-3 sticky-top-custom">
-            <!-- 1. مربع تفاصيل الطلب -->
             <RequestDetailsCard :request="selectedRequest" />
-
-            <!-- 2. مربع المستجيبين -->
             <RespondersCard :donors="selectedRequest.responders || []" />
-
-            <!-- 3. مربع الخريطة وإجراءات الطلب التفاعلية -->
             <LocationMapCard
               @accept="handleAccept"
               @reject="handleReject"
@@ -62,31 +57,25 @@ import RespondersCard from '@/components/hospital/emergencyrequests/RespondersCa
 import LocationMapCard from '@/components/hospital/emergencyrequests/LocationMapCard.vue';
 import apiClient from '@/api/axios';
 
+const currentLanguage = computed(() => localStorage.getItem('musaef_lang') || 'ar');
+
 const loading = ref(false);
 const filter = ref('all');
 
-// خريطة تحويل فصائل الدم إلى أرقام الـ ID المقابلة لها في الباك إند
 const bloodTypeMap = {
-  'O-': 1,
-  'O+': 2,
-  'A-': 3,
-  'A+': 4,
-  'B-': 5,
-  'B+': 6,
-  'AB-': 7,
-  'AB+': 8
+  'O-': 1, 'O+': 2, 'A-': 3, 'A+': 4,
+  'B-': 5, 'B+': 6, 'AB-': 7, 'AB+': 8
 };
 
-// 12 حالة طارئة مكتملة البيانات
 const emergencyRequests = ref([
   {
     id: 1,
     code: 'ER-2024-1840',
     bloodType: 'O-',
     units: 6,
-    urgency: 'حرجة جداً',
+    urgency: 'critical',
     coverage: 92,
-    status: 'نشط',
+    status: 'active',
     hospital_name: 'مستشفى الشفاء الطبي',
     location: 'غزة - الرمال',
     created_at: '15-05-2026 14:30',
@@ -101,9 +90,9 @@ const emergencyRequests = ref([
     code: 'ER-2024-1841',
     bloodType: 'A+',
     units: 4,
-    urgency: 'عالية',
+    urgency: 'high',
     coverage: 75,
-    status: 'نشط',
+    status: 'active',
     hospital_name: 'مستشفى القدس الطبي',
     location: 'غزة - تل الهوى',
     created_at: 'منذ 20 دقيقة',
@@ -116,9 +105,9 @@ const emergencyRequests = ref([
     code: 'ER-2024-1842',
     bloodType: 'B-',
     units: 3,
-    urgency: 'متوسطة',
+    urgency: 'medium',
     coverage: 60,
-    status: 'قيد التغطية',
+    status: 'processing',
     hospital_name: 'مستشفى القدس',
     location: 'غزة - تل الهوى',
     created_at: 'منذ 45 دقيقة',
@@ -131,9 +120,9 @@ const emergencyRequests = ref([
     code: 'ER-2024-1843',
     bloodType: 'AB+',
     units: 2,
-    urgency: 'متوسطة',
+    urgency: 'medium',
     coverage: 40,
-    status: 'قيد التغطية',
+    status: 'processing',
     hospital_name: 'مستشفى العودة',
     location: 'شمال غزة',
     created_at: 'منذ ساعة',
@@ -144,126 +133,31 @@ const emergencyRequests = ref([
     code: 'ER-2024-1844',
     bloodType: 'O+',
     units: 2,
-    urgency: 'منخفضة',
+    urgency: 'low',
     coverage: 100,
-    status: 'مكتملة',
+    status: 'completed',
     hospital_name: 'مجمع ناصر الطبي',
     location: 'خانيونس',
     created_at: 'منذ ساعتين',
     responders: [
       { id: 106, name: 'خالد عبد الله', blood_type: 'O+', match_score: 97, eta_minutes: 5, distance_km: 1.0 }
     ]
-  },
-  {
-    id: 6,
-    code: 'ER-2024-1845',
-    bloodType: 'A-',
-    units: 1,
-    urgency: 'منخفضة',
-    coverage: 100,
-    status: 'مكتملة',
-    hospital_name: 'مستشفى الأندونيسي',
-    location: 'شمال غزة',
-    created_at: 'منذ 3 ساعات',
-    responders: []
-  },
-  {
-    id: 7,
-    code: 'ER-2024-1846',
-    bloodType: 'B+',
-    units: 1,
-    urgency: 'منخفضة',
-    coverage: 100,
-    status: 'مكتملة',
-    hospital_name: 'مستشفى الأقصى',
-    location: 'دير البلح',
-    created_at: 'منذ 4 ساعات',
-    responders: []
-  },
-  {
-    id: 8,
-    code: 'ER-2024-1847',
-    bloodType: 'AB-',
-    units: 1,
-    urgency: 'منخفضة',
-    coverage: 100,
-    status: 'مكتملة',
-    hospital_name: 'مستشفى النجار',
-    location: 'رفح',
-    created_at: 'منذ 5 ساعات',
-    responders: []
-  },
-  {
-    id: 9,
-    code: 'ER-2024-1848',
-    bloodType: 'O-',
-    units: 5,
-    urgency: 'حرجة جداً',
-    coverage: 30,
-    status: 'نشط',
-    hospital_name: 'مستشفى الكويتي',
-    location: 'رفح',
-    created_at: 'منذ 15 دقيقة',
-    responders: [
-      { id: 107, name: 'يوسف رامي', blood_type: 'O-', match_score: 99, eta_minutes: 3, distance_km: 0.8 }
-    ]
-  },
-  {
-    id: 10,
-    code: 'ER-2024-1849',
-    bloodType: 'A+',
-    units: 2,
-    urgency: 'عالية',
-    coverage: 100,
-    status: 'مكتملة',
-    hospital_name: 'مستشفى الخدمة العامة',
-    location: 'غزة - صبرا',
-    created_at: 'منذ 6 ساعات',
-    responders: []
-  },
-  {
-    id: 11,
-    code: 'ER-2024-1850',
-    bloodType: 'B+',
-    units: 3,
-    urgency: 'متوسطة',
-    coverage: 100,
-    status: 'مكتملة',
-    hospital_name: 'مستشفى الهلال الإماراتي',
-    location: 'رفح',
-    created_at: 'منذ 7 ساعات',
-    responders: []
-  },
-  {
-    id: 12,
-    code: 'ER-2024-1851',
-    bloodType: 'O+',
-    units: 4,
-    urgency: 'منخفضة',
-    coverage: 100,
-    status: 'مكتملة',
-    hospital_name: 'مستشفى الشهداء',
-    location: 'دير البلح',
-    created_at: 'منذ 8 ساعات',
-    responders: []
   }
 ]);
 
 const selectedRequest = ref(emergencyRequests.value[0]);
 
-// حساب أعداد أزرار الفلترة ديناميكياً
 const filterCounts = computed(() => {
   const all = emergencyRequests.value.length;
-  const completed = emergencyRequests.value.filter(r => r.coverage >= 100 || r.status === 'مكتملة').length;
+  const completed = emergencyRequests.value.filter(r => r.coverage >= 100 || r.status === 'completed' || r.status === 'مكتملة').length;
   const covering = all - completed;
   return { all, covering, completed };
 });
 
-// تصفية الجدول التفاعلي
 const filteredRequests = computed(() => {
   const list = emergencyRequests.value || [];
-  if (filter.value === 'covering') return list.filter(r => r.coverage < 100 && r.status !== 'مكتملة');
-  if (filter.value === 'completed') return list.filter(r => r.coverage >= 100 || r.status === 'مكتملة');
+  if (filter.value === 'covering') return list.filter(r => r.coverage < 100 && r.status !== 'completed' && r.status !== 'مكتملة');
+  if (filter.value === 'completed') return list.filter(r => r.coverage >= 100 || r.status === 'completed' || r.status === 'مكتملة');
   return list;
 });
 
@@ -272,16 +166,17 @@ const selectRequestItem = (req) => {
 };
 
 const handleExport = () => {
-  alert('📥 جاري تصدير تقرير النداءات الطارئة بصيغة PDF/Excel بنجاح!');
+  alert(currentLanguage.value === 'en'
+    ? '📥 Exporting emergency calls report in PDF/Excel format successfully!'
+    : '📥 جاري تصدير تقرير النداءات الطارئة بصيغة PDF/Excel بنجاح!');
 };
 
-// إنشاء طلب طارئ جديد بدعم الربط الصحيح مع الباك إند
 const handleCreateEmergency = async () => {
-  const inputType = prompt("أدخل فصيلة الدم المطلوبة (مثال: O+, O-, A+):", "O-");
+  const inputType = prompt(currentLanguage.value === 'en' ? "Enter required blood type (e.g. O+, O-, A+):" : "أدخل فصيلة الدم المطلوبة (مثال: O+, O-, A+):", "O-");
   if (!inputType) return;
 
   const formattedType = inputType.trim().toUpperCase();
-  const unitsInput = prompt("أدخل عدد الوحدات المطلوبة:", "3");
+  const unitsInput = prompt(currentLanguage.value === 'en' ? "Enter number of required units:" : "أدخل عدد الوحدات المطلوبة:", "3");
   const units = parseInt(unitsInput) || 2;
 
   const newReqId = emergencyRequests.value.length + 1840;
@@ -290,21 +185,20 @@ const handleCreateEmergency = async () => {
     code: `ER-2024-${newReqId}`,
     bloodType: formattedType,
     units: units,
-    urgency: 'حرجة جداً',
+    urgency: 'critical',
     coverage: 20,
-    status: 'نشط',
+    status: 'active',
     hospital_name: 'مستشفى الشفاء الطبي',
     location: 'غزة - الرمال',
-    created_at: 'الآن',
+    created_at: currentLanguage.value === 'en' ? 'Just now' : 'الآن',
     responders: [
-      { id: 301, name: 'متبرع استجابة فورية', blood_type: formattedType, match_score: 98, eta_minutes: 4, distance_km: 1.1 }
+      { id: 301, name: 'Instant Response Donor', blood_type: formattedType, match_score: 98, eta_minutes: 4, distance_km: 1.1 }
     ]
   };
 
   emergencyRequests.value.unshift(newRequest);
   selectedRequest.value = newRequest;
 
-  // إرسال البيانات متوافقة تماماً مع قواعد التحقق في الباك إند
   try {
     await apiClient.post('/hospital/requests', {
       blood_type: formattedType,
@@ -317,23 +211,27 @@ const handleCreateEmergency = async () => {
     console.log('تم إضافة النداء بالواجهة وتحديث الحالة بنجاح.');
   }
 
-  alert(`🚨 تم إطلاق النداء الطارئ (${newRequest.code}) وتنبيه المتبرعين المطابقين فوراً!`);
+  alert(currentLanguage.value === 'en'
+    ? `🚨 Emergency call (${newRequest.code}) dispatched and matching donors notified instantly!`
+    : `🚨 تم إطلاق النداء الطارئ (${newRequest.code}) وتنبيه المتبرعين المطابقين فوراً!`);
 };
 
-// تفاعلية زر قبول الطلب
 const handleAccept = async () => {
   if (selectedRequest.value) {
-    selectedRequest.value.status = 'مكتملة';
+    selectedRequest.value.status = 'completed';
     selectedRequest.value.coverage = 100;
-    alert(`✅ تم قبول وتلبية النداء (${selectedRequest.value.code}) بنجاح!`);
+    alert(currentLanguage.value === 'en'
+      ? `✅ Emergency call (${selectedRequest.value.code}) accepted and fulfilled successfully!`
+      : `✅ تم قبول وتلبية النداء (${selectedRequest.value.code}) بنجاح!`);
   }
 };
 
-// تفاعلية زر رفض الطلب
 const handleReject = async () => {
   if (selectedRequest.value) {
-    selectedRequest.value.status = 'مرفوضة';
-    alert(`❌ تم رفض الطلب (${selectedRequest.value.code}).`);
+    selectedRequest.value.status = 'rejected';
+    alert(currentLanguage.value === 'en'
+      ? `❌ Request (${selectedRequest.value.code}) rejected.`
+      : `❌ تم رفض الطلب (${selectedRequest.value.code}).`);
   }
 };
 
@@ -348,12 +246,12 @@ const fetchRequests = async () => {
         code: item.request_code || `ER-2024-${1840 + index}`,
         bloodType: item.blood_type?.name || item.blood_type || 'O-',
         units: item.units_required || 3,
-        urgency: item.urgency_level === 'critical' || item.emergency_level === 'critical' ? 'حرجة جداً' : 'عالية',
+        urgency: item.urgency_level === 'critical' || item.emergency_level === 'critical' ? 'critical' : 'high',
         coverage: 75,
-        status: 'نشط',
+        status: 'active',
         hospital_name: item.hospital?.facility_name || 'مستشفى الشفاء الطبي',
         location: item.hospital?.address || 'غزة - الرمال',
-        created_at: 'منذ قليل',
+        created_at: currentLanguage.value === 'en' ? 'Just now' : 'منذ قليل',
         responders: [
           { id: 1, name: 'أحمد محمد', blood_type: 'O-', match_score: 95, eta_minutes: 5, distance_km: 1.2 }
         ]
@@ -375,7 +273,6 @@ onMounted(() => {
 
 <style scoped>
 .emergency-requests-page {
-  font-family: 'Cairo', sans-serif;
   padding-bottom: 24px;
 }
 
@@ -385,4 +282,6 @@ onMounted(() => {
     top: 20px;
   }
 }
+.dir-rtl { direction: rtl; }
+.dir-ltr { direction: ltr; }
 </style>

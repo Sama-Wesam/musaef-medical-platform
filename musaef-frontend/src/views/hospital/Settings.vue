@@ -1,11 +1,11 @@
 <template>
   <HospitalLayout>
-    <div class="medical-settings-page container-fluid px-2 px-md-3" dir="rtl">
+    <div class="medical-settings-page container-fluid px-2 px-md-3" :class="currentLanguage === 'ar' ? 'dir-rtl text-end' : 'dir-ltr text-start'">
 
       <!-- Header Section -->
-      <div class="mb-3 mb-md-4 text-end">
-        <h4 class="fw-bold text-dark mb-1 fs-5 fs-md-4">إعدادات الجهة الطبية</h4>
-        <p class="text-muted fs-8 fs-md-7 mb-0">إدارة وتحديث معلومات وإعدادات الجهة الطبية</p>
+      <div class="mb-3 mb-md-4" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
+        <h4 class="fw-bold text-dark mb-1 fs-5 fs-md-4">{{ t('settingsTitle') }}</h4>
+        <p class="text-muted fs-8 fs-md-7 mb-0">{{ t('settingsSubtitle') }}</p>
       </div>
 
       <!-- Navigation Tabs Bar -->
@@ -16,40 +16,40 @@
             :class="{ 'active-tab': activeTab === 'profile' }"
             @click="activeTab = 'profile'"
           >
-            الملف التعريفي
+            {{ t('tabProfile') }}
           </button>
           <button
             class="tab-item flex-fill py-2 px-3 fw-bold border-0 bg-transparent transition-all text-nowrap"
             :class="{ 'active-tab': activeTab === 'general' }"
             @click="activeTab = 'general'"
           >
-            الإعدادات
+            {{ t('tabGeneral') }}
           </button>
           <button
             class="tab-item flex-fill py-2 px-3 fw-bold border-0 bg-transparent transition-all text-nowrap"
             :class="{ 'active-tab': activeTab === 'security' }"
             @click="activeTab = 'security'"
           >
-            الأمان
+            {{ t('tabSecurity') }}
           </button>
           <button
             class="tab-item flex-fill py-2 px-3 fw-bold border-0 bg-transparent transition-all text-nowrap"
             :class="{ 'active-tab': activeTab === 'notifs' }"
             @click="activeTab = 'notifs'"
           >
-            الإشعارات
+            {{ t('tabNotifs') }}
           </button>
           <button
             class="tab-item flex-fill py-2 px-3 fw-bold border-0 bg-transparent transition-all text-nowrap"
             :class="{ 'active-tab': activeTab === 'verify' }"
             @click="activeTab = 'verify'"
           >
-            التحقق والاعتماد
+            {{ t('tabVerify') }}
           </button>
         </div>
       </div>
 
-      <!-- Tab Content Components with Data Binding -->
+      <!-- Tab Content Components -->
       <ProfileTab v-if="activeTab === 'profile'" :hospitalData="hospitalData" />
       <GeneralSettingsTab v-if="activeTab === 'general'" v-model:hospitalData="hospitalData" @refresh="fetchHospitalProfile" />
       <SecurityTab v-if="activeTab === 'security'" />
@@ -61,7 +61,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import HospitalLayout from '@/layouts/HospitalLayout.vue';
 import hospitalApi from '@/api/hospital';
 
@@ -70,6 +70,31 @@ import GeneralSettingsTab from '@/components/hospital/settings/GeneralSettingsTa
 import SecurityTab from '@/components/hospital/settings/SecurityTab.vue';
 import NotificationsTab from '@/components/hospital/settings/NotificationsTab.vue';
 import VerificationTab from '@/components/hospital/settings/VerificationTab.vue';
+
+const currentLanguage = computed(() => localStorage.getItem('musaef_lang') || 'ar');
+
+const dictionary = {
+  ar: {
+    settingsTitle: 'إعدادات الجهة الطبية',
+    settingsSubtitle: 'إدارة وتحديث معلومات وإعدادات الجهة الطبية',
+    tabProfile: 'الملف التعريفي',
+    tabGeneral: 'الإعدادات',
+    tabSecurity: 'الأمان',
+    tabNotifs: 'الإشعارات',
+    tabVerify: 'التحقق والاعتماد'
+  },
+  en: {
+    settingsTitle: 'Medical Facility Settings',
+    settingsSubtitle: 'Manage and update medical facility information and settings',
+    tabProfile: 'Profile',
+    tabGeneral: 'Settings',
+    tabSecurity: 'Security',
+    tabNotifs: 'Notifications',
+    tabVerify: 'Verification & Accreditation'
+  }
+};
+
+const t = (key) => dictionary[currentLanguage.value === 'en' ? 'en' : 'ar'][key] || key;
 
 const activeTab = ref('general');
 const hospitalData = ref({
@@ -92,7 +117,7 @@ const fetchHospitalProfile = async () => {
         phone_number: data.phone_number || data.phone || hospitalData.value.phone_number,
         city: data.city || hospitalData.value.city || 'رفح',
         address: data.address || hospitalData.value.address,
-        working_hours: data.working_hours || hospitalData.value.working_hours || '24 ساعة 7 أيام في الأسبوع'
+        working_hours: data.working_hours || hospitalData.value.working_hours || (currentLanguage.value === 'en' ? '24 Hours 7 Days a Week' : '24 ساعة 7 أيام في الأسبوع')
       };
     }
   } catch (err) {
@@ -112,4 +137,6 @@ onMounted(() => {
 @media (min-width: 768px) { .min-w-tabs { min-width: 100%; } }
 .tab-item { color: #64748b; border-radius: 50px; font-size: 0.825rem; cursor: pointer; transition: all 0.2s ease-in-out; }
 .active-tab { background-color: #dc3545 !important; color: #ffffff !important; box-shadow: 0 2px 8px rgba(220, 53, 69, 0.25); }
+.dir-rtl { direction: rtl; }
+.dir-ltr { direction: ltr; }
 </style>

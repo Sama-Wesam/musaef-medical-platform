@@ -8,7 +8,7 @@ class CreateBloodRequest extends FormRequest
 {
     /**
      * تحديد ما إذا كان المستخدم مصرحاً له بإجراء هذا الطلب.
-     * نرجع true لأننا نتحقق من الصلاحيات عبر الـ Middleware مسبقاً.
+     * نرجع true  نتحقق من الصلاحيات عبر الـ Middleware .
      */
     public function authorize(): bool
     {
@@ -18,7 +18,7 @@ class CreateBloodRequest extends FormRequest
     /**
      * قواعد التحقق (Validation Rules) التي تطبق على الطلب.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string,
      */
     public function rules(): array
     {

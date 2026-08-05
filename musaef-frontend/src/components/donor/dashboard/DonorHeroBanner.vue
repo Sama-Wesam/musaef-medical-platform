@@ -13,29 +13,29 @@
             <div class="inner-circle bg-white rounded-circle d-flex flex-column align-items-center justify-content-center">
               <i class="bi bi-calendar3 text-danger fs-6 fs-md-5 mb-1"></i>
               <span class="fs-3 fs-md-2 fw-black text-dark lh-1">{{ stats.daysUntilNextDonation || 45 }}</span>
-              <span class="fs-9 fw-bold text-dark mt-1">يوماً متبقية</span>
+              <span class="fs-9 fw-bold text-dark mt-1">{{ t('daysRemaining') }}</span>
             </div>
           </div>
-          <small class="text-muted fs-9 mt-2 text-center d-block">حتى التبرع التالي</small>
+          <small class="text-muted fs-9 mt-2 text-center d-block">{{ t('nextDonation') }}</small>
         </div>
       </div>
 
-      <!-- الجزء الأوسط: النصوص والأيقونات مرتبطة بحالة الاستبيان -->
+      <!-- الجزء الأوسط: النصوص والأيقونات مرتبطة بحالة الاستبيان واللغة الحالية -->
       <div class="col-12 col-md-4 col-lg-6 text-center order-1 order-md-2">
         <h2 class="fw-black mb-2 hero-status-title" :class="donorStore.healthEligibility.isEligible ? 'text-success' : 'text-danger'">
-          {{ donorStore.healthEligibility.statusTitle }}
+          {{ getLocalizedStatusTitle() }}
         </h2>
 
         <h5 class="fw-bold text-dark mb-2 fs-6 fs-md-5">
-          {{ donorStore.healthEligibility.statusDescription }}
+          {{ getLocalizedStatusDesc() }}
         </h5>
 
         <p class="text-secondary fs-8 mb-2 mb-md-3">
-          {{ donorStore.healthEligibility.detailedMessage }}
+          {{ getLocalizedStatusMsg() }}
         </p>
 
         <div class="text-secondary fs-8 mb-3">
-          لديك <strong class="text-danger fw-bold fs-7">{{ stats.points || 230 }}</strong> نقطة و <strong class="text-danger fw-bold fs-7">{{ stats.badgesCount || 3 }}</strong> شارات
+          {{ t('youHave') }} <strong class="text-danger fw-bold fs-7">{{ stats.points || 230 }}</strong> {{ t('pointsAnd') }} <strong class="text-danger fw-bold fs-7">{{ stats.badgesCount || 3 }}</strong> {{ t('badges') }}
         </div>
 
         <div class="d-flex align-items-center justify-content-center gap-2 gap-sm-3">
@@ -63,6 +63,7 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
 import { useDonorStore } from '@/stores/donorStore';
 
 // استيراد الأيقونات مباشرة لضمان تحميلها بدون مشاكل المسارات في Vite
@@ -80,12 +81,74 @@ defineProps({
 });
 
 const donorStore = useDonorStore();
+const currentLanguage = computed(() => localStorage.getItem('musaef_lang') || 'ar');
+
+// قاموس ترجمات محلي يضمن أداء سلس ومباشر
+const translations = {
+  ar: {
+    daysRemaining: 'يوماً متبقية',
+    nextDonation: 'حتى التبرع التالي',
+    eligibleTitle: 'مؤهل للتبرع',
+    notEligibleTitle: 'غير مؤهل حالياً',
+    eligibleDesc: 'حالتك الصحية مؤهلة للتبرع',
+    notEligibleDesc: 'حالتك الصحية تتطلب الانتظار',
+    eligibleMsg: 'يمكنك التبرع الآن، صحتك تسمح بذلك.',
+    notEligibleMsg: 'يرجى الانتظار حتى اكتمال فترة التعافي لتتمكن من التبرع من جديد.',
+    youHave: 'لديك',
+    pointsAnd: 'نقطة و',
+    badges: 'شارات'
+  },
+  en: {
+    daysRemaining: 'Days remaining',
+    nextDonation: 'Until next donation',
+    eligibleTitle: 'Eligible for Donation',
+    notEligibleTitle: 'Currently Ineligible',
+    eligibleDesc: 'Your health status is eligible for donation',
+    notEligibleDesc: 'Your health status requires waiting',
+    eligibleMsg: 'You can donate now, your health permits it.',
+    notEligibleMsg: 'Please wait until recovery period is complete to donate again.',
+    youHave: 'You have',
+    pointsAnd: 'points &',
+    badges: 'badges'
+  }
+};
+
+const t = (key) => {
+  const lang = currentLanguage.value === 'en' ? 'en' : 'ar';
+  return translations[lang][key] || key;
+};
+
+const getLocalizedStatusTitle = () => {
+  if (currentLanguage.value === 'en') {
+    return donorStore.healthEligibility.isEligible ? translations.en.eligibleTitle : translations.en.notEligibleTitle;
+  }
+  return donorStore.healthEligibility.statusTitle || translations.ar.eligibleTitle;
+};
+
+const getLocalizedStatusDesc = () => {
+  if (currentLanguage.value === 'en') {
+    return donorStore.healthEligibility.isEligible ? translations.en.eligibleDesc : translations.en.notEligibleDesc;
+  }
+  return donorStore.healthEligibility.statusDescription || translations.ar.eligibleDesc;
+};
+
+const getLocalizedStatusMsg = () => {
+  if (currentLanguage.value === 'en') {
+    return donorStore.healthEligibility.isEligible ? translations.en.eligibleMsg : translations.en.notEligibleMsg;
+  }
+  return donorStore.healthEligibility.detailedMessage || translations.ar.eligibleMsg;
+};
 
 const handleHeroDropFallback = (e) => { e.target.src = bloodShieldImg; };
 </script>
 
 <style scoped>
-.hero-status-banner { background: linear-gradient(135deg, #fff5f5 0%, #fdecec 100%); border: 1px solid #fca5a5 !important; }
+.hero-status-banner {
+  font-family: Arial, sans-serif !important;
+  background: linear-gradient(135deg, #fff5f5 0%, #fdecec 100%);
+  border: 1px solid #fca5a5 !important;
+}
+
 .pink-heart-bg { position: absolute; font-size: 1.2rem; opacity: 0.25; pointer-events: none; z-index: 1; }
 .heart-1 { top: 15%; left: 10%; }
 .heart-2 { top: 70%; left: 25%; }

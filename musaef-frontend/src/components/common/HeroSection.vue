@@ -1,42 +1,37 @@
 <template>
-  <section class="hero-section dir-rtl">
+  <section class="hero-section" :dir="currentLanguage === 'ar' ? 'rtl' : 'ltr'">
     <div class="container-fluid p-0">
       <div class="row g-0 align-items-center hero-row">
 
-        <!-- النص والأزرار (يمين) -->
+        <!-- النص والأزرار -->
         <div class="col-lg-6 hero-content d-flex align-items-center justify-content-end px-3 px-md-5">
           <div class="hero-text-wrapper">
 
             <span class="hero-title-small">
-              مسعف...
+              {{ $t('hero.smallTitle') }}
             </span>
 
-            <h1 class="hero-title">
-              المنصة الذكية للتبرع
-              <br />
-              بالدم وقت الطوارئ
-            </h1>
+            <h1 class="hero-title" v-html="$t('hero.titleHtml')"></h1>
 
             <p class="hero-description">
-              نربط المتبرعين والمستشفيات بسرعة وذكاء لنضمن وصول الدم إلى من تحتاجه في الوقت المناسب.
+              {{ $t('hero.description') }}
             </p>
 
             <div class="hero-buttons">
               <RouterLink to="/about" class="btn hero-btn-outline">
-                استكشف المنصة
+                {{ $t('hero.explore') }}
               </RouterLink>
 
-              <!-- تم تعديل الرابط ليتجه مباشرة إلى صفحة تسجيل الدخول /login -->
               <RouterLink to="/login" class="btn hero-btn-primary">
                 <i class="bi bi-heart-fill"></i>
-                <span>تبرع الآن</span>
+                <span>{{ $t('hero.donateNow') }}</span>
               </RouterLink>
             </div>
 
           </div>
         </div>
 
-        <!-- الصورة (يسار) بنفس الحجم والتنسيق الأصلي تماماً -->
+        <!-- الصورة -->
         <div class="col-lg-6 hero-image-col">
           <div class="hero-image-wrapper">
             <img
@@ -53,17 +48,17 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/authStore';
 
 const authStore = useAuthStore();
+const { locale } = useI18n();
+
+const currentLanguage = computed(() => locale.value || 'ar');
 </script>
 
 <style scoped>
-.dir-rtl {
-  direction: rtl;
-  font-family: Arial, sans-serif;
-}
-
 .hero-section {
   background: #f8fafc;
   height: 500px;
@@ -93,33 +88,40 @@ const authStore = useAuthStore();
   margin-left: 200px;
 }
 
+[dir="ltr"] .hero-text-wrapper {
+  align-items: flex-start;
+  text-align: left;
+  margin-left: 0;
+  margin-right: 200px;
+}
+
 .hero-title-small {
   color: #DC2626;
-  font-size: 50px;
+  font-size: 45px;
   font-weight: 700;
-  line-height: 1;
-  margin-bottom: 18px;
+  line-height: 1.2;
+  margin-bottom: 12px;
   width: 100%;
-  text-align: right;
+  text-align: inherit;
 }
 
 .hero-title {
   width: 100%;
-  font-size: 52px;
+  font-size: 35px;
   font-weight: 800;
-  line-height: 1.35;
+  line-height: 1.3;
   color: #0F172A;
-  text-align: right;
-  margin-bottom: 18px;
+  text-align: inherit;
+  margin-bottom: 14px;
 }
 
 .hero-description {
   width: 100%;
-  font-size: 25px;
+  font-size: 30px;
   color: #6B7280;
-  line-height: 2;
-  text-align: right;
-  margin-bottom: 28px;
+  line-height: 1.6;
+  text-align: inherit;
+  margin-bottom: 24px;
 }
 
 .hero-buttons {
@@ -128,6 +130,12 @@ const authStore = useAuthStore();
   justify-content: flex-end;
   gap: 16px;
   margin-left: 160px;
+}
+
+[dir="ltr"] .hero-buttons {
+  justify-content: flex-start;
+  margin-left: 0;
+  margin-right: 160px;
 }
 
 .hero-btn-primary {
@@ -200,13 +208,22 @@ const authStore = useAuthStore();
   margin-left: 40px;
 }
 
-/* التجاوب مع الهواتف والشاشات الصغيرة */
+[dir="ltr"] .hero-image {
+  transform: translateX(60px);
+  margin-left: 0;
+  margin-right: 40px;
+}
+
 @media (max-width: 1200px) {
-  .hero-text-wrapper {
+  .hero-text-wrapper,
+  [dir="ltr"] .hero-text-wrapper {
     margin-left: 0;
+    margin-right: 0;
   }
-  .hero-buttons {
+  .hero-buttons,
+  [dir="ltr"] .hero-buttons {
     margin-left: 0;
+    margin-right: 0;
   }
 }
 
@@ -227,25 +244,26 @@ const authStore = useAuthStore();
   }
 
   .hero-text-wrapper {
-    margin: 0 auto;
-    align-items: center;
-    text-align: center;
+    margin: 0 auto !important;
+    align-items: center !important;
+    text-align: center !important;
     max-width: 100%;
   }
 
   .hero-title-small,
   .hero-title,
   .hero-description {
-    text-align: center;
+    text-align: center !important;
   }
 
-  .hero-title-small { font-size: 32px; }
-  .hero-title { font-size: 32px; }
-  .hero-description { font-size: 18px; }
+  .hero-title-small { font-size: 24px; }
+  .hero-title { font-size: 26px; }
+  .hero-description { font-size: 15px; }
 
   .hero-buttons {
     justify-content: center !important;
-    margin-left: 0;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
   }
 
   .hero-image {
@@ -253,8 +271,9 @@ const authStore = useAuthStore();
     max-width: 420px;
     height: auto;
     object-fit: contain;
-    transform: none;
-    margin-left: 0;
+    transform: none !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
   }
 }
 </style>

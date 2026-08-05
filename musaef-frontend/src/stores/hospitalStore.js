@@ -54,7 +54,7 @@ export const useHospitalStore = defineStore('hospital', {
 
     async updateStockOperation(payload) {
       try {
-        // الاستدلال الصريح بالدالة المعرفة داخل API
+
         if (typeof hospitalApi.updateInventory === 'function') {
           await hospitalApi.updateInventory(payload);
         } else if (typeof hospitalApi.updateStock === 'function') {

@@ -12,6 +12,7 @@ use Illuminate\Routing\Controller;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Models\Hospital;
 
 class AuthController extends Controller
 {
@@ -54,8 +55,6 @@ class AuthController extends Controller
                 'email.email'    => 'صيغة البريد الإلكتروني غير صحيحة.',
                 'email.exists'   => 'البريد الإلكتروني غير مسجل لدينا.',
             ]);
-
-            // يمكن هنا إضافة منطق إرسال البريد الإلكتروني الفعلي حسب الحاجة
 
             return $this->successResponse(null, 'تم إرسال رابط إعادة تعيين كلمة المرور بنجاح!');
 
@@ -149,28 +148,31 @@ class AuthController extends Controller
                 'phone'                 => 'required|string|max:20',
                 'password'              => 'required|string|min:8|confirmed',
                 'license_number'        => 'required|string|max:100',
-                'address'               => 'required|string|max:255',
-                'latitude'              => 'required|numeric',
-                'longitude'             => 'required|numeric',
+                'address'               => 'nullable|string|max:255',  // تم جعله اختياريًا
+                'latitude'              => 'nullable|numeric',          // تم جعله اختياريًا
+                'longitude'             => 'nullable|numeric',         // تم جعله اختياريًا
                 'facility_type'         => 'nullable|string|max:50',
+                'facility_name'         => 'nullable|string|max:255',
             ]);
 
-            $user = \App\Models\User::create([
+            // 1. إنشاء حساب المستخدم في جدول users
+            $user = User::create([
                 'name'     => $validated['name'],
                 'email'    => $validated['email'],
+                'phone'    => $validated['phone'],
                 'password' => bcrypt($validated['password']),
                 'role'     => 'hospital',
             ]);
 
-            $hospital = \App\Models\Hospital::create([
+            // 2. إنشاء سجل المستشفى مع استخدام القيم الافتراضية في حال عدم التمرير
+            $hospital = Hospital::create([
                 'user_id'        => $user->id,
-                'facility_name'  => $validated['name'],
-                'facility_type'  => $request->input('facility_type', 'hospital'),
+                'facility_name'  => $validated['facility_name'] ?? $validated['name'],
+                'facility_type'  => $validated['facility_type'] ?? 'مستشفى',
                 'license_number' => $validated['license_number'],
-                'phone'          => $validated['phone'],
-                'address'        => $validated['address'],
-                'latitude'       => $validated['latitude'],
-                'longitude'      => $validated['longitude'],
+                'address'        => $validated['address'] ?? 'غزة - فلسطين', // قيمة افتراضية في حال التمرير كـ null
+                'latitude'       => $validated['latitude'] ?? 31.5017,        // إحداثيات افتراضية لغزة
+                'longitude'      => $validated['longitude'] ?? 34.4668,       // إحداثيات افتراضية لغزة
                 'is_verified'    => true,
             ]);
 
@@ -182,7 +184,7 @@ class AuthController extends Controller
                 'token'    => $token
             ], 'تم تسجيل حساب المستشفى بنجاح', 201);
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return $this->errorResponse('خطأ في البيانات المرفقة', 422, $e->errors());
         } catch (\Throwable $e) {
             return $this->errorResponse('حدث خطأ أثناء إنشاء حساب المستشفى: ' . $e->getMessage(), 500);

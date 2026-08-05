@@ -1,6 +1,6 @@
 <template>
   <AdminLayout>
-    <div class="admin-dashboard-view container-fluid px-2 px-md-3 dir-rtl" dir="rtl">
+    <div class="admin-dashboard-view container-fluid px-2 px-md-3" :class="currentLanguage === 'ar' ? 'dir-rtl text-end' : 'dir-ltr text-start'">
 
       <!-- 1. الكروت الإحصائية الـ 5 العلوية -->
       <StatsOverviewCards :stats="dashboardStore.stats" />
@@ -33,7 +33,7 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { useAdminDashboardStore } from '@/stores/adminStore';
 
@@ -45,6 +45,7 @@ import PlatformWeeklyActivity from '@/components/admin/dashboard/PlatformWeeklyA
 import RecentActivitiesList from '@/components/admin/dashboard/RecentActivitiesList.vue';
 
 const dashboardStore = useAdminDashboardStore();
+const currentLanguage = computed(() => localStorage.getItem('musaef_lang') || 'ar');
 
 onMounted(() => {
   dashboardStore.fetchDashboardData();
@@ -57,4 +58,5 @@ onMounted(() => {
   padding-bottom: 24px;
 }
 .dir-rtl { direction: rtl; }
+.dir-ltr { direction: ltr; }
 </style>

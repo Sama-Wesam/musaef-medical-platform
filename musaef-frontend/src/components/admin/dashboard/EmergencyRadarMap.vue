@@ -1,7 +1,7 @@
 <template>
-  <div class="card border-0 shadow-sm p-3 rounded-4 bg-white h-100 overflow-hidden text-end dir-rtl">
+  <div class="card border-0 shadow-sm p-3 rounded-4 bg-white h-100 overflow-hidden" :class="currentLanguage === 'ar' ? 'dir-rtl text-end' : 'dir-ltr text-start'">
     <div class="d-flex justify-content-between align-items-center mb-2 px-1">
-      <h6 class="fw-bold text-dark mb-0 fs-7">رادار الطوارئ المباشر</h6>
+      <h6 class="fw-bold text-dark mb-0 fs-7">{{ t('radarTitle') }}</h6>
     </div>
     <div class="rounded-3 overflow-hidden position-relative flex-grow-1" style="min-height: 220px;">
       <iframe
@@ -16,7 +16,21 @@
   </div>
 </template>
 
+<script setup>
+import { computed } from 'vue';
+
+const currentLanguage = computed(() => localStorage.getItem('musaef_lang') || 'ar');
+
+const dictionary = {
+  ar: { radarTitle: 'رادار الطوارئ المباشر' },
+  en: { radarTitle: 'Live Emergency Radar' }
+};
+
+const t = (key) => dictionary[currentLanguage.value === 'en' ? 'en' : 'ar'][key] || key;
+</script>
+
 <style scoped>
 .fs-7 { font-size: 0.9rem; }
 .dir-rtl { direction: rtl; }
+.dir-ltr { direction: ltr; }
 </style>

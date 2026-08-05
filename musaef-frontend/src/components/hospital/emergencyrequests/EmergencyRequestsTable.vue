@@ -1,15 +1,19 @@
 <template>
-  <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden p-2 p-md-3" dir="rtl">
+  <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden p-2 p-md-3" :dir="currentLanguage === 'ar' ? 'rtl' : 'ltr'">
     <div class="table-responsive">
       <table class="table align-middle text-center mb-0 fs-8 border-0 min-w-table custom-design-table">
         <thead>
           <tr class="text-secondary border-0">
-            <th class="py-3 text-end pe-3 pe-md-4 text-nowrap fw-bold">رقم الطلب</th>
-            <th class="py-3 text-nowrap fw-bold">الفصيلة المطلوبة</th>
-            <th class="py-3 text-nowrap fw-bold">عدد الوحدات</th>
-            <th class="py-3 text-nowrap fw-bold">مستوى الخطورة</th>
-            <th class="py-3 text-nowrap fw-bold">عدد المستجيبين</th>
-            <th class="py-3 ps-3 ps-md-4 text-nowrap fw-bold text-center">حالة الطلب</th>
+            <th class="py-3 text-nowrap fw-bold" :class="currentLanguage === 'ar' ? 'text-end pe-3 pe-md-4' : 'text-start ps-3 ps-md-4'">
+              {{ t('emergency.table.requestCode') }}
+            </th>
+            <th class="py-3 text-nowrap fw-bold">{{ t('emergency.table.requiredBloodType') }}</th>
+            <th class="py-3 text-nowrap fw-bold">{{ t('emergency.table.unitsCount') }}</th>
+            <th class="py-3 text-nowrap fw-bold">{{ t('emergency.table.urgencyLevel') }}</th>
+            <th class="py-3 text-nowrap fw-bold">{{ t('emergency.table.respondersCount') }}</th>
+            <th class="py-3 text-nowrap fw-bold text-center" :class="currentLanguage === 'ar' ? 'ps-3 ps-md-4' : 'pe-3 pe-md-4'">
+              {{ t('emergency.table.status') }}
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -21,7 +25,7 @@
             :class="selectedRequestId === req.id ? 'active-selected-row' : ''"
           >
             <!-- رقم الطلب -->
-            <td class="fw-bold text-dark py-3.5 text-end pe-3 pe-md-4 fs-8">
+            <td class="fw-bold text-dark py-3.5 fs-8" :class="currentLanguage === 'ar' ? 'text-end pe-3 pe-md-4' : 'text-start ps-3 ps-md-4'">
               {{ req.code }}
             </td>
 
@@ -38,7 +42,7 @@
             <!-- مستوى الخطورة -->
             <td class="py-3.5">
               <span :class="['pill-badge px-3 py-1 fs-9 fw-bold', req.urgencyCustomClass]">
-                {{ req.urgencyText }}
+                {{ translateUrgency(req.urgencyRaw) }}
               </span>
             </td>
 
@@ -53,16 +57,16 @@
             </td>
 
             <!-- حالة الطلب -->
-            <td class="py-3.5 ps-3 ps-md-4 text-center">
+            <td class="py-3.5 text-center" :class="currentLanguage === 'ar' ? 'ps-3 ps-md-4' : 'pe-3 pe-md-4'">
               <span :class="['pill-badge px-3 py-1 fs-9 fw-bold', req.statusCustomClass]">
-                {{ req.statusText }}
+                {{ translateStatus(req.statusRaw, req.coverage) }}
               </span>
             </td>
           </tr>
 
           <tr v-if="formattedRequests.length === 0">
             <td colspan="6" class="text-center text-muted py-4 fs-8">
-              لا توجد طلبات متطابقة مع التصفية الحالية.
+              {{ t('emergency.table.noRequests') }}
             </td>
           </tr>
         </tbody>
@@ -73,6 +77,8 @@
 
 <script setup>
 import { computed } from 'vue';
+
+const currentLanguage = computed(() => localStorage.getItem('musaef_lang') || 'ar');
 
 const props = defineProps({
   requests: {
@@ -87,24 +93,68 @@ const props = defineProps({
 
 defineEmits(['selectRequest']);
 
+const dictionary = {
+  ar: {
+    "emergency.table.requestCode": "رقم الطلب",
+    "emergency.table.requiredBloodType": "الفصيلة المطلوبة",
+    "emergency.table.unitsCount": "عدد الوحدات",
+    "emergency.table.urgencyLevel": "مستوى الخطورة",
+    "emergency.table.respondersCount": "عدد المستجيبين",
+    "emergency.table.status": "حالة الطلب",
+    "emergency.table.noRequests": "لا توجد طلبات متطابقة مع التصفية الحالية."
+  },
+  en: {
+    "emergency.table.requestCode": "Request Code",
+    "emergency.table.requiredBloodType": "Required Type",
+    "emergency.table.unitsCount": "Units Needed",
+    "emergency.table.urgencyLevel": "Urgency Level",
+    "emergency.table.respondersCount": "Responders Count",
+    "emergency.table.status": "Request Status",
+    "emergency.table.noRequests": "No requests match the current filter."
+  }
+};
+
+const t = (key) => dictionary[currentLanguage.value === 'en' ? 'en' : 'ar'][key] || key;
+
+const translateUrgency = (raw) => {
+  if (currentLanguage.value === 'en') {
+    if (raw === 'حرجة جداً' || raw === 'حرجة' || raw === 'critical') return 'Critical';
+    if (raw === 'عالية' || raw === 'high') return 'High';
+    if (raw === 'متوسطة' || raw === 'medium') return 'Medium';
+    return 'Low';
+  }
+  if (raw === 'critical' || raw === 'حرجة جداً') return 'حرج';
+  if (raw === 'high' || raw === 'عالية') return 'خطر';
+  if (raw === 'medium' || raw === 'متوسطة') return 'متوسط';
+  return 'منخفض';
+};
+
+const translateStatus = (raw, coverage) => {
+  if (currentLanguage.value === 'en') {
+    if (coverage >= 100 || raw === 'مكتملة' || raw === 'completed') return 'Completed';
+    if (coverage > 40 || raw === 'قيد المعالجة' || raw === 'processing') return 'Processing';
+    if (raw === 'مرفوضة' || raw === 'rejected') return 'Rejected';
+    return 'Active';
+  }
+  if (coverage >= 100 || raw === 'completed') return 'مكتملة';
+  if (coverage > 40 || raw === 'processing') return 'قيد المعالجة';
+  if (raw === 'rejected') return 'مرفوضة';
+  return 'نشط';
+};
+
 const formattedRequests = computed(() => {
   return props.requests.map((item, idx) => {
     let code = item.code || `ER-2024-${1840 + idx}`;
-
-    let urgencyText = item.urgency || 'حرج';
+    let urgencyRaw = item.urgency || 'critical';
     let urgencyCustomClass = 'urgency-critical';
 
-    if (urgencyText === 'حرجة جداً' || urgencyText === 'حرجة' || urgencyText === 'حرج' || urgencyText === 'critical') {
-      urgencyText = 'حرج';
+    if (urgencyRaw === 'حرجة جداً' || urgencyRaw === 'critical' || urgencyRaw === 'حرجة') {
       urgencyCustomClass = 'urgency-critical';
-    } else if (urgencyText === 'عالية' || urgencyText === 'خطر' || urgencyText === 'high') {
-      urgencyText = 'خطر';
+    } else if (urgencyRaw === 'عالية' || urgencyRaw === 'high') {
       urgencyCustomClass = 'urgency-high';
-    } else if (urgencyText === 'متوسطة' || urgencyText === 'متوسط' || urgencyText === 'medium') {
-      urgencyText = 'متوسط';
+    } else if (urgencyRaw === 'متوسطة' || urgencyRaw === 'medium') {
       urgencyCustomClass = 'urgency-medium';
     } else {
-      urgencyText = 'منخفض';
       urgencyCustomClass = 'urgency-low';
     }
 
@@ -115,35 +165,24 @@ const formattedRequests = computed(() => {
       progressColorClass = 'bg-warning';
     }
 
-    let statusText = item.status || 'نشط';
+    let statusRaw = item.status || 'active';
     let statusCustomClass = 'status-active';
 
-    if (statusText === 'نشط' || statusText === 'قيد التغطية' || statusText === 'نشط/قيد التغطية') {
-      if (item.coverage >= 100) {
-        statusText = 'مكتملة';
-        statusCustomClass = 'status-completed';
-      } else if (item.coverage > 40) {
-        statusText = 'قيد المعالجة';
-        statusCustomClass = 'status-processing';
-      } else {
-        statusText = 'نشط';
-        statusCustomClass = 'status-active';
-      }
-    } else if (statusText === 'مكتملة' || item.coverage >= 100) {
-      statusText = 'مكتملة';
+    if (item.coverage >= 100 || statusRaw === 'مكتملة' || statusRaw === 'completed') {
       statusCustomClass = 'status-completed';
-    } else if (statusText === 'مرفوضة') {
-      statusText = 'مرفوضة';
+    } else if (item.coverage > 40 || statusRaw === 'processing') {
+      statusCustomClass = 'status-processing';
+    } else if (statusRaw === 'مرفوضة' || statusRaw === 'rejected') {
       statusCustomClass = 'urgency-high';
     }
 
     return {
       ...item,
       code,
-      urgencyText,
+      urgencyRaw,
       urgencyCustomClass,
       progressColorClass,
-      statusText,
+      statusRaw,
       statusCustomClass
     };
   });
@@ -180,21 +219,7 @@ const formattedRequests = computed(() => {
   border-bottom: 1px solid #f1f5f9;
 }
 
-.custom-row td:first-child {
-  border-top-right-radius: 12px;
-  border-bottom-right-radius: 12px;
-  border-right: 1px solid #f1f5f9;
-}
-
-.custom-row td:last-child {
-  border-top-left-radius: 12px;
-  border-bottom-left-radius: 12px;
-  border-left: 1px solid #f1f5f9;
-}
-
-.custom-row:hover {
-  background-color: #f8fafc;
-}
+.custom-row:hover { background-color: #f8fafc; }
 
 .active-selected-row td {
   background-color: #fff1f2 !important;
@@ -208,44 +233,16 @@ const formattedRequests = computed(() => {
   text-align: center;
 }
 
-.urgency-critical {
-  background-color: #fff1f2;
-  color: #e11d48;
-}
+.urgency-critical { background-color: #fff1f2; color: #e11d48; }
+.urgency-high { background-color: #fef2f2; color: #dc2626; }
+.urgency-medium { background-color: #fffbe6; color: #d97706; }
+.urgency-low { background-color: #f0fdf4; color: #16a34a; }
 
-.urgency-high {
-  background-color: #fef2f2;
-  color: #dc2626;
-}
+.status-active { background-color: #fff1f2; color: #e11d48; }
+.status-processing { background-color: #fff7ed; color: #ea580c; }
+.status-completed { background-color: #f0fdf4; color: #16a34a; }
 
-.urgency-medium {
-  background-color: #fffbe6;
-  color: #d97706;
-}
-
-.urgency-low {
-  background-color: #f0fdf4;
-  color: #16a34a;
-}
-
-.status-active {
-  background-color: #fff1f2;
-  color: #e11d48;
-}
-
-.status-processing {
-  background-color: #fff7ed;
-  color: #ea580c;
-}
-
-.status-completed {
-  background-color: #f0fdf4;
-  color: #16a34a;
-}
-
-.progress-bar-flat {
-  background-color: #e2e8f0;
-  border-radius: 4px;
-  overflow: hidden;
-}
+.progress-bar-flat { background-color: #e2e8f0; border-radius: 4px; overflow: hidden; }
+.dir-rtl { direction: rtl; }
+.dir-ltr { direction: ltr; }
 </style>

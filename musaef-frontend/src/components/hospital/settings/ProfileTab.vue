@@ -1,33 +1,33 @@
 <template>
-  <div class="row g-3 g-lg-4 align-items-stretch dir-rtl">
+  <div class="row g-3 g-lg-4 align-items-stretch" :dir="currentLanguage === 'ar' ? 'rtl' : 'ltr'">
     <div class="col-12 col-lg-6">
-      <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white h-100 text-end">
-        <h6 class="fw-bold text-dark mb-4 fs-6">معلومات الجهة الطبية</h6>
+      <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white h-100" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
+        <h6 class="fw-bold text-dark mb-4 fs-6">{{ t('infoTitle') }}</h6>
 
         <div class="d-flex flex-column gap-3 fs-7">
           <div class="d-flex align-items-center gap-2 flex-wrap">
             <span class="text-danger">🏢</span>
-            <span class="text-muted ms-1">اسم المستشفى:</span>
-            <span class="fw-bold text-dark">{{ hospitalData.name }}</span>
+            <span class="text-muted ms-1">{{ t('hospitalName') }}:</span>
+            <span class="fw-bold text-dark">{{ translateFacilityName(hospitalData.name) }}</span>
           </div>
           <div class="d-flex align-items-center gap-2 flex-wrap">
             <span class="text-danger">📍</span>
-            <span class="text-muted ms-1">العنوان:</span>
-            <span class="text-dark">{{ hospitalData.address || 'غير محدد' }}</span>
+            <span class="text-muted ms-1">{{ t('address') }}:</span>
+            <span class="text-dark">{{ translateAddress(hospitalData.address) }}</span>
           </div>
           <div class="d-flex align-items-center gap-2 flex-wrap">
             <span class="text-danger">⏰</span>
-            <span class="text-muted ms-1">ساعات العمل:</span>
-            <span class="text-dark">{{ hospitalData.working_hours }}</span>
+            <span class="text-muted ms-1">{{ t('workingHours') }}:</span>
+            <span class="text-dark">{{ translateWorkingHours(hospitalData.working_hours) }}</span>
           </div>
           <div class="d-flex align-items-center gap-2 flex-wrap">
             <span class="text-danger">📞</span>
-            <span class="text-muted ms-1">رقم الهاتف:</span>
-            <span class="text-dark" dir="ltr">{{ hospitalData.phone_number || 'غير متوفر' }}</span>
+            <span class="text-muted ms-1">{{ t('phone') }}:</span>
+            <span class="text-dark" dir="ltr">{{ hospitalData.phone_number || 'N/A' }}</span>
           </div>
           <div class="d-flex align-items-center gap-2 flex-wrap">
             <span class="text-danger">✉️</span>
-            <span class="text-muted ms-1">البريد الإلكتروني:</span>
+            <span class="text-muted ms-1">{{ t('email') }}:</span>
             <span class="text-dark text-break" dir="ltr">{{ hospitalData.contact_email }}</span>
           </div>
         </div>
@@ -50,6 +50,49 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
+
+const currentLanguage = computed(() => localStorage.getItem('musaef_lang') || 'ar');
+
+const dictionary = {
+  ar: {
+    infoTitle: 'معلومات الجهة الطبية',
+    hospitalName: 'اسم المستشفى',
+    address: 'العنوان',
+    workingHours: 'ساعات العمل',
+    phone: 'رقم الهاتف',
+    email: 'البريد الإلكتروني'
+  },
+  en: {
+    infoTitle: 'Medical Facility Information',
+    hospitalName: 'Hospital Name',
+    address: 'Address',
+    workingHours: 'Working Hours',
+    phone: 'Phone Number',
+    email: 'Email'
+  }
+};
+
+const facilityNameDict = {
+  'جمعية بنك الدم المركزي': 'Central Blood Bank Society',
+  'مجمع الشفاء الطبي': 'Al-Shifa Medical Complex'
+};
+
+const addressDict = {
+  'غزة - الرمال شارع الوحدة': 'Gaza - Rimal, Al-Wehda St',
+  'غزة - الرمال': 'Gaza - Rimal'
+};
+
+const t = (key) => dictionary[currentLanguage.value === 'en' ? 'en' : 'ar'][key] || key;
+const translateFacilityName = (name) => currentLanguage.value === 'en' ? (facilityNameDict[name] || name) : name;
+const translateAddress = (addr) => currentLanguage.value === 'en' ? (addressDict[addr] || addr) : (addr || 'غير محدد');
+const translateWorkingHours = (hours) => {
+  if (currentLanguage.value === 'en') {
+    if (hours === '24 ساعة 7 أيام في الأسبوع') return '24 Hours 7 Days a Week';
+  }
+  return hours;
+};
+
 defineProps({
   hospitalData: {
     type: Object,
@@ -61,4 +104,5 @@ defineProps({
 <style scoped>
 .fs-7 { font-size: 0.85rem; }
 .dir-rtl { direction: rtl; }
+.dir-ltr { direction: ltr; }
 </style>

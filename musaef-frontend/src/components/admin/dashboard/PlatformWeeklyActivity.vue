@@ -1,16 +1,15 @@
 <template>
-  <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white h-100 text-end dir-rtl">
-    <!-- الهيدر المحدث: العنوان يمين والدليل (الطلبات/المتبرعون) يسار -->
+  <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white h-100" :class="currentLanguage === 'ar' ? 'dir-rtl text-end' : 'dir-ltr text-start'">
     <div class="d-flex justify-content-between align-items-center mb-3 mb-md-4 flex-wrap gap-2">
-      <h6 class="fw-bold text-dark mb-0 fs-7">النشاط العام للمنصة (أسبوعي)</h6>
+      <h6 class="fw-bold text-dark mb-0 fs-7">{{ t('weeklyTitle') }}</h6>
 
       <div class="d-flex align-items-center gap-3 fs-9 fw-semibold text-muted">
         <div class="d-flex align-items-center gap-1">
-          <span>المتبرعون</span>
+          <span>{{ t('donors') }}</span>
           <span class="dot-indicator" style="background-color: #DC2626;"></span>
         </div>
         <div class="d-flex align-items-center gap-1">
-          <span>الطلبات</span>
+          <span>{{ t('requests') }}</span>
           <span class="dot-indicator" style="background-color: #2563EB;"></span>
         </div>
       </div>
@@ -64,46 +63,55 @@
       </div>
 
       <div class="d-flex justify-content-between text-muted fs-8 pt-3 px-2 min-chart-width">
-        <span>السبت</span>
-        <span>الأحد</span>
-        <span>الإثنين</span>
-        <span>الثلاثاء</span>
-        <span>الأربعاء</span>
-        <span>الخميس</span>
-        <span>الجمعة</span>
+        <span>{{ translateDay('sat') }}</span>
+        <span>{{ translateDay('sun') }}</span>
+        <span>{{ translateDay('mon') }}</span>
+        <span>{{ translateDay('tue') }}</span>
+        <span>{{ translateDay('wed') }}</span>
+        <span>{{ translateDay('thu') }}</span>
+        <span>{{ translateDay('fri') }}</span>
       </div>
     </div>
   </div>
 </template>
+
+<script setup>
+import { computed } from 'vue';
+
+const currentLanguage = computed(() => localStorage.getItem('musaef_lang') || 'ar');
+
+const dictionary = {
+  ar: { weeklyTitle: 'النشاط العام للمنصة (أسبوعي)', donors: 'المتبرعون', requests: 'الطلبات' },
+  en: { weeklyTitle: 'General Platform Activity (Weekly)', donors: 'Donors', requests: 'Requests' }
+};
+
+const dayDict = {
+  ar: { sat: 'السبت', sun: 'الأحد', mon: 'الإثنين', tue: 'الثلاثاء', wed: 'الأربعاء', thu: 'الخميس', fri: 'الجمعة' },
+  en: { sat: 'Sat', sun: 'Sun', mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri' }
+};
+
+const t = (key) => dictionary[currentLanguage.value === 'en' ? 'en' : 'ar'][key] || key;
+const translateDay = (key) => dayDict[currentLanguage.value === 'en' ? 'en' : 'ar'][key];
+</script>
 
 <style scoped>
 .fs-7 { font-size: 0.9rem; }
 .fs-8 { font-size: 0.8rem; }
 .fs-9 { font-size: 0.72rem; }
 
-.min-chart-width {
-  min-width: 400px;
-}
+.min-chart-width { min-width: 400px; }
+@media (min-width: 768px) { .min-chart-width { min-width: 100%; } }
 
-@media (min-width: 768px) {
-  .min-chart-width {
-    min-width: 100%;
-  }
-}
-
-.chart-scroll-wrapper {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-.chart-scroll-wrapper::-webkit-scrollbar {
-  display: none;
-}
+.chart-scroll-wrapper { scrollbar-width: none; -ms-overflow-style: none; }
+.chart-scroll-wrapper::-webkit-scrollbar { display: none; }
 
 .dot-indicator {
   width: 10px;
   height: 10px;
   border-radius: 50%;
   display: inline-block;
+  flex-shrink: 0;
 }
 .dir-rtl { direction: rtl; }
+.dir-ltr { direction: ltr; }
 </style>

@@ -1,9 +1,8 @@
 <template>
   <AdminLayout>
-    <div class="radar-view container-fluid px-2 px-md-3" dir="rtl">
-
+    <div class="radar-view container-fluid px-2 px-md-3" :dir="langStore.dir">
       <div class="row g-3 g-lg-4">
-        <!-- 1. القسم الأيمن: قائمة الحالات الحرجة المباشرة (Emergency Priority AI) -->
+        <!-- 1. قائمة الحالات الحرجة المباشرة -->
         <div class="col-12 col-lg-5 col-xl-4 order-2 order-lg-1">
           <CriticalCasesList
             v-model:filter="filter"
@@ -12,12 +11,11 @@
           />
         </div>
 
-        <!-- 2. القسم الأيسر: الخريطة الجغرافية المباشرة ودليل الخطورة -->
+        <!-- 2. الخريطة الجغرافية ودليل الخطورة -->
         <div class="col-12 col-lg-7 col-xl-8 order-1 order-lg-2">
           <RadarMap />
         </div>
       </div>
-
     </div>
   </AdminLayout>
 </template>
@@ -27,22 +25,41 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import apiClient from '@/api/axios';
 import echo from '@/utils/echo';
+import { useLangStore } from '@/stores/langStore';
 
 import CriticalCasesList from '@/components/admin/liveradar/CriticalCasesList.vue';
 import RadarMap from '@/components/admin/liveradar/RadarMap.vue';
 
+const langStore = useLangStore();
+const currentLanguage = computed(() => langStore.currentLang);
+
 const filter = ref('all');
 const timerInterval = ref(null);
 
-// التثبيت المسبق لـ 3 حالات حرجة مباشرة تظهر فور التحميل وثابتة لاختفاء أي وميض
-const hospitalsList = ref([
+// قاموس الترجمة لمستشفيات الرادار ومواقعها
+const hospitalNames = {
+  'مستشفى الكويتي': { ar: 'مستشفى الكويتي', en: 'Kuwaiti Hospital' },
+  'مستشفى العودة': { ar: 'مستشفى العودة', en: 'Al-Awda Hospital' },
+  'مستشفى ناصر': { ar: 'مستشفى ناصر', en: 'Nasser Hospital' }
+};
+
+const locationNames = {
+  'الجنوب - رفح': { ar: 'الجنوب - رفح', en: 'South - Rafah' },
+  'وسطى - النصيرات': { ar: 'وسطى - النصيرات', en: 'Central - Nuseirat' },
+  'جنوب - خانيونس': { ar: 'جنوب - خانيونس', en: 'South - Khan Younis' }
+};
+
+const getEtaUnit = () => (currentLanguage.value === 'en' ? 'mins' : 'دقائق');
+
+// البيانات المبدئية للثلاث حالات
+const defaultHospitals = [
   {
     id: 1,
     name: 'مستشفى الكويتي',
     location: 'الجنوب - رفح',
-    remainingSeconds: 332,
-    timeLeft: '00:05:32',
-    responseTime: '6 دقائق',
+    remainingSeconds: 324,
+    timeLeft: '00:05:24',
+    responseTimeVal: 6,
     urgency: 'critical',
     icon: 'Group 1000002306.png'
   },
@@ -50,9 +67,9 @@ const hospitalsList = ref([
     id: 2,
     name: 'مستشفى العودة',
     location: 'وسطى - النصيرات',
-    remainingSeconds: 272,
-    timeLeft: '00:04:32',
-    responseTime: '6 دقائق',
+    remainingSeconds: 264,
+    timeLeft: '00:04:24',
+    responseTimeVal: 6,
     urgency: 'critical',
     icon: 'Group 1000002306 (1).png'
   },
@@ -60,18 +77,29 @@ const hospitalsList = ref([
     id: 3,
     name: 'مستشفى ناصر',
     location: 'جنوب - خانيونس',
-    remainingSeconds: 572,
-    timeLeft: '00:09:32',
-    responseTime: '6 دقائق',
+    remainingSeconds: 564,
+    timeLeft: '00:09:24',
+    responseTimeVal: 6,
     urgency: 'critical',
     icon: 'Group 1000002306 (2).png'
   }
-]);
+];
 
-// تصفية المستشفيات بحسب الفلتر (حرجة، متوسطة، منخفضة)
+const hospitalsList = ref([...defaultHospitals]);
+
+// تصفية المستشفيات بحسب الفلتر مع ترجمة الأسماء والمواقع ديناميكياً
 const filteredHospitals = computed(() => {
-  if (filter.value === 'all') return hospitalsList.value;
-  return hospitalsList.value.filter(h => h.urgency === filter.value);
+  let list = hospitalsList.value;
+  if (filter.value !== 'all') {
+    list = list.filter(h => h.urgency === filter.value);
+  }
+
+  return list.map(h => ({
+    ...h,
+    translatedName: hospitalNames[h.name] ? hospitalNames[h.name][currentLanguage.value === 'en' ? 'en' : 'ar'] : h.name,
+    translatedLocation: locationNames[h.location] ? locationNames[h.location][currentLanguage.value === 'en' ? 'en' : 'ar'] : h.location,
+    responseTime: `${h.responseTimeVal || 6} ${getEtaUnit()}`
+  }));
 });
 
 const formatSeconds = (totalSec) => {
@@ -83,6 +111,7 @@ const formatSeconds = (totalSec) => {
 };
 
 const startCountdowns = () => {
+  if (timerInterval.value) clearInterval(timerInterval.value);
   timerInterval.value = setInterval(() => {
     hospitalsList.value.forEach(item => {
       if (item.remainingSeconds > 0) {
@@ -98,20 +127,19 @@ const fetchRadarData = async () => {
     const res = await apiClient.get('/admin/emergency-radar');
     const data = res.data?.data || res.data;
     if (Array.isArray(data) && data.length > 0) {
-      // دمج البيانات القادمة فقط إن وجدت وتجاوز قيم الاستبدال الخاطئة
       hospitalsList.value = data.map(item => ({
         id: item.id,
-        name: item.hospital?.facility_name || item.name || 'مستشفى معتمد',
-        location: item.hospital?.address || item.location || 'قطاع غزة',
+        name: item.hospital?.facility_name || item.name || 'مستشفى الكويتي',
+        location: item.hospital?.address || item.location || 'غزة',
         remainingSeconds: item.remaining_seconds || 300,
         timeLeft: formatSeconds(item.remaining_seconds || 300),
-        responseTime: item.expected_response_time || '6 دقائق',
+        responseTimeVal: item.expected_response_time_val || 6,
         urgency: item.urgency_level || item.urgency || 'critical',
         icon: item.icon || 'Group 1000002306.png'
       }));
     }
   } catch (err) {
-    console.warn('الحفاظ على القائمة الافتراضية المكونة من 3 حالات حرجة بنجاح.');
+    console.warn('Maintaining default critical cases list successfully.');
   }
 };
 
@@ -119,19 +147,16 @@ onMounted(() => {
   fetchRadarData();
   startCountdowns();
 
-  // الاستماع اللحظي للحدث المباشر لإضافة الحالة الحرجة فوراً لرادار الأدمن
   try {
     echo.channel('emergencies.live')
       .listen('.new.emergency', (e) => {
-        console.log('🚨 تم إطلاق حالة حرجة على رادار الطوارئ:', e.bloodRequest);
-
         const newCase = {
           id: e.bloodRequest?.id || Date.now(),
-          name: e.bloodRequest?.facility_name || 'مستشفى طارئ جديد',
+          name: e.bloodRequest?.facility_name || 'مستشفى الكويتي',
           location: e.bloodRequest?.address || 'غزة',
           remainingSeconds: 600,
           timeLeft: '00:10:00',
-          responseTime: '5 دقائق',
+          responseTimeVal: 5,
           urgency: 'critical',
           icon: 'Group 1000002306.png'
         };
@@ -139,7 +164,7 @@ onMounted(() => {
         hospitalsList.value.unshift(newCase);
       });
   } catch (err) {
-    console.warn('تعذر الاتصال بقناة رادار الطوارئ الحي.');
+    console.warn('Could not connect to live emergency radar channel.');
   }
 });
 

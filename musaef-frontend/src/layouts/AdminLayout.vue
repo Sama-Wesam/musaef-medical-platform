@@ -1,65 +1,45 @@
 <template>
-  <div class="admin-layout-wrapper">
-    <!-- الهيدر الموحد في الأعلى -->
+  <div class="admin-layout min-vh-100 bg-light-gray d-flex flex-column" dir="rtl">
     <AdminHeader />
 
-    <!-- هيكل الصفحة الأسفل (المحتوى والسايدبار) -->
-    <div class="admin-container">
+    <div class="d-flex flex-grow-1 main-body-wrapper">
+      <!-- السايدبار ثابت في أقصى اليمين دائماً -->
+      <aside class="sidebar-container flex-shrink-0">
+        <AdminSidebar />
+      </aside>
 
-      <!-- السايدبار الموحد (يظهر في الجانب الأيمن حسب تصميم المنصة) -->
-      <AdminSidebar />
-
-      <!-- محتوى الصفحات المتغير -->
-      <main class="admin-main-content">
+      <!-- محتوى الصفحة يتغير اتجاه نصها بحسب اللغة دون نقل السايدبار -->
+      <main class="main-content-container flex-grow-1 p-3 p-md-4 overflow-x-hidden" :dir="currentLocale === 'ar' ? 'rtl' : 'ltr'">
         <slot />
       </main>
-
     </div>
   </div>
 </template>
 
 <script setup>
-// استدعاء المكونين بالمسار الصحيح بناءً على هيكل المشروع
+import { computed } from 'vue';
 import AdminHeader from '@/components/admin/AdminHeader.vue';
 import AdminSidebar from '@/components/admin/AdminSidebar.vue';
-import { useAuthStore } from '@/stores/authStore';
 
-const authStore = useAuthStore();
+const currentLocale = computed(() => localStorage.getItem('musaef_lang') || 'ar');
 </script>
 
 <style scoped>
-/* الحاوية الكلية للتخطيط */
-.admin-layout-wrapper {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background-color: #f8f9fa;
+.admin-layout {
+  background-color: #f8fafc;
 }
 
-/* حاوية المحتوى والسايدبار تقع تحت الهيدر تماماً */
-.admin-container {
-  display: flex;
-  flex: 1;
+.main-body-wrapper {
   width: 100%;
-  flex-direction: row-reverse; /* لضمان ظهور السايدبار يمين والمحتوى يسار */
-  align-items: flex-start;
 }
 
-/* مساحة المحتوى الأساسي */
-.admin-main-content {
-  flex-grow: 1;
-  padding: 24px;
-  background-color: #f8f9fa;
-  min-height: calc(100vh - 96px); /* ارتفاع الشاشة مطروحاً منه ارتفاع الهيدر */
-  overflow-x: hidden;
+.bg-light-gray {
+  background-color: #f8fafc;
 }
 
-/* التجاوب مع الشاشات الصغيرة */
-@media (max-width: 992px) {
-  .admin-container {
-    flex-direction: column;
-    overflow-y: auto;
-    max-height: calc(100vh - 96px);
+@media (max-width: 991.98px) {
+  .sidebar-container {
+    display: none;
   }
 }
 </style>

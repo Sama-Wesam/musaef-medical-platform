@@ -1,11 +1,11 @@
 <template>
   <HospitalLayout>
-    <div class="blood-bank-inventory container-fluid px-2 px-md-3 dir-rtl text-end" dir="rtl">
+    <div class="blood-bank-inventory container-fluid px-2 px-md-3" :class="currentLanguage === 'ar' ? 'dir-rtl text-end' : 'dir-ltr text-start'">
 
       <!-- الهيدر وعنوان الصفحة -->
-      <div class="mb-4">
-        <h4 class="fw-bold text-dark mb-1 fs-5 fs-md-4">إدارة بنك الدم</h4>
-        <p class="text-muted fs-8 mb-0">متابعة وتحديث مخزون وحدات الدم بشكل لحظي</p>
+      <div class="mb-4" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
+        <h4 class="fw-bold text-dark mb-1 fs-5 fs-md-4">{{ t('pageTitle') }}</h4>
+        <p class="text-muted fs-8 mb-0">{{ t('pageSubtitle') }}</p>
       </div>
 
       <!-- 1. الكروت الإحصائية العلوية -->
@@ -31,7 +31,7 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
 import HospitalLayout from '@/layouts/HospitalLayout.vue';
 import { useHospitalStore } from '@/stores/hospitalStore';
 
@@ -42,6 +42,20 @@ import RecentDonationsCard from '@/components/hospital/bloodinventory/RecentDona
 import StockOperationsForm from '@/components/hospital/bloodinventory/StockOperationsForm.vue';
 
 const hospitalStore = useHospitalStore();
+const currentLanguage = computed(() => localStorage.getItem('musaef_lang') || 'ar');
+
+const dictionary = {
+  ar: {
+    pageTitle: 'إدارة بنك الدم',
+    pageSubtitle: 'متابعة وتحديث مخزون وحدات الدم بشكل لحظي'
+  },
+  en: {
+    pageTitle: 'Blood Bank Management',
+    pageSubtitle: 'Real-time tracking and updating of blood unit inventory'
+  }
+};
+
+const t = (key) => dictionary[currentLanguage.value === 'en' ? 'en' : 'ar'][key] || key;
 
 onMounted(() => {
   hospitalStore.fetchInventory();
@@ -54,4 +68,6 @@ onMounted(() => {
   padding-bottom: 24px;
 }
 .dir-rtl { direction: rtl; }
+.dir-ltr { direction: ltr; }
+.fs-8 { font-size: 0.82rem; }
 </style>

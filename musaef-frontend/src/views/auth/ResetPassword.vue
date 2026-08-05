@@ -404,14 +404,10 @@ const registerForm = ref({
   terms: false
 });
 
-// تعديل المسار باستخدام الـ Alias المباشر @ تجنباً لأي مشاكل
 const getImageUrl = (fileName) => {
   return new URL(`../../assets/images/${fileName}`, import.meta.url).href;
 };
 
-// ==========================================
-// الربط المباشر مع Pinia Store
-// ==========================================
 const handleLogin = async () => {
   loading.value = true;
   try {
@@ -496,9 +492,13 @@ const handleLogoFallback = (e) => {
 </script>
 
 <style scoped>
+.auth-page-wrapper,
+.auth-page-wrapper * {
+  font-family: Arial, sans-serif !important;
+}
+
 .dir-rtl {
   direction: rtl;
-  font-family: Arial, sans-serif;
 }
 
 .auth-page-wrapper {

@@ -1,5 +1,5 @@
 <template>
-  <div class="about-page d-flex flex-column min-vh-100 dir-rtl">
+  <div class="about-page d-flex flex-column min-vh-100" :dir="currentLanguage === 'ar' ? 'rtl' : 'ltr'">
     <!-- Navbar -->
     <Navbar />
 
@@ -8,27 +8,22 @@
       <div class="container-fluid p-0">
         <div class="row g-0 align-items-center hero-row">
 
-          <!-- النص الوصفي (يمين) -->
+          <!-- النص الوصفي -->
           <div class="col-lg-6 hero-content d-flex align-items-center justify-content-end px-3 px-md-5">
             <div class="hero-text-wrapper">
               <h1 class="fw-bold hero-title mb-3">
-                من نحن<span class="text-danger">...</span>
+                {{ $t('about.title') }}<span class="text-danger">...</span>
               </h1>
-              <p class="hero-description text-secondary">
-                منصة ذكية تهدف إلى تسهيل التبرع بالدم<br />
-                إنقاذ الأرواح باستخدام الذكاء الاصطناعي والتقنيات الحديثة.<br />
-                نربط بين المتبرعين والمحتاجين في لحظات الطوارئ<br />
-                لضمان وصول الدم في الوقت المناسب.
-              </p>
+              <p class="hero-description text-secondary" v-html="$t('about.descriptionHtml')"></p>
             </div>
           </div>
 
-          <!-- صورة الهيرو (يسار) -->
+          <!-- صورة الهيرو -->
           <div class="col-lg-6 hero-image-col">
             <div class="hero-image-wrapper">
               <img
                 :src="getImageUrl('about-doctor.png')"
-                alt="من نحن - مسعف"
+                :alt="$t('about.title')"
                 class="hero-about-img"
                 @error="handleImgFallback"
               />
@@ -50,9 +45,9 @@
               <div class="icon-circle bg-pink-light text-danger mx-auto mb-3">
                 <i class="bi bi-eye-fill fs-4"></i>
               </div>
-              <h4 class="fw-bold text-danger mb-3 fs-5 fs-md-4">رؤيتنا:</h4>
+              <h4 class="fw-bold text-danger mb-3 fs-5 fs-md-4">{{ $t('about.visionTitle') }}</h4>
               <p class="text-secondary fs-7 mb-0 lh-lg">
-                أن نكون المنصة الرائدة والأكثر موثوقية في مجال التبرع بالدم على مستوى الوطن العربي.
+                {{ $t('about.visionDesc') }}
               </p>
             </div>
           </div>
@@ -63,9 +58,9 @@
               <div class="icon-circle bg-pink-light text-danger mx-auto mb-3">
                 <i class="bi bi-envelope-fill fs-4"></i>
               </div>
-              <h4 class="fw-bold text-danger mb-3 fs-5 fs-md-4">رسالتنا:</h4>
+              <h4 class="fw-bold text-danger mb-3 fs-5 fs-md-4">{{ $t('about.missionTitle') }}</h4>
               <p class="text-secondary fs-7 mb-0 lh-lg">
-                توفير الدم بأسرع وقت وبأعلى معايير الأمان من خلال منصة موثوقة تعتمد على التقنية والتعاون الإنساني لإنقاذ الأرواح.
+                {{ $t('about.missionDesc') }}
               </p>
             </div>
           </div>
@@ -76,13 +71,13 @@
               <div class="icon-circle bg-pink-light mx-auto mb-3">
                 <img
                   :src="getIconUrl('Frame 2147225414.png')"
-                  alt="أهدافنا"
+                  :alt="$t('about.goalsTitle')"
                   class="goal-icon"
                 />
               </div>
-              <h4 class="fw-bold text-danger mb-3 fs-5 fs-md-4">أهدافنا</h4>
+              <h4 class="fw-bold text-danger mb-3 fs-5 fs-md-4">{{ $t('about.goalsTitle') }}</h4>
               <p class="text-secondary fs-7 mb-0 lh-lg">
-                إنقاذ الأرواح عبر تسهيل التبرع بدم آمن وسريع وفعال باستخدام التقنية والذكاء الاصطناعي.
+                {{ $t('about.goalsDesc') }}
               </p>
             </div>
           </div>
@@ -94,17 +89,17 @@
     <!-- 3. مميزات المنصة -->
     <section id="features" class="py-4 py-md-5 bg-white">
       <div class="container text-center px-3 px-md-4">
-        <h3 class="fw-bold text-dark section-title-center mb-1 fs-4 fs-md-3">مميزات المنصة؟!</h3>
+        <h3 class="fw-bold text-dark section-title-center mb-1 fs-4 fs-md-3">{{ $t('about.featuresTitle') }}</h3>
         <div class="title-red-line mx-auto mb-4 mb-md-5"></div>
 
         <div class="row g-3 justify-content-center">
-          <div v-for="feature in features" :key="feature.title" class="col-12 col-sm-6 col-md-4 col-lg-2">
+          <div v-for="(feature, idx) in features" :key="idx" class="col-12 col-sm-6 col-md-4 col-lg-2">
             <div class="p-3 border rounded-4 bg-white h-100 feature-card shadow-sm d-flex flex-column justify-content-center align-items-center text-center">
               <div class="feature-icon mb-2 text-danger fs-2">
                 <i :class="feature.icon"></i>
               </div>
-              <h6 class="fw-bold fs-7 mb-2 text-dark">{{ feature.title }}</h6>
-              <p class="text-muted fs-8 mb-0 lh-base">{{ feature.desc }}</p>
+              <h6 class="fw-bold fs-7 mb-2 text-dark">{{ $t(feature.titleKey) }}</h6>
+              <p class="text-muted fs-8 mb-0 lh-base">{{ $t(feature.descKey) }}</p>
             </div>
           </div>
         </div>
@@ -114,24 +109,24 @@
     <!-- 4. التقييمات والآراء -->
     <section id="reviews" class="py-4 py-md-5 bg-light-gray">
       <div class="container text-center px-3 px-md-4">
-        <h3 class="fw-bold text-dark section-title-center mb-1 fs-4 fs-md-3">التقييمات والآراء</h3>
+        <h3 class="fw-bold text-dark section-title-center mb-1 fs-4 fs-md-3">{{ $t('about.reviewsTitle') }}</h3>
         <div class="title-red-line mx-auto mb-4 mb-md-5"></div>
 
         <div class="row g-3 g-md-4">
-          <div v-for="review in reviews" :key="review.name" class="col-12 col-md-4">
-            <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white h-100 text-end review-card d-flex flex-column justify-content-between">
-              <p class="text-dark fw-medium fs-7 mb-4 lh-lg">"{{ review.text }}"</p>
+          <div v-for="(review, idx) in reviews" :key="idx" class="col-12 col-md-4">
+            <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white h-100 text-start-dir review-card d-flex flex-column justify-content-between">
+              <p class="text-dark fw-medium fs-7 mb-4 lh-lg">"{{ $t(review.textKey) }}"</p>
 
               <div class="d-flex align-items-center gap-3 mt-auto pt-3 border-top border-light-subtle">
                 <img
                   :src="getImageUrl(review.avatar)"
                   class="rounded-circle avatar-img flex-shrink-0"
-                  :alt="review.name"
+                  :alt="$t(review.nameKey)"
                   @error="handleAvatarFallback"
                 />
                 <div class="min-w-0">
-                  <h6 class="fw-bold mb-0.5 text-dark fs-7 text-truncate">{{ review.name }}</h6>
-                  <small class="text-muted fs-8 text-truncate d-block">{{ review.role }}</small>
+                  <h6 class="fw-bold mb-0.5 text-dark fs-7 text-truncate">{{ $t(review.nameKey) }}</h6>
+                  <small class="text-muted fs-8 text-truncate d-block">{{ $t(review.roleKey) }}</small>
                 </div>
               </div>
             </div>
@@ -140,24 +135,24 @@
       </div>
     </section>
 
-    <!-- 5. بالتعاون مع (المستشفيات والجهات الشريكة) -->
+    <!-- 5. بالتعاون مع -->
     <section id="partners" class="py-5 bg-white">
       <div class="container text-center px-3 px-md-4">
-        <h3 class="fw-bold text-dark section-title-center mb-1 fs-4 fs-md-3">بالتعاون مع</h3>
+        <h3 class="fw-bold text-dark section-title-center mb-1 fs-4 fs-md-3">{{ $t('about.partnersTitle') }}</h3>
         <div class="title-red-line mx-auto mb-4 mb-md-5"></div>
 
-        <div class="row g-3 justify-content-center align-items-stretch" v-if="partners.length > 0">
-          <div v-for="partner in partners" :key="partner.id || partner.facility_name" class="col-12 col-sm-6 col-md-4 col-lg-3">
+        <div class="row g-3 justify-content-center align-items-stretch" v-if="localizedPartners.length > 0">
+          <div v-for="partner in localizedPartners" :key="partner.id || partner.facility_name" class="col-12 col-sm-6 col-md-4 col-lg-3">
             <div class="partner-card p-3 border rounded-4 bg-white shadow-sm d-flex align-items-center gap-3 h-100">
               <div class="partner-icon-wrapper rounded-circle bg-pink-light text-danger flex-shrink-0 d-flex align-items-center justify-content-center">
                 <i class="bi bi-hospital fs-4"></i>
               </div>
-              <div class="text-end min-w-0 flex-grow-1">
-                <h6 class="fw-bold fs-7 text-dark mb-1 text-truncate" :title="partner.facility_name || partner.name">
+              <div class="text-start-dir min-w-0 flex-grow-1 overflow-hidden">
+                <h6 class="partner-name fw-bold fs-7 text-dark mb-1" :title="partner.facility_name || partner.name">
                   {{ partner.facility_name || partner.name }}
                 </h6>
-                <small class="text-muted fs-8 d-block text-truncate">
-                  <i class="bi bi-geo-alt me-1 text-danger"></i>{{ partner.address || 'قطاع غزة' }}
+                <small class="partner-address text-muted fs-8 d-block">
+                  <i class="bi bi-geo-alt me-1 text-danger"></i>{{ partner.address || $t('about.defaultLocation') }}
                 </small>
               </div>
             </div>
@@ -166,7 +161,7 @@
 
         <div v-else class="text-muted py-4">
           <div class="spinner-border text-danger spinner-border-sm me-2" role="status"></div>
-          <span>جاري تحميل الجهات الشريكة...</span>
+          <span>{{ $t('about.loadingPartners') }}</span>
         </div>
       </div>
     </section>
@@ -177,10 +172,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import apiClient from '@/api/axios';
 import Navbar from '@/components/common/Navbar.vue';
 import Footer from '@/components/common/Footer.vue';
+
+const { locale, te, t } = useI18n();
+const currentLanguage = computed(() => locale.value || 'ar');
 
 const getImageUrl = (name) => {
   return new URL(`../../assets/images/${name}`, import.meta.url).href;
@@ -191,49 +190,92 @@ const getIconUrl = (name) => {
 };
 
 const features = ref([
-  { title: 'التنبؤ بالطلب المستقبلي', desc: 'تحليل ذكي للتنبؤ بالطلب وتوفير الدم مسبقاً.', icon: 'bi bi-graph-up-arrow' },
-  { title: 'إدارة مخزون الدم', desc: 'متابعة دقيقة لمخزون الدم وتحديثه لحظياً.', icon: 'bi bi-droplet' },
-  { title: 'نظام المكافآت', desc: 'نقاط ومكافآت لتشجيع العطاء المستمر.', icon: 'bi bi-gift' },
-  { title: 'إشعارات الطوارئ', desc: 'تنبيهات فورية للحالات الطارئة القريبة منك.', icon: 'bi bi-bell' },
-  { title: 'الخرائط الذكية', desc: 'تحديد أقرب المراكز والمستشفيات بسهولة.', icon: 'bi bi-geo-alt' },
-  { title: 'المطابقة الذكية', desc: 'نظام ذكي يطابق بين المتبرع والمحتاج بدقة وسرعة.', icon: 'bi bi-magic' }
+  { titleKey: 'about.features.predict.title', descKey: 'about.features.predict.desc', icon: 'bi bi-graph-up-arrow' },
+  { titleKey: 'about.features.inventory.title', descKey: 'about.features.inventory.desc', icon: 'bi bi-droplet' },
+  { titleKey: 'about.features.rewards.title', descKey: 'about.features.rewards.desc', icon: 'bi bi-gift' },
+  { titleKey: 'about.features.alerts.title', descKey: 'about.features.alerts.desc', icon: 'bi bi-bell' },
+  { titleKey: 'about.features.maps.title', descKey: 'about.features.maps.desc', icon: 'bi bi-geo-alt' },
+  { titleKey: 'about.features.matching.title', descKey: 'about.features.matching.desc', icon: 'bi bi-magic' }
 ]);
 
 const reviews = ref([
   {
-    name: 'أحمد سامي',
-    role: '(متبرع منتظم)',
-    text: 'التبرع عبر "مسعف" ليس مجرد عمل إنساني، بل هو تجربة سلسة ومتكاملة تشعرك بالقيمة الحقيقية لكل قطرة دم تمنحها، ويبقى الأثر الذي تتركه في حياة الآخرين.',
+    nameKey: 'about.reviews.r1.name',
+    roleKey: 'about.reviews.r1.role',
+    textKey: 'about.reviews.r1.text',
     avatar: 'review-ahmed.png'
   },
   {
-    name: 'مريم خالد',
-    role: '(متبرعة)',
-    text: 'لم أكن أتخيل أن ضغطة زر واحدة قد تفصل بين حياة إنسان وموته. "مسعف" أرشدتني في الوقت والمكان المناسبين لأكون سبباً حقيقياً في إحياء نفس.',
+    nameKey: 'about.reviews.r2.name',
+    roleKey: 'about.reviews.r2.role',
+    textKey: 'about.reviews.r2.text',
     avatar: 'review-maryam.png'
   },
   {
-    name: 'مستشفى الشفاء (غزة)',
-    role: '',
-    text: 'في أوقات الطوارئ، كل ثانية تصنع فارقاً بين الحياة والموت. منصة "مسعف" كانت الشريان الأساسي الذي أمد مستشفياتنا بالدم المستمر ومكننا من الاستجابة الفوريه لإنقاذ المصابين.',
+    nameKey: 'about.reviews.r3.name',
+    roleKey: 'about.reviews.r3.role',
+    textKey: 'about.reviews.r3.text',
     avatar: 'shifa-hospital.png'
   }
 ]);
 
-// قائمة افتراضية احتياطية تعتمد على المستشفيات المسجلة لديك
-const defaultHospitals = [
-  { id: 1, facility_name: 'مجمع الشفاء الطبي', address: 'غزة - الرمال' },
-  { id: 2, facility_name: 'جمعية بنك الدم المركزي', address: 'غزة - شارع الوحدة' },
-  { id: 3, facility_name: 'بنك الدم المركزي - وزارة الصحة', address: 'غزة - النصر' },
-  { id: 4, facility_name: 'مستشفى الأهلي العربي (المعمداني)', address: 'غزة - الزيتون' },
-  { id: 5, facility_name: 'مستشفى القدس - الهلال الأحمر', address: 'غزة - تل الهوى' },
-  { id: 6, facility_name: 'مستشفى كمال عدوان', address: 'شمال غزة - بيت لاهيا' },
-  { id: 7, facility_name: 'المستشفى الإندونيسي', address: 'شمال غزة - بيت لاهيا' },
-  { id: 8, facility_name: 'مجمع ناصر الطبي', address: 'خانيونس - وسط المدينة' },
-  { id: 9, facility_name: 'مستشفى أبو يوسف النجار', address: 'رفح - الجنينة' }
+const defaultHospitalsKeys = [
+  { id: 1, name: 'مجمع الشفاء الطبي', address: 'غزة - الرمال' },
+  { id: 2, name: 'جمعية بنك الدم المركزي', address: 'غزة - الرمال شارع الوحدة' },
+  { id: 3, name: 'بنك الدم المركزي - وزارة الصحة', address: 'غزة - النصر' },
+  { id: 4, name: 'مستشفى الأهلي العربي (المعمداني)', address: 'غزة - الزيتون' },
+  { id: 5, name: 'مستشفى القدس - الهلال الأحمر', address: 'غزة - تل الهوى' },
+  { id: 6, name: 'مستشفى أصدقاء المريض الخيري', address: 'غزة - حي الرمال - شارع الشهداء' },
+  { id: 7, name: 'مستشفى كمال عدوان', address: 'شمال غزة - بيت لاهيا' },
+  { id: 8, name: 'المستشفى الإندونيسي', address: 'شمال غزة - بيت لاهيا' },
+  { id: 9, name: 'مستشفى العودة - النصيرات', address: 'المحافظة الوسطى - النصيرات' }
 ];
 
+const partnersDictionary = {
+  // Hospitals
+  'مجمع الشفاء الطبي': 'Al-Shifa Medical Complex',
+  'جمعية بنك الدم المركزي': 'Central Blood Bank Society',
+  'بنك الدم المركزي - وزارة الصحة': 'Central Blood Bank - Ministry of Health',
+  'مستشفى الأهلي العربي (المعمداني)': 'Ahli Arab Hospital (Al-Maamadani)',
+  'مستشفى القدس - الهلال الأحمر': 'Al-Quds Hospital - Red Crescent',
+  'مستشفى أصدقاء المريض الخيري': 'Patient\'s Friends Benevolent Society Hospital',
+  'مستشفى كمال عدوان': 'Kamal Adwan Hospital',
+  'المستشفى الإندونيسي': 'Indonesian Hospital',
+  'مستشفى العودة - النصيرات': 'Al-Awda Hospital - Nuseirat',
+
+  // Locations
+  'غزة - الرمال': 'Gaza - Rimal',
+  'غزة - الرمال شارع الوحدة': 'Gaza - Rimal, Al-Wehda St.',
+  'غزة - النصر': 'Gaza - Al-Nasr',
+  'غزة - الزيتون': 'Gaza - Zeitoun',
+  'غزة - تل الهوى': 'Gaza - Tel Al-Hawa',
+  'غزة - حي الرمال - شارع الشهداء': 'Gaza - Rimal, Al-Shohada St.',
+  'شمال غزة - بيت لاهيا': 'North Gaza - Beit Lahia',
+  'المحافظة الوسطى - النصيرات': 'Middle Area - Nuseirat'
+};
+
 const partners = ref([]);
+
+const localizedPartners = computed(() => {
+  const sourceList = partners.value.length > 0 ? partners.value : defaultHospitalsKeys;
+  const isEn = currentLanguage.value === 'en';
+
+  return sourceList.map(item => {
+    let nameVal = item.facility_name || item.name || (item.nameKey && te(item.nameKey) ? t(item.nameKey) : '');
+    let addressVal = item.address || (item.addressKey && te(item.addressKey) ? t(item.addressKey) : '');
+
+    if (isEn) {
+      nameVal = item.facility_name_en || item.name_en || partnersDictionary[nameVal] || nameVal;
+      addressVal = item.address_en || partnersDictionary[addressVal] || addressVal;
+    }
+
+    return {
+      ...item,
+      facility_name: nameVal,
+      address: addressVal
+    };
+  });
+});
 
 const fetchPartners = async () => {
   try {
@@ -241,11 +283,10 @@ const fetchPartners = async () => {
     if (res && res.data && (Array.isArray(res.data) ? res.data.length > 0 : res.data.data?.length > 0)) {
       partners.value = Array.isArray(res.data) ? res.data : res.data.data;
     } else {
-      partners.value = defaultHospitals;
+      partners.value = defaultHospitalsKeys;
     }
   } catch (error) {
-    console.warn('استخدام القائمة الافتراضية للمستشفيات الشريكة:', error);
-    partners.value = defaultHospitals;
+    partners.value = defaultHospitalsKeys;
   }
 };
 
@@ -263,9 +304,9 @@ const handleAvatarFallback = (e) => {
 </script>
 
 <style scoped>
-.dir-rtl {
-  direction: rtl;
-  font-family: Arial, sans-serif;
+.about-page,
+.about-page * {
+  font-family: Arial, sans-serif !important;
 }
 
 .hero-about-section {
@@ -297,13 +338,20 @@ const handleAvatarFallback = (e) => {
   margin-left: 200px;
 }
 
+[dir="ltr"] .hero-text-wrapper {
+  align-items: flex-start;
+  text-align: left;
+  margin-left: 0;
+  margin-right: 200px;
+}
+
 .hero-title {
   width: 100%;
   font-size: 52px;
   font-weight: 800;
   line-height: 1.35;
   color: #0F172A;
-  text-align: right;
+  text-align: inherit;
   margin-bottom: 18px;
 }
 
@@ -312,7 +360,7 @@ const handleAvatarFallback = (e) => {
   font-size: 25px;
   color: #6B7280;
   line-height: 2;
-  text-align: right;
+  text-align: inherit;
   margin-bottom: 28px;
 }
 
@@ -337,6 +385,12 @@ const handleAvatarFallback = (e) => {
   user-select: none;
   pointer-events: none;
   margin-left: 40px;
+}
+
+[dir="ltr"] .hero-about-img {
+  transform: translateX(60px);
+  margin-left: 0;
+  margin-right: 40px;
 }
 
 .bg-light-gray {
@@ -393,6 +447,14 @@ const handleAvatarFallback = (e) => {
   border: 1px solid #f1f5f9;
 }
 
+.text-start-dir {
+  text-align: right;
+}
+
+[dir="ltr"] .text-start-dir {
+  text-align: left;
+}
+
 .avatar-img {
   width: 50px;
   height: 50px;
@@ -401,7 +463,6 @@ const handleAvatarFallback = (e) => {
   border: 1px solid #e2e8f0;
 }
 
-/* تنسيق بطاقات المستشفيات الشريكة */
 .partner-card {
   border: 1px solid #e2e8f0 !important;
   transition: all 0.3s ease;
@@ -418,12 +479,27 @@ const handleAvatarFallback = (e) => {
   height: 45px;
 }
 
+/* حل مشكلة طفح وتجاوز النص حدود البطاقة */
+.partner-name {
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.35;
+}
+
+.partner-address {
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.3;
+}
+
 .fs-7 { font-size: 0.9rem; }
 .fs-8 { font-size: 0.8rem; }
 
 @media (max-width: 1200px) {
-  .hero-text-wrapper {
+  .hero-text-wrapper,
+  [dir="ltr"] .hero-text-wrapper {
     margin-left: 0;
+    margin-right: 0;
   }
 }
 
@@ -444,15 +520,15 @@ const handleAvatarFallback = (e) => {
   }
 
   .hero-text-wrapper {
-    margin: 0 auto;
-    align-items: center;
-    text-align: center;
+    margin: 0 auto !important;
+    align-items: center !important;
+    text-align: center !important;
     max-width: 100%;
   }
 
   .hero-title,
   .hero-description {
-    text-align: center;
+    text-align: center !important;
   }
 
   .hero-about-img {
@@ -460,8 +536,9 @@ const handleAvatarFallback = (e) => {
     max-width: 420px;
     height: auto;
     object-fit: contain;
-    transform: none;
-    margin-left: 0;
+    transform: none !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
   }
 
   .hero-title {

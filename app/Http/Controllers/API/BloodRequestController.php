@@ -29,7 +29,7 @@ class BloodRequestController extends Controller
      */
     public function store(Request $request)
     {
-        // 1. التعرف التلقائي وتحويل اسم الفصيلة النصي إلى blood_type_id إن وجد
+        // 1. التعرف التلقائي وتحويل اسم الفصيلة النصي إلى blood_type_id 
         if (!$request->has('blood_type_id') && $request->has('blood_type')) {
             $bloodTypeName = trim($request->input('blood_type'));
             $bloodTypeRecord = BloodType::where('name', $bloodTypeName)

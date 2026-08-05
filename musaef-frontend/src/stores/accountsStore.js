@@ -111,21 +111,35 @@ export const useAccountsStore = defineStore('accounts', {
       if (confirm(`هل أنت تأكد من حذف هذا الـ ${type}؟`)) {
         try {
           await apiClient.delete(`/admin/accounts/${id}`);
+          this.removeLocalItem(id, type);
           alert('تم الحذف بنجاح');
         } catch (e) {
-          if (type === 'متبرع') this.donors = this.donors.filter(d => d.id !== id && d.phone !== id);
-          if (type === 'مستشفى') this.hospitals = this.hospitals.filter(h => h.id !== id);
-          if (type === 'صلاحية') this.roles = this.roles.filter(r => r.id !== id);
+          // Fallback للتعامل المحلي في حالة عدم وجود بيئة خلفية نشطة
+          this.removeLocalItem(id, type);
           alert(`تم حذف الـ ${type} بنجاح!`);
         }
+      }
+    },
+
+    removeLocalItem(id, type) {
+      const isDonor = type.includes('متبرع') || type.includes('Donor');
+      const isHospital = type.includes('مستشفى') || type.includes('Hospital');
+      const isRole = type.includes('صلاحية') || type.includes('دور') || type.includes('Role') || type.includes('Permission');
+
+      if (isDonor) {
+        this.donors = this.donors.filter(d => d.id !== id && d.phone !== id);
+      } else if (isHospital) {
+        this.hospitals = this.hospitals.filter(h => h.id !== id);
+      } else if (isRole) {
+        this.roles = this.roles.filter(r => r.id !== id);
       }
     },
 
     // 2. زر التعديل التفاعلي
     editItem(item, type) {
       const newName = prompt(`تعديل اسم الـ ${type}:`, item.name);
-      if (newName) {
-        item.name = newName;
+      if (newName && newName.trim() !== '') {
+        item.name = newName.trim();
         alert(`تم تعديل بيانات الـ ${type} بنجاح!`);
       }
     },
@@ -133,13 +147,18 @@ export const useAccountsStore = defineStore('accounts', {
     // 3. أزرار الإضافة التفاعلية (+ إضافة متبرع / + إضافة مستشفى / + إضافة دور)
     addItem(type) {
       const name = prompt(`أدخل اسم الـ ${type} الجديد:`);
-      if (name) {
-        if (type === 'متبرع') {
-          this.donors.unshift({ id: Date.now(), name, phone: '0590000000', bloodType: 'O+', location: 'غزة', status: 'نشط' });
-        } else if (type === 'مستشفى') {
-          this.hospitals.unshift({ id: Date.now(), name, type: 'حكومي', phone: '082000000', location: 'غزة', status: 'نشط' });
-        } else if (type === 'دور/صلاحية') {
-          this.roles.unshift({ id: Date.now(), name, roleTitle: 'مسؤول', email: 'new@musaef.ps', scope: 'محدود', status: 'نشط' });
+      if (name && name.trim() !== '') {
+        const cleanName = name.trim();
+        const isDonor = type.includes('متبرع') || type.includes('Donor');
+        const isHospital = type.includes('مستشفى') || type.includes('Hospital');
+        const isRole = type.includes('صلاحية') || type.includes('دور') || type.includes('Role') || type.includes('Permission');
+
+        if (isDonor) {
+          this.donors.unshift({ id: Date.now(), name: cleanName, phone: '0590000000', bloodType: 'O+', location: 'غزة', status: 'نشط' });
+        } else if (isHospital) {
+          this.hospitals.unshift({ id: Date.now(), name: cleanName, type: 'حكومي', phone: '082000000', location: 'غزة', status: 'نشط' });
+        } else if (isRole) {
+          this.roles.unshift({ id: Date.now(), name: cleanName, roleTitle: 'مسؤول', email: 'new@musaef.ps', scope: 'محدود', status: 'نشط' });
         }
         alert(`تمت إضافة الـ ${type} بنجاح!`);
       }
@@ -147,7 +166,32 @@ export const useAccountsStore = defineStore('accounts', {
 
     // 4. زر تصدير السجل (CSV)
     exportLogsCSV() {
-      alert('جاري تحضير وتصدير سجل العمليات بصيغة CSV...');
+      if (!this.auditLogs.length) {
+        alert('لا توجد بيانات متاحة للتصدير.');
+        return;
+      }
+
+      const headers = ['ID', 'المستخدم', 'الدور', 'نوع العملية', 'التفاصيل', 'عنوان IP', 'التاريخ والوقت'];
+      const rows = this.auditLogs.map(log => [
+        log.id,
+        `"${log.user || ''}"`,
+        `"${log.role || ''}"`,
+        `"${log.actionType || ''}"`,
+        `"${log.details || ''}"`,
+        `"${log.ipAddress || ''}"`,
+        `"${log.timestamp || ''}"`
+      ]);
+
+      const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+
+      link.setAttribute('href', url);
+      link.setAttribute('download', `audit_logs_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     },
 
     // 5. التنقل بين الصفحات (Pagination)

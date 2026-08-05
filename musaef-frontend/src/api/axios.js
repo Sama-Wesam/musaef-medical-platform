@@ -10,6 +10,10 @@ const apiClient = axios.create({
 
 apiClient.interceptors.request.use(
   (config) => {
+    // 1. تمرير اللغة الحالية إلى Laravel Middleware عبر Header
+    const currentLang = localStorage.getItem('musaef_lang') || 'ar';
+    config.headers['Accept-Language'] = currentLang;
+
     if (config.data instanceof FormData) {
       delete config.headers['Content-Type'];
     } else {

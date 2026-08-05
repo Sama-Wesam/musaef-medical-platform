@@ -1,6 +1,8 @@
 <template>
-  <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white h-100 text-end dir-rtl">
-    <h6 class="fw-bold text-dark mb-3 mb-md-4 fs-7">توزيع الطلبات حسب فصيلة الدم</h6>
+  <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white h-100" :class="currentLanguage === 'ar' ? 'dir-rtl text-end' : 'dir-ltr text-start'">
+    <h6 class="fw-bold text-dark mb-3 mb-md-4 fs-7" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
+      {{ t('title') }}
+    </h6>
 
     <div class="d-flex flex-column flex-sm-row align-items-center justify-content-around gap-3">
       <!-- الدائرة المركزية (Donut View) -->
@@ -23,33 +25,33 @@
 
         <div class="position-absolute text-center">
           <strong class="d-block fs-5 fw-bold text-dark mb-0">24,892</strong>
-          <small class="text-muted fs-9">إجمالي الطلبات</small>
+          <small class="text-muted fs-9">{{ t('totalRequests') }}</small>
         </div>
       </div>
 
       <!-- دليل الفصائل والألوان -->
       <div class="d-flex flex-column gap-2 fs-8 text-dark">
-        <div class="d-flex align-items-center gap-2 justify-content-end">
+        <div class="d-flex align-items-center gap-2" :class="currentLanguage === 'ar' ? 'justify-content-end' : 'justify-content-start'">
           <span class="text-muted fs-9">(41%)</span>
           <span class="fw-bold me-1">O+</span>
           <span class="dot-indicator" style="background-color: #D32F2F;"></span>
         </div>
-        <div class="d-flex align-items-center gap-2 justify-content-end">
+        <div class="d-flex align-items-center gap-2" :class="currentLanguage === 'ar' ? 'justify-content-end' : 'justify-content-start'">
           <span class="text-muted fs-9">(22%)</span>
           <span class="fw-bold me-1">A+</span>
           <span class="dot-indicator" style="background-color: #2563EB;"></span>
         </div>
-        <div class="d-flex align-items-center gap-2 justify-content-end">
+        <div class="d-flex align-items-center gap-2" :class="currentLanguage === 'ar' ? 'justify-content-end' : 'justify-content-start'">
           <span class="text-muted fs-9">(13%)</span>
           <span class="fw-bold me-1">B+</span>
           <span class="dot-indicator" style="background-color: #16A34A;"></span>
         </div>
-        <div class="d-flex align-items-center gap-2 justify-content-end">
+        <div class="d-flex align-items-center gap-2" :class="currentLanguage === 'ar' ? 'justify-content-end' : 'justify-content-start'">
           <span class="text-muted fs-9">(15%)</span>
           <span class="fw-bold me-1">AB+</span>
           <span class="dot-indicator" style="background-color: #FBBF24;"></span>
         </div>
-        <div class="d-flex align-items-center gap-2 justify-content-end">
+        <div class="d-flex align-items-center gap-2" :class="currentLanguage === 'ar' ? 'justify-content-end' : 'justify-content-start'">
           <span class="text-muted fs-9">(6%)</span>
           <span class="fw-bold me-1">O-</span>
           <span class="dot-indicator" style="background-color: #7C3AED;"></span>
@@ -58,6 +60,25 @@
     </div>
   </div>
 </template>
+
+<script setup>
+import { computed } from 'vue';
+
+const currentLanguage = computed(() => localStorage.getItem('musaef_lang') || 'ar');
+
+const dictionary = {
+  ar: {
+    title: 'توزيع الطلبات حسب فصيلة الدم',
+    totalRequests: 'إجمالي الطلبات'
+  },
+  en: {
+    title: 'Requests Distribution by Blood Type',
+    totalRequests: 'Total Requests'
+  }
+};
+
+const t = (key) => dictionary[currentLanguage.value === 'en' ? 'en' : 'ar'][key] || key;
+</script>
 
 <style scoped>
 .fs-7 { font-size: 0.9rem; }
@@ -87,4 +108,5 @@
   display: inline-block;
 }
 .dir-rtl { direction: rtl; }
+.dir-ltr { direction: ltr; }
 </style>

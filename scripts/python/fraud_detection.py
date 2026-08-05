@@ -12,7 +12,7 @@ def main():
         # تدريب النموذج لاكتشاف القيم الشاذة
         model = IsolationForest(contamination=0.05, random_state=42)
 
-        # -1 يعني "احتيالي/شاذ"، 1 يعني "طبيعي"
+        # -1 يعني "احتيالي"، 1 يعني "طبيعي"
         data['is_fraud'] = model.fit_predict(data[['request_frequency', 'quantity', 'time_interval']])
 
         # تصفية الطلبات المشبوهة فقط

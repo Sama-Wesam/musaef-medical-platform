@@ -1,9 +1,9 @@
 <template>
-  <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white text-end dir-rtl">
+  <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white" :class="currentLanguage === 'ar' ? 'dir-rtl text-end' : 'dir-ltr text-start'">
 
     <div class="d-flex align-items-center justify-content-start gap-2 mb-3">
       <span class="fs-5">🔔</span>
-      <h6 class="fw-bold text-dark mb-0 fs-6">إشعارات النظام العامة</h6>
+      <h6 class="fw-bold text-dark mb-0 fs-6">{{ t('systemNotifsTitle') }}</h6>
     </div>
 
     <div class="d-flex flex-column gap-3 mb-4">
@@ -12,9 +12,9 @@
           <div class="icon-box bg-danger-subtle rounded-3 p-2 d-flex align-items-center justify-content-center flex-shrink-0">
             <span class="text-danger fs-6">🔔</span>
           </div>
-          <div class="text-end">
-            <span class="fw-bold text-dark d-block fs-7 mb-1">الإشعارات الفورية</span>
-            <small class="text-muted fs-8 d-block">استقبال التنبيهات الفورية على المتصفح عند استجابة متبرع جديد لنداء طارئ</small>
+          <div :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
+            <span class="fw-bold text-dark d-block fs-7 mb-1">{{ t('instantNotifs') }}</span>
+            <small class="text-muted fs-8 d-block">{{ t('instantNotifsDesc') }}</small>
           </div>
         </div>
         <div class="form-check form-switch m-0 p-0 ms-auto ms-sm-0">
@@ -27,9 +27,9 @@
           <div class="icon-box bg-danger-subtle rounded-3 p-2 d-flex align-items-center justify-content-center flex-shrink-0">
             <span class="text-danger fs-6">✉️</span>
           </div>
-          <div class="text-end">
-            <span class="fw-bold text-dark d-block fs-7 mb-1">إشعارات البريد الإلكتروني</span>
-            <small class="text-muted fs-8 d-block">تلقي تقارير أسبوعية وإشعارات الحساب الرسمية عبر البريد</small>
+          <div :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
+            <span class="fw-bold text-dark d-block fs-7 mb-1">{{ t('emailNotifs') }}</span>
+            <small class="text-muted fs-8 d-block">{{ t('emailNotifsDesc') }}</small>
           </div>
         </div>
         <div class="form-check form-switch m-0 p-0 ms-auto ms-sm-0">
@@ -40,7 +40,7 @@
 
     <div class="d-flex align-items-center justify-content-start gap-2 mb-3 pt-2">
       <span class="fs-5">🧠</span>
-      <h6 class="fw-bold text-dark mb-0 fs-6">تنبيهات المخزون الذكية والذكاء الاصطناعي (Blood Demand Forecast AI)</h6>
+      <h6 class="fw-bold text-dark mb-0 fs-6">{{ t('aiNotifsTitle') }}</h6>
     </div>
 
     <div class="d-flex flex-column gap-3 mb-4">
@@ -49,9 +49,9 @@
           <div class="icon-box bg-danger-subtle rounded-3 p-2 d-flex align-items-center justify-content-center flex-shrink-0">
             <span class="text-danger fs-6">🩸</span>
           </div>
-          <div class="text-end">
-            <span class="fw-bold text-dark d-block fs-7 mb-1">تنبيهات نقص المخزون الحرج</span>
-            <small class="text-muted fs-8 d-block">إرسال إشعارات فورية عند انخفاض أية فصيلة دم عن الحد الأدنى في المستشفى</small>
+          <div :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
+            <span class="fw-bold text-dark d-block fs-7 mb-1">{{ t('criticalStockAlerts') }}</span>
+            <small class="text-muted fs-8 d-block">{{ t('criticalStockAlertsDesc') }}</small>
           </div>
         </div>
         <div class="form-check form-switch m-0 p-0 ms-auto ms-sm-0">
@@ -64,9 +64,9 @@
           <div class="icon-box bg-danger-subtle rounded-3 p-2 d-flex align-items-center justify-content-center flex-shrink-0">
             <span class="text-danger fs-6">📈</span>
           </div>
-          <div class="text-end">
-            <span class="fw-bold text-dark d-block fs-7 mb-1">توقعات الذكاء الاصطناعي للطلب المستقبلي</span>
-            <small class="text-muted fs-8 d-block">تلقي توصيات استباقية من نموذج BloodDemandForecast لإطلاق حملات التبرع قبل النقص المتوقع خلال 72 ساعة</small>
+          <div :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
+            <span class="fw-bold text-dark d-block fs-7 mb-1">{{ t('aiPredictions') }}</span>
+            <small class="text-muted fs-8 d-block">{{ t('aiPredictionsDesc') }}</small>
           </div>
         </div>
         <div class="form-check form-switch m-0 p-0 ms-auto ms-sm-0">
@@ -75,16 +75,55 @@
       </div>
     </div>
 
-    <!-- أزرار التحكم الفعالة والتفاعلية -->
+    <!-- أزرار التحكم -->
     <div class="d-flex align-items-center justify-content-end gap-2 gap-md-3 mt-4 pt-2 border-top">
-      <button type="button" class="btn btn-outline-secondary px-3 px-md-4 py-2 rounded-3 fs-7 fw-bold" @click="resetNotifSettings">إلغاء</button>
-      <button type="button" class="btn btn-danger px-4 px-md-5 py-2 rounded-3 fs-7 fw-bold" @click="saveNotificationSettings">حفظ الإعدادات</button>
+      <button type="button" class="btn btn-outline-secondary px-3 px-md-4 py-2 rounded-3 fs-7 fw-bold" @click="resetNotifSettings">{{ t('cancel') }}</button>
+      <button type="button" class="btn btn-danger px-4 px-md-5 py-2 rounded-3 fs-7 fw-bold" @click="saveNotificationSettings">{{ t('saveSettings') }}</button>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+
+const currentLanguage = computed(() => localStorage.getItem('musaef_lang') || 'ar');
+
+const dictionary = {
+  ar: {
+    systemNotifsTitle: 'إشعارات النظام العامة',
+    instantNotifs: 'الإشعارات الفورية',
+    instantNotifsDesc: 'استقبال التنبيهات الفورية على المتصفح عند استجابة متبرع جديد لنداء طارئ',
+    emailNotifs: 'إشعارات البريد الإلكتروني',
+    emailNotifsDesc: 'تلقي تقارير أسبوعية وإشعارات الحساب الرسمية عبر البريد',
+    aiNotifsTitle: 'تنبيهات المخزون الذكية والذكاء الاصطناعي (Blood Demand Forecast AI)',
+    criticalStockAlerts: 'تنبيهات نقص المخزون الحرج',
+    criticalStockAlertsDesc: 'إرسال إشعارات فورية عند انخفاض أية فصيلة دم عن الحد الأدنى في المستشفى',
+    aiPredictions: 'توقعات الذكاء الاصطناعي للطلب المستقبلي',
+    aiPredictionsDesc: 'تلقي توصيات استباقية من نموذج BloodDemandForecast لإطلاق حملات التبرع قبل النقص المتوقع خلال 72 ساعة',
+    cancel: 'إلغاء',
+    saveSettings: 'حفظ الإعدادات',
+    saveSuccess: 'تم حفظ إعدادات الإشعارات والتنبيهات الذكية بنجاح',
+    resetSuccess: 'تم استعادة الإعدادات الافتراضية بنجاح'
+  },
+  en: {
+    systemNotifsTitle: 'General System Notifications',
+    instantNotifs: 'Instant Push Notifications',
+    instantNotifsDesc: 'Receive instant browser alerts when a donor responds to an emergency call',
+    emailNotifs: 'Email Notifications',
+    emailNotifsDesc: 'Receive weekly reports and official account notifications via email',
+    aiNotifsTitle: 'Smart Inventory & AI Alerts (Blood Demand Forecast AI)',
+    criticalStockAlerts: 'Critical Low Stock Alerts',
+    criticalStockAlertsDesc: 'Send instant notifications when any blood type drops below the minimum limit',
+    aiPredictions: 'AI Demand Forecast Predictions',
+    aiPredictionsDesc: 'Receive proactive recommendations from BloodDemandForecast AI before expected 72h shortage',
+    cancel: 'Cancel',
+    saveSettings: 'Save Settings',
+    saveSuccess: 'Notification and smart alert settings saved successfully',
+    resetSuccess: 'Default settings restored successfully'
+  }
+};
+
+const t = (key) => dictionary[currentLanguage.value === 'en' ? 'en' : 'ar'][key] || key;
 
 const notifSettings = ref({
   instantNotifs: true,
@@ -94,7 +133,7 @@ const notifSettings = ref({
 });
 
 const saveNotificationSettings = () => {
-  alert('تم حفظ إعدادات الإشعارات والتنبيهات الذكية بنجاح');
+  alert(t('saveSuccess'));
 };
 
 const resetNotifSettings = () => {
@@ -104,7 +143,7 @@ const resetNotifSettings = () => {
     criticalStockAlerts: true,
     aiPredictions: true
   };
-  alert('تم استعادة الإعدادات الافتراضية بنجاح');
+  alert(t('resetSuccess'));
 };
 </script>
 
@@ -115,6 +154,7 @@ const resetNotifSettings = () => {
 .bg-light-subtle { background-color: #f8fafc; }
 .icon-box { width: 38px; height: 38px; }
 .dir-rtl { direction: rtl; }
+.dir-ltr { direction: ltr; }
 
 .custom-red-switch {
   width: 2.8em !important;
@@ -128,10 +168,5 @@ const resetNotifSettings = () => {
 .custom-red-switch:checked {
   background-color: #dc3545 !important;
   border-color: #dc3545 !important;
-}
-
-.custom-red-switch:focus {
-  border-color: transparent;
-  box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
 }
 </style>

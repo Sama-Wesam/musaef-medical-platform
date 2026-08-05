@@ -1,17 +1,17 @@
 <template>
-  <div class="ai-section dir-rtl">
+  <div :class="currentLanguage === 'ar' ? 'dir-rtl text-end' : 'dir-ltr text-start'">
     <div class="row g-3 g-lg-4">
 
-      <!-- العمود الأيمن: التحكم بنموذج المطابقة التنبؤية والتنبؤ بالطلب -->
+      <!-- العمود الأيمن / الأيسر: التحكم بنموذج المطابقة والتنبؤ بالطلب -->
       <div class="col-12 col-lg-8">
         <div class="d-flex flex-column gap-3 gap-md-4">
           <!-- مربع التحكم بنموذج المطابقة التنبؤية (SmartMatchingEngine) -->
-          <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white text-end">
-            <h6 class="fw-bold text-dark mb-3 mb-md-4 fs-6 text-end">التحكم بنموذج المطابقة التنبؤية (Smart Matching AI)</h6>
+          <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white">
+            <h6 class="fw-bold text-dark mb-3 mb-md-4 fs-6">{{ t('smartMatchingTitle') }}</h6>
 
             <div class="p-3 bg-white rounded-3 mb-3 mb-md-4 border border-light-subtle">
               <div class="d-flex justify-content-between align-items-center mb-3">
-                <span class="fw-bold text-dark fs-8">الحد الأدنى نسبة المطابقة الذكية لإرسال النداء للمتبرع</span>
+                <span class="fw-bold text-dark fs-8">{{ t('minMatchingLabel') }}</span>
               </div>
 
               <div class="position-relative my-4 px-2">
@@ -25,7 +25,7 @@
                   />
                   <div
                     class="slider-tooltip position-absolute bg-red-main text-white fw-bold rounded-2 px-2 py-0.5 fs-9"
-                    :style="{ right: `calc(${matchingPercentage}% - 18px)` }"
+                    :style="tooltipPositionStyle"
                   >
                     {{ aiSettings.matchingThreshold }}%
                   </div>
@@ -43,8 +43,8 @@
 
             <!-- أزرار الزيادة والنقصان لنطاق البحث -->
             <div class="d-flex align-items-center justify-content-between p-2.5 p-md-3 border-top flex-wrap gap-2">
-              <span class="fw-bold text-dark fs-8">نطاق البحث الجغرافي الأقصى للـ AI (حول المستشفى)</span>
-              <div class="input-group counter-input ms-auto ms-sm-0" style="width: 120px;">
+              <span class="fw-bold text-dark fs-8">{{ t('searchRadiusLabel') }}</span>
+              <div class="input-group counter-input" style="width: 120px;" :class="currentLanguage === 'ar' ? 'ms-auto ms-sm-0' : 'me-auto me-sm-0'">
                 <button class="btn btn-outline-secondary btn-sm" @click="aiSettings.searchRadius > 1 && aiSettings.searchRadius--">-</button>
                 <input type="text" class="form-control text-center fw-bold fs-8" readonly :value="aiSettings.searchRadius" />
                 <button class="btn btn-outline-secondary btn-sm" @click="aiSettings.searchRadius++">+</button>
@@ -54,34 +54,34 @@
             <!-- خوارزمية كشف وتصفية الحسابات الوهمية (FraudDetectionAI) -->
             <div class="d-flex align-items-center justify-content-between p-2.5 p-md-3 border-top flex-wrap gap-2">
               <div class="min-w-0">
-                <span class="fw-bold text-dark fs-8 d-block mb-1 text-truncate">خوارزمية كشف وتصفية الحسابات الوهمية تلقائياً (Fraud Detection AI)</span>
-                <small class="text-muted fs-9 d-block text-truncate">تقوم AI بتحليل السجلات عبر fraud_detection.py وإيقاف الحسابات الوهمية تلقائياً</small>
+                <span class="fw-bold text-dark fs-8 d-block mb-1 text-truncate">{{ t('fraudTitle') }}</span>
+                <small class="text-muted fs-9 d-block text-truncate">{{ t('fraudDesc') }}</small>
               </div>
-              <div class="form-check form-switch m-0 ms-auto ms-sm-0">
+              <div class="form-check form-switch m-0" :class="currentLanguage === 'ar' ? 'ms-auto ms-sm-0' : 'me-auto me-sm-0'">
                 <input class="form-check-input custom-switch" type="checkbox" v-model="aiSettings.fakeAccountFilter" />
               </div>
             </div>
           </div>
 
-          <!-- مربع التحكم بنموذج التنبؤ بالطلب المستقبلي (BloodDemandForecast & HeatMapAnalysis) -->
-          <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white text-end">
-            <h6 class="fw-bold text-dark mb-3 mb-md-4 fs-6 text-end">التحكم بنموذج التنبؤ بالطلب المستقبلي (Demand Forecast & Heatmap)</h6>
+          <!-- مربع التحكم بنموذج التنبؤ بالطلب المستقبلي -->
+          <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white">
+            <h6 class="fw-bold text-dark mb-3 mb-md-4 fs-6">{{ t('forecastTitle') }}</h6>
 
             <div class="d-flex align-items-center justify-content-between p-2.5 p-md-3 border-bottom flex-wrap gap-2">
-              <span class="fw-bold text-dark fs-8">دورية تحديث الخريطة الحرارية لنقص الفصائل (Heat Map Analysis)</span>
-              <select class="form-select form-select-sm fs-8 rounded-3 ms-auto ms-sm-0" style="width: 130px;" v-model="aiSettings.heatmapFrequency">
-                <option value="12">كل 12 ساعة</option>
-                <option value="24">كل 24 ساعة</option>
-                <option value="6">كل 6 ساعات</option>
+              <span class="fw-bold text-dark fs-8">{{ t('heatmapFrequencyLabel') }}</span>
+              <select class="form-select form-select-sm fs-8 rounded-3" style="width: 140px;" :class="currentLanguage === 'ar' ? 'ms-auto ms-sm-0' : 'me-auto me-sm-0'" v-model="aiSettings.heatmapFrequency">
+                <option value="12">{{ t('every12h') }}</option>
+                <option value="24">{{ t('every24h') }}</option>
+                <option value="6">{{ t('every6h') }}</option>
               </select>
             </div>
 
             <div class="d-flex align-items-center justify-content-between p-2.5 p-md-3 flex-wrap gap-2">
               <div class="min-w-0">
-                <span class="fw-bold text-dark fs-8 d-block mb-1 text-truncate">نظام التنبيهات الاستباقية للمستشفيات (Blood Demand Forecast)</span>
-                <small class="text-muted fs-9 d-block text-truncate">إرسال توصيات آليه للمستشفيات برفع الجاهزية عند توقع نقص فصيلة معينة خلال 48 ساعة.</small>
+                <span class="fw-bold text-dark fs-8 d-block mb-1 text-truncate">{{ t('proactiveAlertsTitle') }}</span>
+                <small class="text-muted fs-9 d-block text-truncate">{{ t('proactiveAlertsDesc') }}</small>
               </div>
-              <div class="form-check form-switch m-0 ms-auto ms-sm-0">
+              <div class="form-check form-switch m-0" :class="currentLanguage === 'ar' ? 'ms-auto ms-sm-0' : 'me-auto me-sm-0'">
                 <input class="form-check-input custom-switch" type="checkbox" v-model="aiSettings.proactiveAlerts" />
               </div>
             </div>
@@ -89,47 +89,47 @@
         </div>
       </div>
 
-      <!-- العمود الأيسر: حالة النماذج الذكية + مقاييس الأداء + زر الحفظ -->
+      <!-- العمود الآخر: حالة النماذج الذكية + مقاييس الأداء + زر الحفظ -->
       <div class="col-12 col-lg-4">
         <div class="d-flex flex-column gap-3">
-          <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white text-end">
-            <h6 class="fw-bold text-dark mb-3 mb-md-4 text-end fs-6">حالة النماذج الذكية ومقاييس الأداء</h6>
+          <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white">
+            <h6 class="fw-bold text-dark mb-3 mb-md-4 fs-6">{{ t('modelsStatusTitle') }}</h6>
 
-            <div class="ai-stat-card p-3 rounded-4 mb-3 position-relative bg-light-subtle text-end">
+            <div class="ai-stat-card p-3 rounded-4 mb-3 position-relative bg-light-subtle">
               <div class="d-flex justify-content-between align-items-start mb-2">
                 <div class="model-icon">
-                  <img :src="getIconUrl('Frame 2147226156.png')" alt="نموذج التنبؤ بالطلب" width="32" height="32" />
+                  <img :src="getIconUrl('Frame 2147226156.png')" alt="Forecast Model" width="32" height="32" />
                 </div>
-                <div class="text-end">
-                  <h6 class="fw-bold text-dark fs-8 mb-1">نموذج التنبؤ بالطلب</h6>
-                  <span class="badge bg-success-subtle text-success rounded-pill px-2 py-1 fs-9">يعمل بكفاءة</span>
+                <div :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
+                  <h6 class="fw-bold text-dark fs-8 mb-1">{{ t('forecastModelName') }}</h6>
+                  <span class="badge bg-success-subtle text-success rounded-pill px-2 py-1 fs-9">{{ t('statusEfficient') }}</span>
                 </div>
               </div>
-              <div class="mt-3 text-end">
-                <span class="text-muted fs-9 d-block mb-1">دقة التنبؤ (Model Metrics)</span>
+              <div class="mt-3">
+                <span class="text-muted fs-9 d-block mb-1">{{ t('modelMetricsLabel') }}</span>
                 <h4 class="fw-bold text-purple mb-0 fs-4">49.2%</h4>
               </div>
             </div>
 
-            <div class="ai-stat-card p-3 rounded-4 mb-3 position-relative bg-light-subtle text-end">
+            <div class="ai-stat-card p-3 rounded-4 mb-3 position-relative bg-light-subtle">
               <div class="d-flex justify-content-between align-items-start mb-2">
                 <div class="model-icon">
-                  <img :src="getIconUrl('Group 1000002338.png')" alt="نموذج المطابقة الفورية" width="32" height="32" />
+                  <img :src="getIconUrl('Group 1000002338.png')" alt="Matching Model" width="32" height="32" />
                 </div>
-                <div class="text-end">
-                  <h6 class="fw-bold text-dark fs-8 mb-1">نموذج المطابقة الفورية</h6>
-                  <span class="badge bg-success-subtle text-success rounded-pill px-2 py-1 fs-9">نشط</span>
+                <div :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
+                  <h6 class="fw-bold text-dark fs-8 mb-1">{{ t('instantMatchingModelName') }}</h6>
+                  <span class="badge bg-success-subtle text-success rounded-pill px-2 py-1 fs-9">{{ t('statusActive') }}</span>
                 </div>
               </div>
-              <div class="mt-3 text-end">
-                <span class="text-muted fs-9 d-block mb-1">تم المعالجة بنجاح</span>
+              <div class="mt-3">
+                <span class="text-muted fs-9 d-block mb-1">{{ t('processedSuccessfully') }}</span>
                 <h4 class="fw-bold text-success mb-1 fs-4">2,482</h4>
-                <span class="text-muted fs-9">طلب مطابقة منفذ</span>
+                <span class="text-muted fs-9">{{ t('requestsExecuted') }}</span>
               </div>
             </div>
 
             <div class="ai-info-box p-3 rounded-3 border border-danger-subtle bg-danger-subtle text-danger text-center fs-9">
-              تعمل النماذج الذكية على تحليل البيانات باستمرار لتحسين الثقة وتقليل أوقات الاستجابة لإنقاذ المزيد من الأرواح
+              {{ t('infoBoxText') }}
             </div>
           </div>
 
@@ -145,7 +145,7 @@
               <polyline points="17 21 17 13 7 13 7 21"></polyline>
               <polyline points="7 3 7 8 15 8"></polyline>
             </svg>
-            <span>حفظ الإعدادات المتقدمة</span>
+            <span>{{ t('saveAdvancedSettings') }}</span>
           </button>
         </div>
       </div>
@@ -164,6 +164,61 @@ const props = defineProps({
   aiSettings: Object
 });
 
+const currentLanguage = computed(() => localStorage.getItem('musaef_lang') || 'ar');
+
+const dictionary = {
+  ar: {
+    smartMatchingTitle: 'التحكم بنموذج المطابقة التنبؤية (Smart Matching AI)',
+    minMatchingLabel: 'الحد الأدنى نسبة المطابقة الذكية لإرسال النداء للمتبرع',
+    searchRadiusLabel: 'نطاق البحث الجغرافي الأقصى للـ AI (حول المستشفى)',
+    fraudTitle: 'خوارزمية كشف وتصفية الحسابات الوهمية تلقائياً (Fraud Detection AI)',
+    fraudDesc: 'تقوم AI بتحليل السجلات عبر fraud_detection.py وإيقاف الحسابات الوهمية تلقائياً',
+    forecastTitle: 'التحكم بنموذج التنبؤ بالطلب المستقبلي (Demand Forecast & Heatmap)',
+    heatmapFrequencyLabel: 'دورية تحديث الخريطة الحرارية لنقص الفصائل (Heat Map Analysis)',
+    every12h: 'كل 12 ساعة',
+    every24h: 'كل 24 ساعة',
+    every6h: 'كل 6 ساعات',
+    proactiveAlertsTitle: 'نظام التنبيهات الاستباقية للمستشفيات (Blood Demand Forecast)',
+    proactiveAlertsDesc: 'إرسال توصيات آليه للمستشفيات برفع الجاهزية عند توقع نقص فصيلة معينة خلال 48 ساعة.',
+    modelsStatusTitle: 'حالة النماذج الذكية ومقاييس الأداء',
+    forecastModelName: 'نموذج التنبؤ بالطلب',
+    statusEfficient: 'يعمل بكفاءة',
+    modelMetricsLabel: 'دقة التنبؤ (Model Metrics)',
+    instantMatchingModelName: 'نموذج المطابقة الفورية',
+    statusActive: 'نشط',
+    processedSuccessfully: 'تم المعالجة بنجاح',
+    requestsExecuted: 'طلب مطابقة منفذ',
+    infoBoxText: 'تعمل النماذج الذكية على تحليل البيانات باستمرار لتحسين الثقة وتقليل أوقات الاستجابة لإنقاذ المزيد من الأرواح',
+    saveAdvancedSettings: 'حفظ الإعدادات المتقدمة'
+  },
+  en: {
+    smartMatchingTitle: 'Smart Matching AI Control',
+    minMatchingLabel: 'Minimum Smart Matching Ratio for Donor Alert',
+    searchRadiusLabel: 'Max AI Search Radius Around Hospital',
+    fraudTitle: 'Automatic Fraud Detection Algorithm (Fraud Detection AI)',
+    fraudDesc: 'AI analyzes logs via fraud_detection.py and automatically suspends fake accounts',
+    forecastTitle: 'Demand Forecast & Heatmap Control',
+    heatmapFrequencyLabel: 'Heatmap Update Frequency for Blood Shortages',
+    every12h: 'Every 12 Hours',
+    every24h: 'Every 24 Hours',
+    every6h: 'Every 6 Hours',
+    proactiveAlertsTitle: 'Proactive Alert System for Hospitals (Demand Forecast)',
+    proactiveAlertsDesc: 'Automated recommendations sent to hospitals to prepare when blood shortage is expected in 48h.',
+    modelsStatusTitle: 'Smart Models Status & Performance Metrics',
+    forecastModelName: 'Demand Forecast Model',
+    statusEfficient: 'Efficient',
+    modelMetricsLabel: 'Prediction Accuracy (Model Metrics)',
+    instantMatchingModelName: 'Instant Matching Model',
+    statusActive: 'Active',
+    processedSuccessfully: 'Successfully Processed',
+    requestsExecuted: 'Executed Requests',
+    infoBoxText: 'Smart AI models continuously analyze data to build trust and cut response times to save lives.',
+    saveAdvancedSettings: 'Save Advanced Settings'
+  }
+};
+
+const t = (key) => dictionary[currentLanguage.value === 'en' ? 'en' : 'ar'][key] || key;
+
 const getIconUrl = (fileName) => {
   return new URL(`../../../assets/icons/${fileName}`, import.meta.url).href;
 };
@@ -172,6 +227,13 @@ const matchingPercentage = computed(() => {
   const min = 50;
   const max = 100;
   return (((props.aiSettings?.matchingThreshold || 85) - min) / (max - min)) * 100;
+});
+
+const tooltipPositionStyle = computed(() => {
+  if (currentLanguage.value === 'en') {
+    return { left: `calc(${matchingPercentage.value}% - 18px)` };
+  }
+  return { right: `calc(${matchingPercentage.value}% - 18px)` };
 });
 </script>
 
@@ -224,8 +286,12 @@ const matchingPercentage = computed(() => {
 .slider-tooltip {
   top: -10px;
   transform: translateX(50%);
-  transition: right 0.1s ease;
+  transition: right 0.1s ease, left 0.1s ease;
   pointer-events: none;
+}
+
+.dir-ltr .slider-tooltip {
+  transform: translateX(-50%);
 }
 
 .counter-input .btn {
@@ -245,4 +311,5 @@ const matchingPercentage = computed(() => {
   line-height: 1.5;
 }
 .dir-rtl { direction: rtl; }
+.dir-ltr { direction: ltr; }
 </style>

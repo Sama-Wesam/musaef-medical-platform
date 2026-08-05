@@ -1,13 +1,10 @@
 <template>
-  <header class="hospital-header" dir="rtl">
+  <header class="hospital-header" :dir="currentLocale === 'ar' ? 'rtl' : 'ltr'">
 
     <div class="header-container">
 
-      <!-- ==========================================
-           1. أقصى اليمين : (صورة المستشفى واسمه) + زر القائمة للجوال
-      =========================================== -->
+      <!-- 1. صورة اسم المستشفى واسمه والصفة -->
       <div class="d-flex align-items-center gap-2 gap-sm-3">
-        <!-- زر فتح القائمة الجانبية في الشاشات الصغيرة -->
         <button class="menu-toggle-btn d-lg-none" @click="toggleMobileSidebar" aria-label="Toggle Navigation">
           <i class="bi bi-list fs-3 text-dark"></i>
         </button>
@@ -20,30 +17,28 @@
             @error="handleImageError($event, doctorAvatarImg)"
           />
 
-          <div class="doctor-text d-none d-sm-flex">
+          <div class="doctor-text d-none d-sm-flex" :class="currentLocale === 'ar' ? 'text-end' : 'text-start'">
             <h6 class="doctor-name">
-              {{ doctor.name }}
+              {{ translateHospitalName(doctor.rawName) }}
             </h6>
 
             <span class="doctor-role">
-              {{ doctor.role }}
+              {{ currentLocale === 'en' ? 'Blood Bank Director' : 'مدير بنك الدم' }}
             </span>
           </div>
         </div>
       </div>
 
-      <!-- ==========================================
-           2. المنتصف : مستطيل البحث + زر إنشاء طلب طارئ
-      =========================================== -->
+      <!-- 2. البحث والتوجيه ومحول اللغة -->
       <div class="header-center">
 
-        <!-- مربع البحث -->
         <div class="search-box d-none d-md-flex">
           <input
             type="text"
             v-model="search"
-            placeholder="ابحث عن مريض"
+            :placeholder="currentLocale === 'en' ? 'Search for patient...' : 'ابحث عن مريض'"
             class="search-input"
+            :class="currentLocale === 'ar' ? 'text-end' : 'text-start'"
             @input="handleSearch"
           />
 
@@ -51,20 +46,52 @@
             :src="searchIcon"
             alt="Search"
             class="search-icon"
+            :style="currentLocale === 'en' ? 'left: 14px; right: auto;' : 'right: 14px; left: auto;'"
           />
         </div>
 
-        <!-- زر بارز لإنشاء طلب طارئ فوري -->
-        <button class="btn btn-danger fw-bold rounded-pill px-3 py-2 fs-8 d-flex align-items-center gap-1.5 shadow-sm text-nowrap create-emergency-btn" @click="openCreateEmergencyModal">
-          <i class="bi bi-plus-circle-fill"></i>
-          <span>+ إنشاء طلب طارئ</span>
-        </button>
+        <div class="d-flex align-items-center gap-2">
+
+          <!-- محول اللغة -->
+          <div class="dropdown">
+            <button
+              class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-1.5 fw-semibold d-flex align-items-center gap-1.5 lang-switch-btn"
+              type="button"
+              id="languageMenuButton"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              <i class="bi bi-globe fs-7"></i>
+              <span>{{ currentLocale === 'ar' ? 'العربية' : 'English' }}</span>
+              <i class="bi bi-chevron-down fs-9"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm rounded-3 border-0 mt-1" aria-labelledby="languageMenuButton">
+              <li>
+                <button class="dropdown-item d-flex align-items-center justify-content-between fs-8 py-2" :class="{ 'active fw-bold text-danger bg-light': currentLocale === 'ar' }" @click="switchLanguage('ar')">
+                  <span>العربية</span>
+                  <span v-if="currentLocale === 'ar'" class="text-danger">✓</span>
+                </button>
+              </li>
+              <li>
+                <button class="dropdown-item d-flex align-items-center justify-content-between fs-8 py-2" :class="{ 'active fw-bold text-danger bg-light': currentLocale === 'en' }" @click="switchLanguage('en')">
+                  <span>English</span>
+                  <span v-if="currentLocale === 'en'" class="text-danger">✓</span>
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <!-- زر إنشاء طلب طارئ -->
+          <button class="btn btn-danger fw-bold rounded-pill px-3 py-2 fs-8 d-flex align-items-center gap-1.5 shadow-sm text-nowrap create-emergency-btn" @click="openCreateEmergencyModal">
+            <i class="bi bi-plus-circle-fill"></i>
+            <span>{{ currentLocale === 'en' ? '+ Create Emergency Request' : '+ إنشاء طلب طارئ' }}</span>
+          </button>
+
+        </div>
 
       </div>
 
-      <!-- ==========================================
-           3. أقصى اليسار : شعار منصة مسعف
-      =========================================== -->
+      <!-- 3. الشعار -->
       <div class="header-logo">
         <router-link to="/hospital/dashboard">
           <img
@@ -94,20 +121,41 @@ const authStore = useAuthStore();
 const hospitalStore = useHospitalStore();
 
 const search = ref("");
+const currentLocale = computed(() => localStorage.getItem('musaef_lang') || 'ar');
+
+const hospitalDict = {
+  'جمعية بنك الدم المركزي': 'Central Blood Bank Society',
+  'مجمع الشفاء الطبي': 'Al-Shifa Medical Complex',
+  'بنك الدم المركزي - وزارة الصحة': 'Central Blood Bank - Ministry of Health'
+};
+
+const translateHospitalName = (name) => {
+  if (!name) return currentLocale.value === 'en' ? 'Central Blood Bank Society' : 'جمعية بنك الدم المركزي';
+  return currentLocale.value === 'en' ? (hospitalDict[name] || name) : name;
+};
+
+const switchLanguage = (lang) => {
+  localStorage.setItem('musaef_lang', lang);
+  document.documentElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+  document.documentElement.setAttribute('lang', lang);
+  window.location.reload();
+};
 
 const doctor = computed(() => ({
-  name: authStore.user?.name || "د. سعيد عبده",
-  role: authStore.user?.role || "مدير بنك الدم"
+  rawName: authStore.user?.name || "جمعية بنك الدم المركزي",
+  role: authStore.user?.role || "hospital"
 }));
 
 const doctorAvatar = computed(() => authStore.user?.avatar || doctorAvatarImg);
 
 const openCreateEmergencyModal = () => {
-  const bloodType = prompt("أدخل فصيلة الدم المطلوبة (مثال: O-):", "O-");
+  const bloodType = prompt(currentLocale.value === 'en' ? "Enter required blood type (e.g. O-):" : "أدخل فصيلة الدم المطلوبة (مثال: O-):", "O-");
   if (bloodType) {
-    const units = prompt("أدخل عدد الوحدات المطلوبة:", "3");
+    const units = prompt(currentLocale.value === 'en' ? "Enter required units count:" : "أدخل عدد الوحدات المطلوبة:", "3");
     if (units) {
-      alert(`تم إطلاق النداء الطارئ بنجاح لفصيلة (${bloodType}) وتم تنبيه كافة المتبرعين القريبين عبر نظام Smart Matching AI!`);
+      alert(currentLocale.value === 'en'
+        ? `Emergency call sent successfully for (${bloodType}). Nearby donors notified via Smart Matching AI!`
+        : `تم إطلاق النداء الطارئ بنجاح لفصيلة (${bloodType}) وتم تنبيه كافة المتبرعين القريبين عبر نظام Smart Matching AI!`);
     }
   }
 };
@@ -198,7 +246,6 @@ const handleImageError = (e, fallback) => {
 .doctor-text {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
 }
 
 .doctor-name {
@@ -247,7 +294,6 @@ const handleImageError = (e, fallback) => {
     outline: none;
     background: transparent;
     padding: 0 45px 0 15px;
-    text-align: right;
     font-size: 14px;
     color: #374151;
 }
@@ -256,17 +302,24 @@ const handleImageError = (e, fallback) => {
 
 .search-icon {
     position: absolute;
-    right: 14px;
     width: 18px;
     height: 18px;
     object-fit: contain;
     opacity: .7;
 }
 
+.lang-switch-btn {
+    border-color: #e5e7eb;
+    color: #374151;
+    background-color: #f8fafc;
+    height: 38px;
+}
+
 .create-emergency-btn {
     background-color: #dc2626;
     border: none;
     color: #ffffff;
+    height: 38px;
     transition: background-color 0.2s ease;
 }
 .create-emergency-btn:hover {
@@ -290,4 +343,8 @@ const handleImageError = (e, fallback) => {
 
 @media (min-width: 768px) { .logo-image { width: 140px; } }
 @media (min-width: 1200px) { .logo-image { width: 180px; } }
+
+.fs-7 { font-size: 0.9rem; }
+.fs-8 { font-size: 0.8rem; }
+.fs-9 { font-size: 0.72rem; }
 </style>

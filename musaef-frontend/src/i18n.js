@@ -2,203 +2,6 @@ import { createI18n } from 'vue-i18n';
 
 const messages = {
   ar: {
-    adminLayout: {
-      dashboard: 'لوحة التحكم',
-      liveRadar: 'رادار الطوارئ المباشر',
-      analytics: 'مركز التحليلات الذكية',
-      accountManagement: 'إدارة الحسابات',
-      advancedSettings: 'الإعدادات المتقدمة',
-      quickSupportTitle: 'دعم سريع',
-      quickSupportDesc: 'تحتاج مساعدة؟ فريق الدعم متاح 24/7',
-      contactSupport: 'تواصل مع الدعم',
-      logout: 'تسجيل الخروج',
-      systemAdmin: 'مدير النظام'
-    },
-    adminRadar: {
-      title: 'رادار الطوارئ اللحظي',
-      liveCasesTitle: 'الحالات الحرجة المباشرة',
-      filterAll: 'الكل',
-      filterCritical: 'حرجة',
-      filterMedium: 'متوسطة',
-      filterLow: 'منخفضة',
-      remainingTime: 'الوقت المتبقي',
-      expectedResponse: 'سرعة الاستجابة المتوقعة',
-      triggerResponse: 'تفعيل الاستجابة فورية',
-      triggerSuccess: 'تم تفعيل الاستجابة الفورية وتنبيه المتبرعين القريبين لـ {name} بنجاح!',
-      loadMore: 'عرض المزيد / تحديث البيانات',
-      severityTitle: 'مستوى الخطورة',
-      searchPlaceholder: 'ابحث عن مريض أو طلب...'
-    },
-    adminAnalytics: {
-      kpi: {
-        criticalCases: 'الحالات الحرجة',
-        responseRate: 'نسبة الاستجابة',
-        totalRequests: 'إجمالي الطلبات',
-        totalDonors: 'إجمالي المتبرعين',
-        comparedToLastMonth: 'عن الشهر السابق'
-      },
-      charts: {
-        bloodDemandTitle: 'الطلب حسب فصيلة الدم'
-      },
-      map: {
-        gazaHospitalsMap: 'خريطة مستشفيات قطاع غزة'
-      },
-      performance: {
-        title: 'إحصائيات الأداء',
-        avgResponseTime: 'متوسط وقت الاستجابة',
-        avgResponseHospital: 'مستشفى شهداء الأقصى - دير البلح',
-        fulfillmentRate: 'نسبة تلبية الطلبات',
-        fulfillmentHospital: 'المستشفى الأمريكي - غزة',
-        dailyDonationRate: 'معدل التبرع اليومي',
-        dailyDonationDonor: 'المتبرع : أحمد محمد',
-        minUnit: 'دقيقة',
-        unitCount: 'وحدة'
-      },
-      alerts: {
-        title: 'آخر التنبيهات (AI Real-time)',
-        timeHeader: 'الوقت',
-        hospitalHeader: 'المستشفى',
-        bloodTypeHeader: 'الفصيلة',
-        statusHeader: 'الحالة',
-        viewAll: 'عرض جميع التنبيهات >',
-        loadingAll: 'جاري جلب كافة التنبيهات...',
-        toastSuccess: '🔔 تم جلب كافة سجلات التنبيهات الفورية المدعومة بتحليلات الذكاء الاصطناعي بنجاح!',
-        toastFallback: '🔔 أرشيف التنبيهات الذكية الفورية: يظهر كافة النداءات الطارئة والتحذيرات الاستباقية للمستشفيات وبنوك الدم.'
-      },
-      hospitals: {
-        title: 'أكثر المستشفيات احتياجاً (Facility Recommendation AI)',
-        viewAll: 'عرض جميع المستشفيات >',
-        analyzing: 'جاري تحليل كفاءة المستشفيات...',
-        toastSuccess: '🏥 تم استدعاء تقرير كفاءة التوزيع الجغرافي واحتياجات كافة المستشفيات بنجاح عبر Facility Recommendation AI!',
-        toastFallback: '🏥 قائمة المستشفيات الشاملة وتحليل النقص: يتم تقييم زمن التوصيل والوصول الجغرافي واحتياجات المخزون لكافة مستشفيات القطاع استباقياً.'
-      }
-    },
-    hospital: {
-      dashboardTitle: 'الإحصائيات العامة للمستشفى',
-      criticalBadge: 'الحالات الحرجة النشطة:',
-      loading: 'جاري تحميل بيانات لوحة تحكم المستشفى...',
-      header: {
-        searchPlaceholder: 'ابحث عن مريض',
-        createEmergency: '+ إنشاء طلب طارئ',
-        defaultDoctorName: 'جمعية بنك الدم المركزي',
-        defaultDoctorRole: 'مدير بنك الدم'
-      },
-      sidebar: {
-        title: 'القائمة الرئيسية',
-        dashboard: 'لوحة التحكم',
-        notifications: 'مركز الإشعارات والتنبيهات',
-        requests: 'إدارة النداءات الطارئة',
-        inventory: 'إدارة بنك الدم',
-        settings: 'إعدادات الجهة الطبية',
-        quickHelpTitle: 'مساعدة سريعة',
-        quickHelpText: 'تحتاج مساعدة؟ فريق الدعم متاح على مدار الساعة',
-        contactSupport: 'تواصل مع الدعم',
-        logout: 'تسجيل الخروج'
-      },
-      stats: {
-        criticalCases: 'الحالات الحرجة',
-        urgentCase: 'حالة عاجلة',
-        fromYesterday: '+3 من أمس',
-        todayDonors: 'المتبرعون المسجلون اليوم',
-        donor: 'متبرع',
-        fromToday: '+15 اليوم',
-        availableUnits: 'وحدات الدم المتوفرة',
-        unit: 'وحدة',
-        activeRequests: 'الطلبات النشطة',
-        request: 'طلب'
-      },
-      bloodDistribution: {
-        title: 'توزيع فصائل الدم',
-        currentMonth: 'الشهر الحالي',
-        totalUnits: 'اجمالي الوحدات'
-      },
-      monthlyRequests: {
-        title: 'الطلبات الشهرية',
-        currentMonth: 'الشهر الحالي',
-        last12Months: 'آخر 12 شهر',
-        months: {
-          jan: 'يناير', feb: 'فبراير', mar: 'مارس', apr: 'أبريل',
-          may: 'مايو', jun: 'يونيو', jul: 'يوليو', aug: 'أغسطس',
-          sep: 'سبتمبر', oct: 'أكتوبر', nov: 'نوفمبر', dec: 'ديسمبر'
-        }
-      },
-      stockAlerts: {
-        title: 'تنبيهات المخزون الفورية',
-        noAlerts: 'لا توجد تنبيهات مخزون حالياً.',
-        veryLow: 'منخفض جداً (حرج)',
-        availableOnly: 'المتوفر: {count} وحدة فقط',
-        viewAll: 'عرض جميع التنبيهات 🔔'
-      },
-      aiPredictions: {
-        title: 'توقعات الذكاء الاصطناعي (Blood Demand Forecast AI)',
-        predictionText: 'تم التنبؤ بارتفاع الطلب على فصيلة O+ خلال 72 ساعة القادمة.',
-        recommendation: 'زيادة حملات التبرع لهذه الفصيلة لضمان توفر المخزون الحرج.',
-        now: 'الان',
-        h24: '24 ساعة',
-        h48: '48 ساعة',
-        h72: '72 ساعة',
-        analyzing: 'جاري تحليل التقرير...',
-        viewReport: 'عرض التقرير الكامل للذكاء الاصطناعي 📊'
-      }
-    },
-    emergency: {
-      title: 'إدارة النداءات الطارئة',
-      subtitle: 'عرض وإدارة جميع النداءات الطارئة بشكل لحظي',
-      createRequest: 'إنشاء طلب طارئ جديد',
-      exportReport: 'تصدير التقرير',
-      filters: {
-        all: 'الكل',
-        covering: 'قيد التغطية',
-        completed: 'مكتملة'
-      },
-      table: {
-        requestCode: 'رقم الطلب',
-        requiredBloodType: 'الفصيلة المطلوبة',
-        unitsCount: 'عدد الوحدات',
-        urgencyLevel: 'مستوى الخطورة',
-        respondersCount: 'عدد المستجيبين',
-        status: 'حالة الطلب',
-        noRequests: 'لا توجد طلبات متطابقة مع التصفية الحالية.'
-      },
-      urgency: {
-        critical: 'حرج',
-        high: 'خطر',
-        medium: 'متوسط',
-        low: 'منخفض'
-      },
-      status: {
-        active: 'نشط',
-        processing: 'قيد المعالجة',
-        completed: 'مكتملة',
-        rejected: 'مرفوضة'
-      },
-      cards: {
-        priority: 'أولوية قصوى (Emergency Priority AI)',
-        justNow: 'منذ قليل',
-        requiredBloodType: 'الفصيلة المطلوبة',
-        requiredUnits: 'الوحدات المطلوبة',
-        units: 'وحدات',
-        responders: 'المستجيبون للنداء ({count})',
-        smartMatching: 'مطابقة ذكية AI',
-        eta: 'وصول مقدر: {eta} دقائق ({distance} كم)',
-        match: 'تطابق {score}%',
-        waitingResponders: 'جاري استجابة المتبرعين المطابقين عبر خوارزمية Smart Matching...',
-        locationMap: 'الموقع على الخريطة',
-        acceptRequest: 'قبول الطلب',
-        rejectRequest: 'رفض الطلب'
-      },
-      alerts: {
-        loading: 'جاري التحميل...',
-        exportSuccess: '📥 جاري تصدير تقرير النداءات الطارئة بصيغة PDF/Excel بنجاح!',
-        acceptSuccess: '✅ تم قبول وتلبية النداء ({code}) بنجاح!',
-        rejectSuccess: '❌ تم رفض الطلب ({code}).',
-        createSuccess: '🚨 تم إطلاق النداء الطارئ ({code}) وتنبيه المتبرعين المطابقين فوراً!',
-        prompts: {
-          bloodType: 'أدخل فصيلة الدم المطلوبة (مثال: O+, O-, A+):',
-          units: 'أدخل عدد الوحدات المطلوبة:'
-        }
-      }
-    },
     navbar: {
       announcement: 'تم إنقاذ 3,580 مريضاً بفضل الله ثم المتبرعين بالدم.',
       home: 'الرئيسية',
@@ -314,10 +117,10 @@ const messages = {
       incompatible: 'غير متوافق',
       incompatibleSub: 'لا يمكن التبرع',
       aiSearchTitle: 'البحث الذكي عن مراكز التبرع',
-      aiSearchDesc: 'حدد فصيلة الدم للبحث عن أقرب المراكز والمستشفيات المتاحة حالياً.',
+      aiSearchDesc: 'اختر فصيلة الدم للبحث عن أقرب المراكز والمستشفيات المتاحة حالياً.',
       searchBtn: 'بحث',
       searching: 'جاري البحث عن أقرب المراكز...',
-      etaUnit: 'دقائق',
+      etaUnit: 'دقيقة',
       available: 'المتاح',
       unitsUnit: 'وحدات',
       kmUnit: 'كم',
@@ -360,17 +163,17 @@ const messages = {
         f1: {
           name: 'مجمع الشفاء الطبي',
           type: 'مستشفى حكومي',
-          rec: 'في قسم بنك الدم بمجمع الشفاء، يتوفر {count} وحدات من فصيلة {bloodType}. (الوصول التقديري: {eta} دقائق)'
+          rec: 'في قسم بنك الدم بمجمع الشفاء (زمن {bloodType} يتوفر {count} وحدات من فصيلة .الوصول التقديري: {eta} دقائق)'
         },
         f2: {
           name: 'بنك الدم المركزي - غزة',
           type: 'بنك دم مركزي',
-          rec: 'بنك الدم المركزي يحتوي على {count} وحدة متوفرة من فصيلة {bloodType}. (الوصول التقديري: {eta} دقائق)'
+          rec: 'زمن) {bloodType} بنك الدم المركزي يحتوي على {count} وحدة متوفرة من فصيلة .(الوصول التقديري: {eta} دقائق'
         },
         f3: {
           name: 'مستشفى القدس الطبي',
           type: 'مستشفى أهلي',
-          rec: 'مستشفى القدس يضم {count} وحدات جاهزة للتبرع من فصيلة {bloodType}. (الوصول التقديري: {eta} دقيقة)'
+          rec: 'زمن) {bloodType} مستشفى القدس يضم {count} وحدات جاهزة للتبرع من فصيلة .(الوصول التقديري: {eta} دقيقة'
         }
       }
     },
@@ -387,203 +190,6 @@ const messages = {
     }
   },
   en: {
-    adminLayout: {
-      dashboard: 'Dashboard',
-      liveRadar: 'Live Emergency Radar',
-      analytics: 'Smart Analytics Center',
-      accountManagement: 'Account Management',
-      advancedSettings: 'Advanced Settings',
-      quickSupportTitle: 'Quick Support',
-      quickSupportDesc: 'Need help? Support team is available 24/7',
-      contactSupport: 'Contact Support',
-      logout: 'Logout',
-      systemAdmin: 'System Admin'
-    },
-    adminRadar: {
-      title: 'Live Emergency Radar',
-      liveCasesTitle: 'Live Emergency Cases',
-      filterAll: 'All Cases',
-      filterCritical: 'Critical',
-      filterMedium: 'Moderate',
-      filterLow: 'Low',
-      remainingTime: 'Remaining Time',
-      expectedResponse: 'Expected Response (AI)',
-      triggerResponse: 'Trigger Instant Response',
-      triggerSuccess: 'Instant response activated and nearby donors notified for {name} successfully!',
-      loadMore: 'Load More Cases',
-      severityTitle: 'Severity Level',
-      searchPlaceholder: 'Search for patient or request...'
-    },
-    adminAnalytics: {
-      kpi: {
-        criticalCases: 'Critical Cases',
-        responseRate: 'Response Rate',
-        totalRequests: 'Total Requests',
-        totalDonors: 'Total Donors',
-        comparedToLastMonth: 'Compared to Last Month'
-      },
-      charts: {
-        bloodDemandTitle: 'Blood Demand by Type'
-      },
-      map: {
-        gazaHospitalsMap: 'Gaza Strip Hospitals Map'
-      },
-      performance: {
-        title: 'Performance Statistics',
-        avgResponseTime: 'Average Response Time',
-        avgResponseHospital: 'Al-Aqsa Martyrs Hospital - Deir Al-Balah',
-        fulfillmentRate: 'Fulfillment Rate',
-        fulfillmentHospital: 'American Hospital - Gaza',
-        dailyDonationRate: 'Daily Donation Rate',
-        dailyDonationDonor: 'Donor: Ahmed Mohammed',
-        minUnit: 'min',
-        unitCount: 'unit'
-      },
-      alerts: {
-        title: 'Recent Alerts (AI Real-time)',
-        timeHeader: 'Time',
-        hospitalHeader: 'Hospital',
-        bloodTypeHeader: 'Blood Type',
-        statusHeader: 'Status',
-        viewAll: 'View All Alerts >',
-        loadingAll: 'Fetching all alerts...',
-        toastSuccess: '🔔 All real-time alert logs powered by AI analytics fetched successfully!',
-        toastFallback: '🔔 Instant Smart Alerts Archive: Displays all emergency calls and proactive warnings for hospitals and blood banks.'
-      },
-      hospitals: {
-        title: 'Hospitals with Highest Need (Facility Recommendation AI)',
-        viewAll: 'View All Hospitals >',
-        analyzing: 'Analyzing hospital efficiency...',
-        toastSuccess: '🏥 Geographic distribution efficiency and hospital needs report fetched successfully via Facility Recommendation AI!',
-        toastFallback: '🏥 Comprehensive Hospitals & Shortage Analysis: Proactively evaluates delivery time, geographic reach, and inventory needs for all sector hospitals.'
-      }
-    },
-    hospital: {
-      dashboardTitle: 'Hospital General Statistics',
-      criticalBadge: 'Active Critical Cases:',
-      loading: 'Loading hospital dashboard data...',
-      header: {
-        searchPlaceholder: 'Search for patient',
-        createEmergency: '+ Create Emergency Request',
-        defaultDoctorName: 'Central Blood Bank Society',
-        defaultDoctorRole: 'Blood Bank Director'
-      },
-      sidebar: {
-        title: 'Main Menu',
-        dashboard: 'Dashboard',
-        notifications: 'Notifications & Alerts Center',
-        requests: 'Emergency Calls Management',
-        inventory: 'Blood Bank Management',
-        settings: 'Medical Facility Settings',
-        quickHelpTitle: 'Quick Support',
-        quickHelpText: 'Need help? Support team is available 24/7',
-        contactSupport: 'Contact Support',
-        logout: 'Logout'
-      },
-      stats: {
-        criticalCases: 'Critical Cases',
-        urgentCase: 'urgent case',
-        fromYesterday: '+3 from yesterday',
-        todayDonors: "Today's Registered Donors",
-        donor: 'donor',
-        fromToday: '+15 today',
-        availableUnits: 'Available Blood Units',
-        unit: 'unit',
-        activeRequests: 'Active Requests',
-        request: 'request'
-      },
-      bloodDistribution: {
-        title: 'Blood Group Distribution',
-        currentMonth: 'Current Month',
-        totalUnits: 'Total Units'
-      },
-      monthlyRequests: {
-        title: 'Monthly Requests',
-        currentMonth: 'Current Month',
-        last12Months: 'Last 12 Months',
-        months: {
-          jan: 'Jan', feb: 'Feb', mar: 'Mar', apr: 'Apr',
-          may: 'May', jun: 'Jun', jul: 'Jul', aug: 'Aug',
-          sep: 'Sep', oct: 'Oct', nov: 'Nov', dec: 'Dec'
-        }
-      },
-      stockAlerts: {
-        title: 'Instant Stock Alerts',
-        noAlerts: 'No stock alerts currently.',
-        veryLow: 'Very Low (Critical)',
-        availableOnly: 'Available: {count} units only',
-        viewAll: 'View All Alerts 🔔'
-      },
-      aiPredictions: {
-        title: 'AI Predictions (Blood Demand Forecast AI)',
-        predictionText: 'High demand predicted for O+ blood type in the next 72 hours.',
-        recommendation: 'Increase donation campaigns for this group to ensure critical stock.',
-        now: 'Now',
-        h24: '24 Hours',
-        h48: '48 Hours',
-        h72: '72 Hours',
-        analyzing: 'Analyzing report...',
-        viewReport: 'View Full AI Report 📊'
-      }
-    },
-    emergency: {
-      title: 'Emergency Calls Management',
-      subtitle: 'Real-time view and management of emergency calls',
-      createRequest: 'Create New Emergency Request',
-      exportReport: 'Export Report',
-      filters: {
-        all: 'All',
-        covering: 'Under Coverage',
-        completed: 'Completed'
-      },
-      table: {
-        requestCode: 'Request Code',
-        requiredBloodType: 'Required Type',
-        unitsCount: 'Units Needed',
-        urgencyLevel: 'Urgency Level',
-        respondersCount: 'Responders Count',
-        status: 'Request Status',
-        noRequests: 'No requests match the current filter.'
-      },
-      urgency: {
-        critical: 'Critical',
-        high: 'High',
-        medium: 'Medium',
-        low: 'Low'
-      },
-      status: {
-        active: 'Active',
-        processing: 'Processing',
-        completed: 'Completed',
-        rejected: 'Rejected'
-      },
-      cards: {
-        priority: 'Emergency Priority AI',
-        justNow: 'Just now',
-        requiredBloodType: 'Required Blood Type',
-        requiredUnits: 'Required Units',
-        units: 'Units',
-        responders: 'Call Responders ({count})',
-        smartMatching: 'Smart Matching AI',
-        eta: 'ETA: {eta} mins ({distance} km)',
-        match: '{score}% Match',
-        waitingResponders: 'Matching donors are responding via Smart Matching algorithm...',
-        locationMap: 'Location on Map',
-        acceptRequest: 'Accept Request',
-        rejectRequest: 'Reject Request'
-      },
-      alerts: {
-        loading: 'Loading...',
-        exportSuccess: '📥 Emergency calls report exported successfully as PDF/Excel!',
-        acceptSuccess: '✅ Emergency call ({code}) accepted and fulfilled successfully!',
-        rejectSuccess: '❌ Request ({code}) rejected.',
-        createSuccess: '🚨 Emergency call ({code}) dispatched and matching donors notified instantly!',
-        prompts: {
-          bloodType: 'Enter required blood type (e.g. O+, O-, A+):',
-          units: 'Enter number of required units:'
-        }
-      }
-    },
     navbar: {
       announcement: '3,580 patients have been saved thanks to donors.',
       home: 'Home',
@@ -702,7 +308,7 @@ const messages = {
       aiSearchDesc: 'Select blood type to search for currently available nearby centers and hospitals.',
       searchBtn: 'Search',
       searching: 'Searching for nearby centers...',
-      etaUnit: 'mins',
+      etaUnit: 'min',
       available: 'Available',
       unitsUnit: 'units',
       kmUnit: 'km',

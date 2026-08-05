@@ -1,6 +1,9 @@
 <template>
   <AdminLayout>
-    <div class="advanced-settings-view container-fluid px-2 px-md-3" dir="rtl">
+    <div
+      class="advanced-settings-view container-fluid px-2 px-md-3"
+      :class="currentLanguage === 'ar' ? 'dir-rtl text-end' : 'dir-ltr text-start'"
+    >
 
       <!-- 1. التبويبات العلوية الرئيسية -->
       <div class="main-tabs-header border-bottom mb-4 overflow-x-auto tabs-scroll-container">
@@ -12,7 +15,7 @@
             :class="{ 'active-tab': settingsStore.activeTab === 'logs' }"
             @click="settingsStore.activeTab = 'logs'"
           >
-            سجلات النظام
+            {{ t('systemLogs') }}
           </button>
 
           <!-- 2. الذكاء الاصطناعي -->
@@ -21,7 +24,7 @@
             :class="{ 'active-tab': settingsStore.activeTab === 'ai' }"
             @click="settingsStore.activeTab = 'ai'"
           >
-            الذكاء الاصطناعي
+            {{ t('ai') }}
           </button>
 
           <!-- 3. البريد الإلكتروني -->
@@ -30,7 +33,7 @@
             :class="{ 'active-tab': settingsStore.activeTab === 'email' }"
             @click="settingsStore.activeTab = 'email'"
           >
-            البريد الإلكتروني
+            {{ t('email') }}
           </button>
 
           <!-- 4. الإعدادات العامة -->
@@ -39,7 +42,7 @@
             :class="{ 'active-tab': settingsStore.activeTab === 'general' }"
             @click="settingsStore.activeTab = 'general'"
           >
-            الإعدادات العامة
+            {{ t('generalSettings') }}
           </button>
 
         </div>
@@ -74,7 +77,7 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { useSettingsStore } from '@/stores/settingsStore';
 
@@ -84,6 +87,25 @@ import AiSettingsTab from '@/components/admin/advancedsettings/AiSettingsTab.vue
 import EmailSettingsTab from '@/components/admin/advancedsettings/EmailSettingsTab.vue';
 
 const settingsStore = useSettingsStore();
+
+const currentLanguage = computed(() => localStorage.getItem('musaef_lang') || 'ar');
+
+const dictionary = {
+  ar: {
+    systemLogs: 'سجلات النظام',
+    ai: 'الذكاء الاصطناعي',
+    email: 'البريد الإلكتروني',
+    generalSettings: 'الإعدادات العامة'
+  },
+  en: {
+    systemLogs: 'System Logs',
+    ai: 'AI Settings',
+    email: 'Email Settings',
+    generalSettings: 'General Settings'
+  }
+};
+
+const t = (key) => dictionary[currentLanguage.value === 'en' ? 'en' : 'ar'][key] || key;
 
 onMounted(() => {
   settingsStore.fetchSettings();
@@ -130,10 +152,15 @@ onMounted(() => {
   content: '';
   position: absolute;
   bottom: -1px;
-  right: 0;
   width: 100%;
   height: 3px;
   background-color: #dc2626;
   border-radius: 3px 3px 0 0;
 }
+
+.dir-rtl .tab-item.active-tab::after { right: 0; }
+.dir-ltr .tab-item.active-tab::after { left: 0; }
+
+.dir-rtl { direction: rtl; }
+.dir-ltr { direction: ltr; }
 </style>

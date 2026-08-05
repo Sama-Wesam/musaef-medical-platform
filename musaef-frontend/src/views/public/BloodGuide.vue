@@ -1,5 +1,5 @@
 <template>
-  <div class="guide-page d-flex flex-column min-vh-100 dir-rtl">
+  <div class="guide-page d-flex flex-column min-vh-100" :dir="currentLanguage === 'ar' ? 'rtl' : 'ltr'">
     <!-- Navbar -->
     <Navbar />
 
@@ -8,23 +8,23 @@
       <div class="container-fluid p-0">
         <div class="row g-0 align-items-center hero-row">
 
-          <!-- النص الوصفي (يمين) -->
+          <!-- النص الوصفي -->
           <div class="col-lg-6 hero-content d-flex align-items-center justify-content-end px-3 px-md-5">
             <div class="hero-text-wrapper">
-              <h1 class="fw-bold hero-main-title text-dark mb-1">دليل التبرع</h1>
-              <h2 class="fw-bold hero-sub-title text-danger mb-3">والإرشادات الطبية</h2>
+              <h1 class="fw-bold hero-main-title text-dark mb-1">{{ $t('guide.heroTitle') }}</h1>
+              <h2 class="fw-bold hero-sub-title text-danger mb-3">{{ $t('guide.heroSubtitle') }}</h2>
               <p class="hero-guide-desc text-secondary">
-                دليل مختصر لفهم توافق فصائل الدم وشروط التبرع الآمن والإرشادات الطبية الأساسية لضمان تبرع آمن وإنقاذ الأرواح.
+                {{ $t('guide.heroDesc') }}
               </p>
             </div>
           </div>
 
-          <!-- صورة الهيرو (يسار) - تجلب من src/assets/images -->
+          <!-- صورة الهيرو -->
           <div class="col-lg-6 hero-image-col">
             <div class="hero-image-wrapper">
               <img
                 :src="getImageUrl('blood-types-hero.png')"
-                alt="دليل التبرع والإرشادات الطبية"
+                :alt="$t('guide.heroTitle')"
                 class="hero-guide-img"
                 @error="handleHeroFallback"
               />
@@ -35,36 +35,34 @@
       </div>
     </section>
 
-    <!-- 2. جدول توافق فصائل الدم + ميزة الذكاء الاصطناعي (Facility Recommendation AI) -->
+    <!-- 2. جدول توافق فصائل الدم + ميزة الذكاء الاصطناعي -->
     <section class="py-4 py-md-5 bg-light-gray">
       <div class="container px-3 px-md-4">
         <div class="text-center mb-4 mb-md-5">
-          <h3 class="fw-bold text-dark section-title">جدول توافق فصائل الدم</h3>
+          <h3 class="fw-bold text-dark section-title">{{ $t('guide.compatibilityTitle') }}</h3>
           <div class="title-red-line mx-auto mt-2"></div>
         </div>
 
         <div class="row g-3 g-lg-4 align-items-stretch">
           <!-- البطاقات الجانبية للجدول -->
           <div class="col-12 col-lg-4 d-flex flex-column gap-3">
-            <!-- بطاقة التبرع لمن - تجلب من src/assets/icons -->
-            <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white flex-fill d-flex flex-row align-items-center justify-content-start gap-3 text-end">
+            <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white flex-fill d-flex flex-row align-items-center justify-content-start gap-3 text-start-dir">
               <div class="card-icon-box flex-shrink-0">
-                <img :src="getIconUrl('Frame 2147225421.png')" alt="التوافق في التبرع" class="icon-img" />
+                <img :src="getIconUrl('Frame 2147225421.png')" alt="Icon" class="icon-img" />
               </div>
-              <div class="text-end">
-                <h6 class="fw-bold text-dark mb-1 fs-6">التوافق في التبرع (من يستطيع التبرع لمن؟)</h6>
-                <p class="text-muted fs-8 mb-0 lh-base">يوضح من يمكنه التبرع لكل فصيلة دم بناءً على توافق فصائل الدم.</p>
+              <div class="text-start-dir">
+                <h6 class="fw-bold text-dark mb-1 fs-6">{{ $t('guide.donateCompatTitle') }}</h6>
+                <p class="text-muted fs-8 mb-0 lh-base">{{ $t('guide.donateCompatDesc') }}</p>
               </div>
             </div>
 
-            <!-- بطاقة الاستقبال من من - تجلب من src/assets/icons -->
-            <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white flex-fill d-flex flex-row align-items-center justify-content-start gap-3 text-end">
+            <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white flex-fill d-flex flex-row align-items-center justify-content-start gap-3 text-start-dir">
               <div class="card-icon-box flex-shrink-0">
-                <img :src="getIconUrl('streamline-sharp_blood-bag-donation-remix.png')" alt="التوافق في الاستقبال" class="icon-img" />
+                <img :src="getIconUrl('streamline-sharp_blood-bag-donation-remix.png')" alt="Icon" class="icon-img" />
               </div>
-              <div class="text-end">
-                <h6 class="fw-bold text-dark mb-1 fs-6">التوافق في الاستقبال (من يستطيع استقبال الدم؟)</h6>
-                <p class="text-muted fs-8 mb-0 lh-base">يوضح من يمكنه استقبال الدم من كل فصيلة دم بأمان.</p>
+              <div class="text-start-dir">
+                <h6 class="fw-bold text-dark mb-1 fs-6">{{ $t('guide.receiveCompatTitle') }}</h6>
+                <p class="text-muted fs-8 mb-0 lh-base">{{ $t('guide.receiveCompatDesc') }}</p>
               </div>
             </div>
           </div>
@@ -105,15 +103,15 @@
                 <div class="d-flex align-items-center gap-2">
                   <i class="bi bi-check-circle-fill text-success fs-5"></i>
                   <div>
-                    <span class="fw-bold text-dark d-block">متوافق</span>
-                    <small class="text-muted fs-8">(يمكن التبرع / الاستقبال)</small>
+                    <span class="fw-bold text-dark d-block">{{ $t('guide.compatible') }}</span>
+                    <small class="text-muted fs-8">({{ $t('guide.compatibleSub') }})</small>
                   </div>
                 </div>
                 <div class="d-flex align-items-center gap-2">
                   <span class="badge-dash"></span>
                   <div>
-                    <span class="fw-bold text-dark d-block">غير متوافق</span>
-                    <small class="text-muted fs-8">(لا يمكن التبرع / الاستقبال)</small>
+                    <span class="fw-bold text-dark d-block">{{ $t('guide.incompatible') }}</span>
+                    <small class="text-muted fs-8">({{ $t('guide.incompatibleSub') }})</small>
                   </div>
                 </div>
               </div>
@@ -121,7 +119,7 @@
           </div>
         </div>
 
-        <!-- مربع الذكاء الاصطناعي (Facility Recommendation AI) -->
+        <!-- مربع الذكاء الاصطناعي / البحث الذكي عن المراكز -->
         <div class="row mt-4 mt-md-5">
           <div class="col-12">
             <div class="card border-0 shadow-sm p-4 rounded-4 bg-white ai-finder-card">
@@ -130,59 +128,59 @@
                   <div class="ai-badge-icon bg-pink-light text-danger rounded-circle p-2">
                     <i class="bi bi-geo-alt-fill fs-5"></i>
                   </div>
-                  <div>
-                    <h5 class="fw-bold text-dark mb-0 fs-6">ابحث عن أقرب مركز تبرع في منطقتك (الذكاء الاصطناعي)</h5>
-                    <small class="text-muted fs-8">يحدد النظام أقرب المراكز المسجلة بها مخزون متوفر وزمن الوصول المتوقع (ETA)</small>
+                  <div class="text-start-dir">
+                    <h5 class="fw-bold text-dark mb-0 fs-6">{{ $t('guide.aiSearchTitle') }}</h5>
+                    <small class="text-muted fs-8">{{ $t('guide.aiSearchDesc') }}</small>
                   </div>
                 </div>
 
                 <div class="d-flex align-items-center gap-2">
                   <select v-model="selectedBloodType" class="form-select form-select-sm rounded-3 border-light-subtle fs-8">
-                    <option value="O+">فصيلة O+</option>
-                    <option value="O-">فصيلة O-</option>
-                    <option value="A+">فصيلة A+</option>
-                    <option value="A-">فصيلة A-</option>
-                    <option value="B+">فصيلة B+</option>
-                    <option value="B-">فصيلة B-</option>
-                    <option value="AB+">فصيلة AB+</option>
-                    <option value="AB-">فصيلة AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
                   </select>
 
                   <button @click="searchNearbyFacilities" class="btn btn-danger btn-sm rounded-3 px-3 fw-bold text-white flex-shrink-0 d-flex align-items-center gap-1">
                     <i class="bi bi-search"></i>
-                    <span>بحث بالأقرب</span>
+                    <span>{{ $t('guide.searchBtn') }}</span>
                   </button>
                 </div>
               </div>
 
-              <!-- نتائج البحث والتوصيات الذكية -->
+              <!-- نتائج البحث -->
               <div v-if="isLoadingFacilities" class="text-center py-4 text-muted fs-8">
                 <div class="spinner-border spinner-border-sm text-danger me-2" role="status"></div>
-                جاري حساب المسافة والبحث عن أقرب المراكز...
+                {{ $t('guide.searching') }}
               </div>
 
-              <div v-else-if="nearbyFacilities.length > 0" class="row g-3 mt-1">
-                <div v-for="(center, idx) in nearbyFacilities" :key="idx" class="col-12 col-md-4">
-                  <div class="p-3 rounded-3 bg-light-gray border border-light-subtle text-end h-100 d-flex flex-column justify-content-between">
+              <div v-else-if="localizedFacilities.length > 0" class="row g-3 mt-1">
+                <div v-for="(center, idx) in localizedFacilities" :key="idx" class="col-12 col-md-4">
+                  <div class="p-3 rounded-3 bg-light-gray border border-light-subtle text-start-dir h-100 d-flex flex-column justify-content-between">
                     <div>
                       <div class="d-flex justify-content-between align-items-center mb-2">
                         <span class="badge bg-danger-subtle text-danger rounded-pill fs-8 px-2 py-1">{{ center.facility_type }}</span>
-                        <small class="text-muted fs-8"><i class="bi bi-clock me-1"></i>{{ center.eta_minutes }} دقيقة وصول</small>
+                        <small class="text-muted fs-8"><i class="bi bi-clock me-1"></i>{{ center.eta_minutes }} {{ $t('guide.etaUnit') }}</small>
                       </div>
                       <h6 class="fw-bold text-dark mb-1 fs-7">{{ center.facility_name }}</h6>
                       <p class="text-muted fs-8 mb-2">{{ center.recommendation_message }}</p>
                     </div>
 
                     <div class="pt-2 border-top border-light-subtle d-flex justify-content-between align-items-center">
-                      <small class="text-secondary fs-8"><i class="bi bi-droplet-fill text-danger me-1"></i>متوفر: <strong>{{ center.available_units }} وحدات</strong></small>
-                      <small class="text-danger fw-bold fs-8"><i class="bi bi-cursor-fill me-1"></i>{{ center.distance_km }} كم</small>
+                      <small class="text-secondary fs-8"><i class="bi bi-droplet-fill text-danger me-1"></i>{{ $t('guide.available') }}: <strong>{{ center.available_units }} {{ $t('guide.unitsUnit') }}</strong></small>
+                      <small class="text-danger fw-bold fs-8"><i class="bi bi-cursor-fill me-1"></i>{{ center.distance_km }} {{ $t('guide.kmUnit') }}</small>
                     </div>
                   </div>
                 </div>
               </div>
 
               <div v-else class="text-center py-3 text-muted fs-8 bg-light-gray rounded-3">
-                اضغطي على "بحث بالأقرب" لعرض التوصيات والمسافات الزمانية لأقرب 3 بنوك دم أو مستشفيات بها مخزون.
+                {{ $t('guide.aiPromptPlaceholder') }}
               </div>
             </div>
           </div>
@@ -191,40 +189,40 @@
       </div>
     </section>
 
-    <!-- 3. قسم نصائح وإرشادات التبرع - تجلب الأيقونات من src/assets/icons -->
+    <!-- 3. قسم نصائح وإرشادات التبرع -->
     <section id="medical-tips" class="py-4 py-md-5 bg-white">
       <div class="container text-center px-3 px-md-4">
-        <h3 class="fw-bold text-dark section-title mb-1">قسم النصائح والإرشادات</h3>
+        <h3 class="fw-bold text-dark section-title mb-1">{{ $t('guide.tipsSectionTitle') }}</h3>
         <div class="title-red-line mx-auto mb-4 mb-md-5"></div>
 
         <div class="row g-3 g-md-4 justify-content-center">
           <div class="col-12 col-md-4">
             <div class="p-4 bg-light-gray rounded-4 h-100 tip-card shadow-sm">
               <div class="tip-icon-box mb-3 mx-auto">
-                <img :src="getIconUrl('mdi_user.png')" alt="العمر المناسب" class="tip-icon-img" />
+                <img :src="getIconUrl('mdi_user.png')" alt="Icon" class="tip-icon-img" />
               </div>
-              <h5 class="fw-bold text-dark mb-2 fs-6">العمر المناسب</h5>
-              <p class="text-muted fs-7 mb-0 lh-lg">يجب أن يكون عمرك بين 18 و 65 عاماً للتبرع بالدم.</p>
+              <h5 class="fw-bold text-dark mb-2 fs-6">{{ $t('guide.tips.age.title') }}</h5>
+              <p class="text-muted fs-7 mb-0 lh-lg">{{ $t('guide.tips.age.desc') }}</p>
             </div>
           </div>
 
           <div class="col-12 col-md-4">
             <div class="p-4 bg-light-gray rounded-4 h-100 tip-card shadow-sm">
               <div class="tip-icon-box mb-3 mx-auto">
-                <img :src="getIconUrl('game-icons_weight-scale.png')" alt="الوزن المناسب" class="tip-icon-img" />
+                <img :src="getIconUrl('game-icons_weight-scale.png')" alt="Icon" class="tip-icon-img" />
               </div>
-              <h5 class="fw-bold text-dark mb-2 fs-6">الوزن المناسب</h5>
-              <p class="text-muted fs-7 mb-0 lh-lg">يجب أن يكون وزنك 50 كجم على الأقل للتبرع بالدم.</p>
+              <h5 class="fw-bold text-dark mb-2 fs-6">{{ $t('guide.tips.weight.title') }}</h5>
+              <p class="text-muted fs-7 mb-0 lh-lg">{{ $t('guide.tips.weight.desc') }}</p>
             </div>
           </div>
 
           <div class="col-12 col-md-4">
             <div class="p-4 bg-light-gray rounded-4 h-100 tip-card shadow-sm">
               <div class="tip-icon-box mb-3 mx-auto">
-                <img :src="getIconUrl('material-symbols_credit-card-clock-outline-rounded.png')" alt="مدة التبرع" class="tip-icon-img" />
+                <img :src="getIconUrl('material-symbols_credit-card-clock-outline-rounded.png')" alt="Icon" class="tip-icon-img" />
               </div>
-              <h5 class="fw-bold text-dark mb-2 fs-6">متى يمكن التبرع مرة أخرى؟</h5>
-              <p class="text-muted fs-7 mb-0 lh-lg">يمكنك التبرع كل 8 أسابيع (56 يوماً) للرجال، وكل 12 أسبوعاً (84 يوماً) للنساء.</p>
+              <h5 class="fw-bold text-dark mb-2 fs-6">{{ $t('guide.tips.frequency.title') }}</h5>
+              <p class="text-muted fs-7 mb-0 lh-lg">{{ $t('guide.tips.frequency.desc') }}</p>
             </div>
           </div>
         </div>
@@ -237,16 +235,16 @@
         <div class="row g-3 g-lg-4">
           <div class="col-12 col-lg-6">
             <div class="bg-white p-3 p-md-4 rounded-4 shadow-sm h-100">
-              <h5 class="fw-bold text-dark mb-4 text-center">الأسئلة الشائعة</h5>
+              <h5 class="fw-bold text-dark mb-4 text-center">{{ $t('guide.faqTitle') }}</h5>
 
               <div class="position-relative mb-4">
                 <input
                   type="text"
-                  class="form-control faq-search-input pe-5 rounded-3 fs-8"
-                  placeholder="ابحث عن سؤال..."
+                  class="form-control faq-search-input pe-5 rounded-3 fs-8 text-start-dir"
+                  :placeholder="$t('guide.faqSearchPlaceholder')"
                   v-model="searchQuery"
                 />
-                <i class="bi bi-search position-absolute top-50 translate-middle-y me-3 text-muted"></i>
+                <i class="bi bi-search position-absolute top-50 translate-middle-y text-muted" :class="currentLanguage === 'ar' ? 'left-icon' : 'right-icon'"></i>
               </div>
 
               <div class="accordion" id="faqAccordion">
@@ -257,14 +255,14 @@
                 >
                   <h2 class="accordion-header">
                     <button
-                      class="accordion-button fs-8 fw-bold"
+                      class="accordion-button fs-8 fw-bold text-start-dir"
                       :class="{ 'collapsed': index !== activeFaqIndex, 'active-faq-btn': index === activeFaqIndex }"
                       type="button"
                       data-bs-toggle="collapse"
                       :data-bs-target="'#faq' + index"
                       @click="activeFaqIndex = index"
                     >
-                      {{ faq.question }}
+                      {{ $t(faq.questionKey) }}
                     </button>
                   </h2>
                   <div
@@ -273,8 +271,8 @@
                     :class="{ 'show': index === activeFaqIndex }"
                     data-bs-parent="#faqAccordion"
                   >
-                    <div class="accordion-body fs-8 text-secondary lh-lg" :class="{ 'text-danger bg-pink-light': faq.isHighlighted }">
-                      {{ faq.answer }}
+                    <div class="accordion-body fs-8 text-secondary lh-lg text-start-dir" :class="{ 'text-danger bg-pink-light': faq.isHighlighted }">
+                      {{ $t(faq.answerKey) }}
                     </div>
                   </div>
                 </div>
@@ -284,12 +282,11 @@
 
           <div class="col-12 col-lg-6">
             <div class="bg-white p-3 p-md-4 rounded-4 shadow-sm h-100">
-              <div class="d-flex align-items-center gap-3 mb-4">
-                <!-- أيقونة تواصل معنا تجلب من src/assets/icons -->
-                <img :src="getIconUrl('stash_headset-solid.png')" alt="تواصل معنا" class="support-icon-img" />
+              <div class="d-flex align-items-center gap-3 mb-4 text-start-dir">
+                <img :src="getIconUrl('stash_headset-solid.png')" alt="Icon" class="support-icon-img" />
                 <div>
-                  <h6 class="fw-bold text-dark mb-1">إذا لم تجد الإجابة</h6>
-                  <small class="text-muted fs-8">تواصل معنا وفريقنا جاهز للرد على استفساراتك.</small>
+                  <h6 class="fw-bold text-dark mb-1">{{ $t('guide.contactHeading') }}</h6>
+                  <small class="text-muted fs-8">{{ $t('guide.contactSubheading') }}</small>
                 </div>
               </div>
 
@@ -297,8 +294,8 @@
                 <div class="mb-3">
                   <input
                     type="text"
-                    class="form-control form-control-custom rounded-3 fs-8"
-                    placeholder="أدخل اسمك الكامل"
+                    class="form-control form-control-custom rounded-3 fs-8 text-start-dir"
+                    :placeholder="$t('guide.contactForm.name')"
                     v-model="contactForm.name"
                     required
                   />
@@ -306,8 +303,8 @@
                 <div class="mb-3">
                   <input
                     type="email"
-                    class="form-control form-control-custom rounded-3 fs-8"
-                    placeholder="أدخل بريدك الإلكتروني"
+                    class="form-control form-control-custom rounded-3 fs-8 text-start-dir"
+                    :placeholder="$t('guide.contactForm.email')"
                     v-model="contactForm.email"
                     required
                   />
@@ -315,26 +312,26 @@
                 <div class="mb-3">
                   <input
                     type="text"
-                    class="form-control form-control-custom rounded-3 fs-8"
-                    placeholder="موضوع الرسالة"
+                    class="form-control form-control-custom rounded-3 fs-8 text-start-dir"
+                    :placeholder="$t('guide.contactForm.subject')"
                     v-model="contactForm.subject"
                     required
                   />
                 </div>
                 <div class="mb-3">
                   <textarea
-                    class="form-control form-control-custom rounded-3 fs-8"
+                    class="form-control form-control-custom rounded-3 fs-8 text-start-dir"
                     rows="4"
-                    placeholder="اكتب رسالتك هنا..."
+                    :placeholder="$t('guide.contactForm.message')"
                     v-model="contactForm.message"
                     required
                   ></textarea>
                 </div>
 
-                <div v-if="successMessage" class="alert alert-success fs-8 py-2 mb-3">
+                <div v-if="successMessage" class="alert alert-success fs-8 py-2 mb-3 text-start-dir">
                   {{ successMessage }}
                 </div>
-                <div v-if="errorMessage" class="alert alert-danger fs-8 py-2 mb-3">
+                <div v-if="errorMessage" class="alert alert-danger fs-8 py-2 mb-3 text-start-dir">
                   {{ errorMessage }}
                 </div>
 
@@ -344,7 +341,7 @@
                   :disabled="isSubmitting"
                 >
                   <span v-if="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
-                  {{ isSubmitting ? 'جاري الإرسال...' : 'تواصل معنا' }}
+                  {{ isSubmitting ? $t('guide.contactForm.sending') : $t('guide.contactForm.send') }}
                 </button>
               </form>
             </div>
@@ -360,16 +357,18 @@
 
 <script setup>
 import { ref, computed, onMounted, onUpdated } from 'vue'
+import { useI18n } from 'vue-i18n'
 import apiClient from '@/api/axios'
 import Navbar from '@/components/common/Navbar.vue'
 import Footer from '@/components/common/Footer.vue'
 
-// دالة لجلب الصور من مجلد src/assets/images
+const { locale, te, t } = useI18n()
+const currentLanguage = computed(() => locale.value || 'ar')
+
 const getImageUrl = (fileName) => {
   return new URL(`../../assets/images/${fileName}`, import.meta.url).href
 }
 
-// دالة لجلب الأيقونات من مجلد src/assets/icons
 const getIconUrl = (fileName) => {
   return new URL(`../../assets/icons/${fileName}`, import.meta.url).href
 }
@@ -404,12 +403,107 @@ const compatibilityMatrix = ref({
   '-O':  { '-O': true,  '+O': false, '-AB': true,  '+AB': false, '-B': false, '+B': false, '-A': false, '+A': false }
 })
 
-/* ========================================================
-   ميزة الذكاء الاصطناعي (Facility Recommendation AI)
-======================================================== */
 const selectedBloodType = ref('O+')
 const nearbyFacilities = ref([])
 const isLoadingFacilities = ref(false)
+
+const facilityTranslationMap = {
+  'مستشفى حكومي': 'Government Hospital',
+  'بنك دم مركزي': 'Central Blood Bank',
+  'مستشفى أهلي': 'Private Hospital',
+  'مستشفى': 'Hospital',
+  'مجمع الشفاء الطبي': 'Al-Shifa Medical Complex',
+  'جمعية بنك الدم المركزي': 'Central Blood Bank Society',
+  'بنك الدم المركزي - وزارة الصحة': 'Central Blood Bank - Ministry of Health',
+  'مستشفى القدس': 'Al-Quds Hospital'
+}
+
+const defaultFacilitiesKeys = [
+  {
+    facility_type_key: 'guide.facilities.f1.type',
+    facility_name_key: 'guide.facilities.f1.name',
+    rec_key: 'guide.facilities.f1.rec',
+    default_type: 'مستشفى حكومي',
+    default_name: 'مجمع الشفاء الطبي',
+    eta_minutes: 5,
+    available_units: 8,
+    distance_km: 1.2
+  },
+  {
+    facility_type_key: 'guide.facilities.f2.type',
+    facility_name_key: 'guide.facilities.f2.name',
+    rec_key: 'guide.facilities.f2.rec',
+    default_type: 'بنك دم مركزي',
+    default_name: 'جمعية بنك الدم المركزي',
+    eta_minutes: 9,
+    available_units: 14,
+    distance_km: 2.8
+  },
+  {
+    facility_type_key: 'guide.facilities.f3.type',
+    facility_name_key: 'guide.facilities.f3.name',
+    rec_key: 'guide.facilities.f3.rec',
+    default_type: 'مستشفى أهلي',
+    default_name: 'بنك الدم المركزي - وزارة الصحة',
+    eta_minutes: 12,
+    available_units: 5,
+    distance_km: 4.1
+  }
+]
+
+const localizedFacilities = computed(() => {
+  const isEn = currentLanguage.value === 'en'
+
+  if (nearbyFacilities.value.length === 0) {
+    return defaultFacilitiesKeys.map(item => {
+      let type = te(item.facility_type_key) ? t(item.facility_type_key) : item.default_type
+      let name = te(item.facility_name_key) ? t(item.facility_name_key) : item.default_name
+      let rec = te(item.rec_key) ? t(item.rec_key, { bloodType: selectedBloodType.value, count: item.available_units, eta: item.eta_minutes }) : ''
+
+      if (isEn) {
+        type = facilityTranslationMap[type] || type
+        name = facilityTranslationMap[name] || name
+        if (!rec || !te(item.rec_key)) {
+          rec = `Recommended: Highest compatibility for ${selectedBloodType.value} (${item.available_units} units available).`
+        }
+      } else if (!rec) {
+        rec = `يوصى به: الأعلى ملاءمة لفصيلة ${selectedBloodType.value} (متوفر ${item.available_units} وحدة).`
+      }
+
+      return {
+        facility_type: type,
+        facility_name: name,
+        recommendation_message: rec,
+        eta_minutes: item.eta_minutes,
+        available_units: item.available_units,
+        distance_km: item.distance_km
+      }
+    })
+  }
+
+  return nearbyFacilities.value.map(item => {
+    let type = item.facility_type || item.type || ''
+    let name = item.facility_name || item.name || ''
+    let rec = item.recommendation_message || ''
+
+    if (isEn) {
+      type = item.facility_type_en || facilityTranslationMap[type] || type
+      name = item.facility_name_en || facilityTranslationMap[name] || name
+      if (item.recommendation_message_en) {
+        rec = item.recommendation_message_en
+      } else if (rec.includes('يوصى به')) {
+        rec = `Recommended: Highest compatibility for ${selectedBloodType.value} (${item.available_units || 0} units available).`
+      }
+    }
+
+    return {
+      ...item,
+      facility_type: type,
+      facility_name: name,
+      recommendation_message: rec
+    }
+  })
+})
 
 const searchNearbyFacilities = async () => {
   isLoadingFacilities.value = true
@@ -433,7 +527,6 @@ const searchNearbyFacilities = async () => {
       fetchFacilitiesApi(lat, lng)
     }
   } catch (error) {
-    console.error('خطأ في تحديد المراكز القريبة:', error)
     isLoadingFacilities.value = false
   }
 }
@@ -446,7 +539,6 @@ const fetchFacilitiesApi = async (lat, lng) => {
     const data = Array.isArray(res) ? res : (res?.data || [])
     nearbyFacilities.value = data
   } catch (err) {
-    console.error('خطأ الاستجابة:', err)
   } finally {
     isLoadingFacilities.value = false
   }
@@ -456,24 +548,22 @@ const searchQuery = ref('')
 const activeFaqIndex = ref(3)
 
 const faqs = ref([
-  { question: 'هل أستطيع التبرع إذا كنت أتناول أدويـة؟', answer: 'تعتمد إمكانية التبرع على نوع الدواء. يرجى استشارة الطبيب في المركز قبل التبرع.' },
-  { question: 'كم مرة يمكنني التبرع؟', answer: 'يمكنك التبرع كل 8 أسابيع للرجال، وكل 12 أسبوعاً للنساء.' },
-  { question: 'ما العمر المناسب للتبرع؟', answer: 'العمر المناسب للتبرع بالدم هو من 18 إلى 65 سنة.' },
-  { question: 'هل التبرع آمن؟', answer: 'يعتبر التبرع بالدم آمن تماماً، يتم استخدام أدوات معقمة وجديدة لمرة واحدة فقط لضمان سلامتك، ويتم اتباع أعلى معايير السلامة والإجراءات الطبية.', isHighlighted: true }
+  { questionKey: 'guide.faqs.q1.q', answerKey: 'guide.faqs.q1.a' },
+  { questionKey: 'guide.faqs.q2.q', answerKey: 'guide.faqs.q2.a' },
+  { questionKey: 'guide.faqs.q3.q', answerKey: 'guide.faqs.q3.a' },
+  { questionKey: 'guide.faqs.q4.q', answerKey: 'guide.faqs.q4.a', isHighlighted: true }
 ])
 
 const filteredFaqs = computed(() => {
   if (!searchQuery.value) return faqs.value
-  return faqs.value.filter(f => f.question.includes(searchQuery.value) || f.answer.includes(searchQuery.value))
+  const query = searchQuery.value.toLowerCase()
+  return faqs.value.filter(f => t(f.questionKey).toLowerCase().includes(query) || t(f.answerKey).toLowerCase().includes(query))
 })
 
 const handleHeroFallback = (e) => {
   e.target.src = getImageUrl('hero-drop.png')
 }
 
-/* ===========================
-      نموذج التواصل معنا
-=========================== */
 const contactForm = ref({
   name: '',
   email: '',
@@ -492,10 +582,10 @@ const handleSubmit = async () => {
 
   try {
     const res = await apiClient.post('/public/contact', contactForm.value)
-    successMessage.value = res?.message || 'تم إرسال رسالتك بنجاح، وسنقوم بالرد عليك في أقرب وقت!'
+    successMessage.value = res?.message || t('guide.contactForm.successMsg')
     contactForm.value = { name: '', email: '', subject: '', message: '' }
   } catch (error) {
-    errorMessage.value = error?.message || error?.response?.data?.message || 'حدث خطأ أثناء إرسال الرسالة، يرجى المحاولة لاحقاً.'
+    errorMessage.value = error?.message || error?.response?.data?.message || t('guide.contactForm.errorMsg')
   } finally {
     isSubmitting.value = false
   }
@@ -503,18 +593,15 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped>
-.dir-rtl {
-  direction: rtl;
-  font-family: Arial, sans-serif;
+.guide-page,
+.guide-page * {
+  font-family: Arial, sans-serif !important;
 }
 
 .bg-light-gray {
   background-color: #f8fafc;
 }
 
-/* ==========================================
-   Hero Section Styles (Matching Homepage Exactly)
-========================================== */
 .hero-guide-section {
   background: #f8fafc;
   height: 500px;
@@ -544,13 +631,20 @@ const handleSubmit = async () => {
   margin-left: 200px;
 }
 
+[dir="ltr"] .hero-text-wrapper {
+  align-items: flex-start;
+  text-align: left;
+  margin-left: 0;
+  margin-right: 200px;
+}
+
 .hero-main-title {
   width: 100%;
   font-size: 52px;
   font-weight: 800;
   line-height: 1.35;
   color: #0F172A;
-  text-align: right;
+  text-align: inherit;
   margin-bottom: 5px;
 }
 
@@ -560,7 +654,7 @@ const handleSubmit = async () => {
   font-weight: 800;
   line-height: 1.2;
   color: #dc2626;
-  text-align: right;
+  text-align: inherit;
   margin-bottom: 18px;
 }
 
@@ -569,7 +663,7 @@ const handleSubmit = async () => {
   font-size: 25px;
   color: #6B7280;
   line-height: 2;
-  text-align: right;
+  text-align: inherit;
   margin-bottom: 28px;
 }
 
@@ -596,9 +690,12 @@ const handleSubmit = async () => {
   margin-left: 40px;
 }
 
-/* ==========================================
-   Compatibility Table Section
-========================================== */
+[dir="ltr"] .hero-guide-img {
+  transform: translateX(60px);
+  margin-left: 0;
+  margin-right: 40px;
+}
+
 .section-title {
   font-size: 28px;
 }
@@ -668,7 +765,6 @@ const handleSubmit = async () => {
   object-fit: contain;
 }
 
-/* بطاقة ميزة الذكاء الاصطناعي AI Finder */
 .ai-finder-card {
   border: 1px solid #f1f5f9;
   border-top: 3px solid #dc2626 !important;
@@ -704,6 +800,14 @@ const handleSubmit = async () => {
   padding: 10px 15px;
 }
 
+.left-icon {
+  left: 15px;
+}
+
+.right-icon {
+  right: 15px;
+}
+
 .accordion-button {
   background-color: #f8fafc;
   color: #1f2937;
@@ -727,6 +831,14 @@ const handleSubmit = async () => {
   object-fit: contain;
 }
 
+.text-start-dir {
+  text-align: right;
+}
+
+[dir="ltr"] .text-start-dir {
+  text-align: left;
+}
+
 .form-control-custom {
   background-color: #f8fafc;
   border: 1px solid #e2e8f0;
@@ -741,10 +853,11 @@ const handleSubmit = async () => {
 .fs-7 { font-size: 0.9rem; }
 .fs-8 { font-size: 0.82rem; }
 
-/* Responsive Adjustments */
 @media (max-width: 1200px) {
-  .hero-text-wrapper {
+  .hero-text-wrapper,
+  [dir="ltr"] .hero-text-wrapper {
     margin-left: 0;
+    margin-right: 0;
   }
 }
 
@@ -766,16 +879,16 @@ const handleSubmit = async () => {
   }
 
   .hero-text-wrapper {
-    margin: 0 auto;
-    align-items: center;
-    text-align: center;
+    margin: 0 auto !important;
+    align-items: center !important;
+    text-align: center !important;
     max-width: 100%;
   }
 
   .hero-main-title,
   .hero-sub-title,
   .hero-guide-desc {
-    text-align: center;
+    text-align: center !important;
   }
 
   .hero-main-title { font-size: 32px; }
@@ -787,8 +900,9 @@ const handleSubmit = async () => {
     max-width: 420px;
     height: auto;
     object-fit: contain;
-    transform: none;
-    margin-left: 0;
+    transform: none !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
   }
 }
 </style>

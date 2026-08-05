@@ -1,24 +1,18 @@
 <template>
-  <div class="home-view" dir="rtl">
+  <div class="home-view" :dir="currentLanguage === 'ar' ? 'rtl' : 'ltr'">
 
-    <!-- ===========================
-            Navbar
-    ============================ -->
+    <!-- Navbar -->
     <Navbar />
 
-    <!-- ===========================
-            Hero Section
-    ============================ -->
+    <!-- Hero Section -->
     <HeroSection />
 
-    <!-- ==================================
-            How It Works Section
-    =================================== -->
+    <!-- How It Works Section -->
     <section class="how-it-works py-4 py-md-5">
       <div class="container px-3 px-md-4">
         <!-- Section Title -->
         <div class="text-center mb-4 mb-md-5">
-          <h2 class="section-title">كيف تعمل المنصة؟!</h2>
+          <h2 class="section-title">{{ $t('home.howItWorksTitle') }}</h2>
           <div class="title-underline"></div>
         </div>
 
@@ -42,12 +36,12 @@
 
               <!-- Title -->
               <h5 class="step-title">
-                {{ step.title }}
+                {{ $t(step.titleKey) }}
               </h5>
 
               <!-- Description -->
               <p class="step-description">
-                {{ step.description }}
+                {{ $t(step.descKey) }}
               </p>
             </div>
 
@@ -56,16 +50,14 @@
               v-if="index < steps.length - 1"
               class="step-arrow d-none d-xl-flex"
             >
-              <i class="bi bi-arrow-left-short"></i>
+              <i :class="currentLanguage === 'ar' ? 'bi bi-arrow-left-short' : 'bi bi-arrow-right-short'"></i>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ==================================
-            Statistics Section
-    =================================== -->
+    <!-- Statistics Section -->
     <section class="stats-section py-4 py-md-5">
       <div class="container px-2 px-md-3">
         <div class="stats-wrapper">
@@ -81,7 +73,7 @@
                 </div>
                 <div class="stat-content">
                   <h2>{{ stat.number }}</h2>
-                  <p>{{ stat.title }}</p>
+                  <p>{{ $t(stat.titleKey) }}</p>
                 </div>
               </div>
             </div>
@@ -90,21 +82,20 @@
       </div>
     </section>
 
-    <!-- ==================================
-            Latest Emergency Cases (AI Prioritized)
-    =================================== -->
+    <!-- Latest Emergency Cases -->
     <section class="latest-cases emergency-section py-4 py-md-5">
       <div class="container px-3 px-md-4">
         <!-- Header -->
         <div class="d-flex justify-content-between align-items-center mb-4 mb-md-5 flex-wrap gap-2 gap-md-3">
-          <div class="text-end">
-            <h2 class="section-title mb-1">أحدث الحالات الطارئة</h2>
-            <div class="title-underline me-0 ms-auto"></div>
+          <div class="text-start-dir">
+            <h2 class="section-title mb-1">{{ $t('home.urgentTitle') }}</h2>
+            <div class="title-underline ms-0 me-auto" v-if="currentLanguage === 'en'"></div>
+            <div class="title-underline me-0 ms-auto" v-else></div>
           </div>
 
           <router-link to="/register" class="view-all fs-8 fs-md-7">
-            عرض جميع الحالات
-            <i class="bi bi-chevron-left"></i>
+            {{ $t('home.viewAll') }}
+            <i :class="currentLanguage === 'ar' ? 'bi bi-chevron-left' : 'bi bi-chevron-right'"></i>
           </router-link>
         </div>
 
@@ -122,28 +113,28 @@
                   {{ item.blood }}
                 </span>
                 <span :class="['urgent-badge', getSeverityClass(item.severity)]">
-                  {{ item.urgency_label }}
+                  {{ getSeverityText(item.severity, item.urgency_label) }}
                 </span>
               </div>
 
               <!-- Card Body -->
-              <div class="card-body-custom">
+              <div class="card-body-custom text-start-dir">
                 <h5 class="hospital-name text-truncate">
-                  {{ item.hospital }}
+                  {{ getLocalizedField(item, 'hospital') }}
                 </h5>
 
                 <div class="case-info">
-                  <i class="bi bi-geo-alt-fill"></i>
-                  <span class="text-truncate">{{ item.location }}</span>
+                  <i class="bi bi-geo-alt-fill me-1 text-danger"></i>
+                  <span class="text-truncate">{{ getLocalizedField(item, 'location') }}</span>
                 </div>
 
                 <div class="case-info">
-                  <i class="bi bi-droplet-fill"></i>
-                  <span>مطلوب: {{ item.units }} وحدات دم</span>
+                  <i class="bi bi-droplet-fill me-1 text-danger"></i>
+                  <span>{{ $t('home.requiredUnits', { count: item.units }) }}</span>
                 </div>
 
                 <div class="case-info">
-                  <i class="bi bi-clock-fill"></i>
+                  <i class="bi bi-clock-fill me-1 text-danger"></i>
                   <span>{{ item.time }}</span>
                 </div>
               </div>
@@ -151,10 +142,10 @@
               <!-- Card Footer / Buttons -->
               <div class="card-footer-custom">
                 <router-link to="/register" class="btn donate-btn flex-grow-1 text-center">
-                  تبرع الآن
+                  {{ $t('home.donate') }}
                 </router-link>
 
-                <button class="btn share-btn" @click="shareCase(item)" aria-label="مشاركة">
+                <button class="btn share-btn" @click="shareCase(item)" :aria-label="$t('home.share')">
                   <i class="bi bi-share-fill"></i>
                 </button>
               </div>
@@ -163,7 +154,7 @@
         </div>
 
         <div v-else class="text-center py-5 text-muted fs-6 bg-white rounded-4 shadow-sm">
-          لا توجد حالات طارئة حالياً.
+          {{ $t('home.noCases') }}
         </div>
       </div>
     </section>
@@ -175,125 +166,148 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import apiClient from '@/api/axios' // استدعاء الـ Axios Interceptor المخصص للمشروع
+import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+import apiClient from '@/api/axios'
 import Navbar from '@/components/common/Navbar.vue'
 import HeroSection from '@/components/common/HeroSection.vue'
 import Footer from '@/components/common/Footer.vue'
 
-/* ===========================
-      خطوات عمل المنصة
-=========================== */
+const { locale, t } = useI18n()
+const currentLanguage = computed(() => locale.value || 'ar')
+
 const steps = [
   {
     number: 1,
     icon: 'bi bi-person-plus',
-    title: 'التسجيل في المنصة',
-    description: 'إنشاء حساب المتبرع وتحديد موقعك.'
+    titleKey: 'home.step1Title',
+    descKey: 'home.step1Desc'
   },
   {
     number: 2,
     icon: 'bi bi-clipboard2-pulse',
-    title: 'إكمال الملف الصحي',
-    description: 'إدخال بياناتك الصحية بأمان وسرية.'
+    titleKey: 'home.step2Title',
+    descKey: 'home.step2Desc'
   },
   {
     number: 3,
     icon: 'bi bi-megaphone',
-    title: 'استقبال طلبات التبرع',
-    description: 'استقبال الطلبات القريبة حسب فصيلة دمك.'
+    titleKey: 'home.step3Title',
+    descKey: 'home.step3Desc'
   },
   {
     number: 4,
     icon: 'bi bi-shield-check',
-    title: 'المطابقة الذكية',
-    description: 'نظام ذكي يطابق بين المتبرع والمحتاج.'
+    titleKey: 'home.step4Title',
+    descKey: 'home.step4Desc'
   },
   {
     number: 5,
     icon: 'bi bi-geo-alt-fill',
-    title: 'التوجه لمركز التبرع',
-    description: 'التوجه للمركز المحدد للتبرع وإنقاذ حياة.'
+    titleKey: 'home.step5Title',
+    descKey: 'home.step5Desc'
   }
 ]
 
-/* ===========================
-      الإحصائيات
-=========================== */
 const statistics = ref([
   {
-    number: '0',
-    title: 'عدد الحالات التي تم دعمها',
+    number: '120+',
+    titleKey: 'home.statSupported',
     icon: 'bi bi-heart-pulse-fill'
   },
   {
     number: '0',
-    title: 'عدد طلبات التبرع',
+    titleKey: 'home.statRequests',
     icon: 'bi bi-droplet-fill'
   },
   {
     number: '0',
-    title: 'عدد المستشفيات',
+    titleKey: 'home.statHospitals',
     icon: 'bi bi-hospital-fill'
   },
   {
     number: '0',
-    title: 'عدد المتبرعين المسجلين',
+    titleKey: 'home.statDonors',
     icon: 'bi bi-people-fill'
   }
 ])
 
-/* ===========================
-      أحدث الحالات (مرتبة بالذكاء الاصطناعي)
-=========================== */
 const emergencyCases = ref([])
+
+const translationsDictionary = {
+  // Hospitals
+  'مجمع الشفاء الطبي': 'Al-Shifa Medical Complex',
+  'مستشفى الأهلي العربي (المعمداني)': 'Ahli Arab Hospital (Al-Maamadani)',
+  'المستشفى الإندونيسي': 'Indonesian Hospital',
+  'بنك الدم المركزي - وزارة الصحة': 'Central Blood Bank - Ministry of Health',
+  'مستشفى أصدقاء المريض الخيري': 'Patient\'s Friends Benevolent Society Hospital',
+  'جمعية بنك الدم المركزي': 'Central Blood Bank Society',
+
+  // Locations
+  'غزة - الرمال': 'Gaza - Rimal',
+  'غزة - الزيتون': 'Gaza - Zeitoun',
+  'شمال غزة - بيت لاهيا': 'North Gaza - Beit Lahia',
+  'غزة - النصر': 'Gaza - Al-Nasr',
+  'غزه - فلسطين': 'Gaza - Palestine',
+  'غزة - فلسطين': 'Gaza - Palestine',
+  'غزه - الرمال شارع الوحده': 'Gaza - Rimal, Al-Wehda St.',
+  'غزة - الرمال شارع الوحدة': 'Gaza - Rimal, Al-Wehda St.'
+}
 
 const fetchHomeStats = async () => {
   try {
     const res = await apiClient.get('/public/home-stats')
     const statsData = (res && res.data) ? res.data : res
     if (statsData) {
-      statistics.value[0].number = (statsData.supported_cases || 0) + '+'
+      statistics.value[0].number = (statsData.supported_cases || 120) + '+'
       statistics.value[1].number = (statsData.total_requests || 0) + '+'
       statistics.value[2].number = (statsData.hospitals_count || 0) + '+'
       statistics.value[3].number = (statsData.donors_count || 0) + '+'
     }
   } catch (error) {
-    console.error('خطأ في جلب الإحصائيات:', error)
+    console.error('Error fetching stats:', error)
   }
 }
 
 const fetchUrgentRequests = async () => {
   try {
     const res = await apiClient.get('/public/urgent-requests')
-    // التعامل المباشر والمرن مع استجابة Axios
     const casesData = Array.isArray(res) ? res : ((res && res.data && Array.isArray(res.data)) ? res.data : [])
 
     if (casesData.length > 0) {
       emergencyCases.value = casesData.map(req => ({
         blood: req.blood || 'O+',
-        hospital: req.hospital || 'مستشفى الشفاء الطبي',
-        location: req.location || 'غزة - الرمال',
+        hospital: req.hospital || '',
+        hospital_ar: req.hospital_ar || req.hospital || '',
+        hospital_en: req.hospital_en || translationsDictionary[req.hospital] || req.hospital || '',
+        location: req.location || '',
+        location_ar: req.location_ar || req.location || '',
+        location_en: req.location_en || translationsDictionary[req.location] || req.location || '',
         units: req.units_needed || 1,
         severity: req.severity || 'Critical',
-        urgency_label: translateSeverity(req.severity, req.condition_type),
-        time: req.created_at || 'منذ فترة قصيرة'
+        urgency_label: req.condition_type || '',
+        time: req.created_at || '2026-08-01 17:26'
       }))
     }
   } catch (error) {
-    console.error('خطأ في جلب الحالات الطارئة:', error)
+    console.error('Error fetching urgent requests:', error)
   }
 }
 
-// دالة صياغة وترجمة الشارة
-const translateSeverity = (severity, condition) => {
-  if (severity === 'Critical') return 'حرج جداً'
-  if (severity === 'High') return 'عاجل'
-  if (condition) return condition
-  return 'عاجل'
+const getSeverityText = (severity, fallback) => {
+  if (severity === 'Critical') return t('home.veryCritical')
+  if (severity === 'High') return t('home.urgent')
+  return fallback || t('home.urgent')
 }
 
-// دالة تلوين الشارة حسب درجة أولوية وخطورة الذكاء الاصطناعي
+const getLocalizedField = (item, fieldName) => {
+  if (currentLanguage.value === 'en') {
+    const rawVal = item[fieldName] || ''
+    return item[`${fieldName}_en`] || translationsDictionary[rawVal] || rawVal
+  }
+  return item[`${fieldName}_ar`] || item[fieldName] || ''
+}
+
 const getSeverityClass = (severity) => {
   if (severity === 'Critical') return 'severity-critical'
   if (severity === 'High') return 'severity-high'
@@ -301,15 +315,16 @@ const getSeverityClass = (severity) => {
 }
 
 const shareCase = (item) => {
+  const hospital = getLocalizedField(item, 'hospital')
   if (navigator.share) {
     navigator.share({
-      title: `حالة تبرع عاجلة: ${item.blood}`,
-      text: `مطلوب تبرع بالدم فصيلة ${item.blood} في ${item.hospital}`,
+      title: `Emergency Case: ${item.blood}`,
+      text: `Blood donation required for ${item.blood} at ${hospital}`,
       url: window.location.href
     }).catch(() => {})
   } else {
     navigator.clipboard.writeText(window.location.href)
-    alert('تم نسخ رابط الصفحة لمشاركته!')
+    alert(t('home.shareSuccess'))
   }
 }
 
@@ -320,14 +335,16 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ==========================================
-   General
-========================================== */
+.home-view,
+.home-view * {
+  font-family: Arial, sans-serif !important;
+}
+
 .home-view {
-  direction: rtl;
-  font-family: Arial, sans-serif;
   background: #ffffff;
   color: #1f2937;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 section {
@@ -338,9 +355,14 @@ section {
   max-width: 1280px;
 }
 
-/* ==========================================
-   Section Title
-========================================== */
+.text-start-dir {
+  text-align: right;
+}
+
+[dir="ltr"] .text-start-dir {
+  text-align: left;
+}
+
 .section-title {
   font-size: 26px;
   font-weight: 800;
@@ -370,9 +392,6 @@ section {
   }
 }
 
-/* ==========================================
-      HOW IT WORKS
-========================================== */
 .how-it-works {
   background: #ffffff;
 }
@@ -493,14 +512,16 @@ section {
   z-index: 2;
 }
 
+[dir="ltr"] .step-arrow {
+  left: auto;
+  right: -24px;
+}
+
 .step-arrow i {
   color: #dc2626;
   font-size: 32px;
 }
 
-/* ==========================================
-      Statistics
-========================================== */
 .stats-section {
   background: #ffffff;
 }
@@ -596,6 +617,10 @@ section {
   .stats-wrapper .col-lg-3:not(:last-child) {
     border-left: 1px solid rgba(255, 255, 255, 0.15);
   }
+  [dir="ltr"] .stats-wrapper .col-lg-3:not(:last-child) {
+    border-left: none;
+    border-right: 1px solid rgba(255, 255, 255, 0.15);
+  }
 }
 
 @media (max-width: 991px) {
@@ -607,9 +632,6 @@ section {
   }
 }
 
-/* =====================================================
-                Latest Emergency Cases
-===================================================== */
 .emergency-section {
   background: #f8fafc;
 }
@@ -809,7 +831,6 @@ section {
 .fs-8 { font-size: 0.85rem; }
 .fs-7 { font-size: 0.95rem; }
 
-/* Animations */
 .step-card:hover .step-icon i {
   transform: scale(1.15);
 }

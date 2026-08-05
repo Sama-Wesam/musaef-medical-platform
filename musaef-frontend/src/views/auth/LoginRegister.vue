@@ -1,14 +1,22 @@
 <template>
-  <div class="auth-page-wrapper min-vh-100 d-flex align-items-center justify-content-center dir-rtl py-3 py-md-4">
+  <div
+    class="auth-page-wrapper min-vh-100 d-flex align-items-center justify-content-center py-3 py-md-4"
+    :dir="currentLanguage === 'ar' ? 'rtl' : 'ltr'"
+  >
     <div class="container px-2 px-md-3">
       <div class="row g-0 auth-main-card shadow-lg rounded-5 overflow-hidden bg-white mx-auto position-relative">
 
-        <!-- ================= 1. القسم الأيمن: النماذج والمدخلات ================= -->
+        <!-- ================= 1. قسم النماذج والمدخلات ================= -->
         <div class="col-12 col-lg-6 form-section-col p-3 p-sm-4 p-md-5 d-flex flex-column justify-content-center position-relative bg-light-gray order-2 order-lg-1">
 
-          <!-- شعار قطرة الدم علوياً من مجلد images -->
-          <div class="top-logo-container position-absolute top-0 end-0 p-3 p-md-4 z-3">
+          <!-- زر تحويل اللغة والشعار أعلى المربع -->
+          <div class="top-logo-container position-absolute top-0 p-3 p-md-4 z-3 d-flex align-items-center gap-2" :class="currentLanguage === 'ar' ? 'end-0' : 'start-0'">
             <img :src="getImageUrl('auth-logo.png')" alt="مسعف" class="top-auth-logo" @error="handleLogoFallback" />
+
+            <button class="btn btn-sm btn-light rounded-pill border fs-9 fw-bold px-2 py-1 ms-2" @click="toggleLanguage">
+              <i class="bi bi-translate text-danger me-1"></i>
+              <span>{{ currentLanguage === 'ar' ? 'English' : 'العربية' }}</span>
+            </button>
           </div>
 
           <div class="auth-card-inner bg-white rounded-4 p-3 p-sm-4 shadow-sm mt-5 mt-lg-4 mx-auto w-100">
@@ -21,7 +29,7 @@
                 :class="activeTab === 'login' ? 'text-danger active-tab' : 'text-muted opacity-50'"
                 @click="activeTab = 'login'"
               >
-                تسجيل الدخول
+                {{ t('loginTab') }}
               </button>
               <button
                 type="button"
@@ -29,13 +37,13 @@
                 :class="activeTab === 'register' ? 'text-danger active-tab' : 'text-muted opacity-50'"
                 @click="activeTab = 'register'"
               >
-                إنشاء حساب
+                {{ t('registerTab') }}
               </button>
             </div>
 
             <!-- تنبيه الأخطاء إن وجدت -->
             <div v-if="error || authStore.error" class="alert alert-danger rounded-3 fs-8 mb-3 text-center">
-              {{ error || authStore.error }}
+              {{ translateBackendError(error || authStore.error) }}
             </div>
 
             <!-- تنبيه النجاح للمستشفيات -->
@@ -45,33 +53,35 @@
 
             <!-- ================= 1.1 نموذج تسجيل الدخول ================= -->
             <form v-if="activeTab === 'login'" @submit.prevent="onLogin">
-              <div class="mb-3 text-end">
-                <label class="form-label fs-8 text-dark fw-bold mb-1 d-block text-end">البريد الإلكتروني</label>
+              <div class="mb-3" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
+                <label class="form-label fs-8 text-dark fw-bold mb-1 d-block">{{ t('email') }}</label>
                 <div class="input-group custom-input-group">
-                  <span class="input-group-text bg-white text-muted border-start-0 order-2">
+                  <span class="input-group-text bg-white text-muted" :class="currentLanguage === 'ar' ? 'border-start-0 order-2' : 'border-end-0 order-1'">
                     <i class="bi bi-envelope"></i>
                   </span>
                   <input
                     v-model="loginForm.email"
                     type="email"
-                    class="form-control border-end-0 text-end fs-8 order-1"
-                    placeholder="البريد الإلكتروني"
+                    class="form-control fs-8"
+                    :class="currentLanguage === 'ar' ? 'border-end-0 text-end order-1' : 'border-start-0 text-start order-2'"
+                    :placeholder="t('emailPlaceholder')"
                     required
                   />
                 </div>
               </div>
 
-              <div class="mb-3 text-end">
-                <label class="form-label fs-8 text-dark fw-bold mb-1 d-block text-end">كلمة المرور</label>
+              <div class="mb-3" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
+                <label class="form-label fs-8 text-dark fw-bold mb-1 d-block">{{ t('password') }}</label>
                 <div class="input-group custom-input-group">
-                  <span class="input-group-text bg-white text-muted border-start-0 order-2">
+                  <span class="input-group-text bg-white text-muted" :class="currentLanguage === 'ar' ? 'border-start-0 order-2' : 'border-end-0 order-1'">
                     <i class="bi bi-lock"></i>
                   </span>
                   <input
                     v-model="loginForm.password"
                     type="password"
-                    class="form-control border-end-0 text-end fs-8 order-1"
-                    placeholder="كلمة المرور"
+                    class="form-control fs-8"
+                    :class="currentLanguage === 'ar' ? 'border-end-0 text-end order-1' : 'border-start-0 text-start order-2'"
+                    :placeholder="t('passwordPlaceholder')"
                     required
                   />
                 </div>
@@ -80,19 +90,19 @@
               <div class="d-flex justify-content-between align-items-center mb-4 fs-8 flex-wrap gap-2">
                 <div class="form-check d-flex align-items-center gap-2 p-0">
                   <input v-model="loginForm.remember" type="checkbox" class="form-check-input ms-0 custom-checkbox" id="rememberMe" />
-                  <label class="form-check-label text-dark fw-medium ms-1" for="rememberMe">تذكرني</label>
+                  <label class="form-check-label text-dark fw-medium ms-1" for="rememberMe">{{ t('rememberMe') }}</label>
                 </div>
-                <router-link to="/forgot-password" class="text-danger text-decoration-none fw-bold fs-8">هل نسيت كلمة السر؟</router-link>
+                <router-link to="/forgot-password" class="text-danger text-decoration-none fw-bold fs-8">{{ t('forgotPassword') }}</router-link>
               </div>
 
               <button type="submit" class="btn btn-danger w-100 rounded-3 py-2 fw-bold text-white shadow-sm mb-4 btn-submit-red" :disabled="loading">
                 <span v-if="loading" class="spinner-border spinner-border-sm me-2" role="status"></span>
-                تسجيل الدخول
+                {{ t('loginBtn') }}
               </button>
 
               <div class="text-center position-relative mb-4">
                 <hr class="text-muted opacity-25" />
-                <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted fs-8">أو سجل الدخول عبر</span>
+                <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted fs-8">{{ t('orSocial') }}</span>
               </div>
 
               <!-- أزرار الدخول الاجتماعي -->
@@ -112,7 +122,7 @@
               </div>
 
               <p class="text-center fs-8 text-muted mt-3 mb-0">
-                ليس لديك حساب؟ <a href="#" class="text-danger fw-bold text-decoration-none ms-1" @click.prevent="activeTab = 'register'">إنشاء حساب جديد</a>
+                {{ t('noAccount') }} <a href="#" class="text-danger fw-bold text-decoration-none ms-1" @click.prevent="activeTab = 'register'">{{ t('registerNew') }}</a>
               </p>
             </form>
 
@@ -120,44 +130,44 @@
             <form v-else @submit.prevent="onRegister">
 
               <!-- حقول المدخلات الأساسية -->
-              <div class="mb-2 text-end">
+              <div class="mb-2" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
                 <div class="input-group custom-input-group">
-                  <span class="input-group-text bg-white text-muted border-start-0 order-2"><i class="bi bi-person"></i></span>
-                  <input v-model="registerForm.fullName" type="text" class="form-control border-end-0 text-end fs-8 order-1" placeholder="الاسم كامل" required />
+                  <span class="input-group-text bg-white text-muted" :class="currentLanguage === 'ar' ? 'border-start-0 order-2' : 'border-end-0 order-1'"><i class="bi bi-person"></i></span>
+                  <input v-model="registerForm.fullName" type="text" class="form-control fs-8" :class="currentLanguage === 'ar' ? 'border-end-0 text-end order-1' : 'border-start-0 text-start order-2'" :placeholder="t('fullNamePlaceholder')" required />
                 </div>
               </div>
 
-              <div class="mb-2 text-end">
+              <div class="mb-2" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
                 <div class="input-group custom-input-group">
-                  <span class="input-group-text bg-white text-muted border-start-0 order-2"><i class="bi bi-envelope"></i></span>
-                  <input v-model="registerForm.email" type="email" class="form-control border-end-0 text-end fs-8 order-1" placeholder="البريد الإلكتروني" required />
+                  <span class="input-group-text bg-white text-muted" :class="currentLanguage === 'ar' ? 'border-start-0 order-2' : 'border-end-0 order-1'"><i class="bi bi-envelope"></i></span>
+                  <input v-model="registerForm.email" type="email" class="form-control fs-8" :class="currentLanguage === 'ar' ? 'border-end-0 text-end order-1' : 'border-start-0 text-start order-2'" :placeholder="t('emailPlaceholder')" required />
                 </div>
               </div>
 
-              <div class="mb-2 text-end">
+              <div class="mb-2" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
                 <div class="input-group custom-input-group">
-                  <span class="input-group-text bg-white text-muted border-start-0 order-2"><i class="bi bi-telephone"></i></span>
-                  <input v-model="registerForm.phone" type="tel" class="form-control border-end-0 text-end fs-8 order-1" placeholder="رقم الهاتف" required />
+                  <span class="input-group-text bg-white text-muted" :class="currentLanguage === 'ar' ? 'border-start-0 order-2' : 'border-end-0 order-1'"><i class="bi bi-telephone"></i></span>
+                  <input v-model="registerForm.phone" type="tel" class="form-control fs-8" :class="currentLanguage === 'ar' ? 'border-end-0 text-end order-1' : 'border-start-0 text-start order-2'" :placeholder="t('phonePlaceholder')" required />
                 </div>
               </div>
 
-              <div class="mb-2 text-end">
+              <div class="mb-2" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
                 <div class="input-group custom-input-group">
-                  <span class="input-group-text bg-white text-muted border-start-0 order-2"><i class="bi bi-lock"></i></span>
-                  <input v-model="registerForm.password" type="password" class="form-control border-end-0 text-end fs-8 order-1" placeholder="كلمة المرور (8 أحرف على الأقل)" required />
+                  <span class="input-group-text bg-white text-muted" :class="currentLanguage === 'ar' ? 'border-start-0 order-2' : 'border-end-0 order-1'"><i class="bi bi-lock"></i></span>
+                  <input v-model="registerForm.password" type="password" class="form-control fs-8" :class="currentLanguage === 'ar' ? 'border-end-0 text-end order-1' : 'border-start-0 text-start order-2'" :placeholder="t('passwordMinPlaceholder')" required />
                 </div>
               </div>
 
-              <div class="mb-3 text-end">
+              <div class="mb-3" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
                 <div class="input-group custom-input-group">
-                  <span class="input-group-text bg-white text-muted border-start-0 order-2"><i class="bi bi-three-dots"></i></span>
-                  <input v-model="registerForm.password_confirmation" type="password" class="form-control border-end-0 text-end fs-8 order-1" placeholder="تأكيد كلمة المرور" required />
+                  <span class="input-group-text bg-white text-muted" :class="currentLanguage === 'ar' ? 'border-start-0 order-2' : 'border-end-0 order-1'"><i class="bi bi-three-dots"></i></span>
+                  <input v-model="registerForm.password_confirmation" type="password" class="form-control fs-8" :class="currentLanguage === 'ar' ? 'border-end-0 text-end order-1' : 'border-start-0 text-start order-2'" :placeholder="t('confirmPasswordPlaceholder')" required />
                 </div>
               </div>
 
               <!-- اختيار نوع الحساب -->
-              <div class="mb-3 text-end">
-                <label class="form-label fs-8 text-dark fw-bold mb-2 d-block text-end">نوع الحساب</label>
+              <div class="mb-3" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
+                <label class="form-label fs-8 text-dark fw-bold mb-2 d-block">{{ t('accountTypeLabel') }}</label>
                 <div class="row g-2">
                   <div class="col-6">
                     <div
@@ -166,7 +176,7 @@
                       @click="accountType = 'hospital'"
                     >
                       <input type="radio" name="accType" :checked="accountType === 'hospital'" class="form-check-input ms-0 custom-radio" />
-                      <span class="fs-8 fw-bold text-truncate">مستشفى / بنك دم</span>
+                      <span class="fs-8 fw-bold text-truncate">{{ t('hospitalAccount') }}</span>
                       <i class="bi bi-building fs-6 ms-1 flex-shrink-0"></i>
                     </div>
                   </div>
@@ -177,7 +187,7 @@
                       @click="accountType = 'donor'"
                     >
                       <input type="radio" name="accType" :checked="accountType === 'donor'" class="form-check-input ms-0 custom-radio" />
-                      <span class="fs-8 fw-bold">متبرع</span>
+                      <span class="fs-8 fw-bold">{{ t('donorAccount') }}</span>
                       <i class="bi bi-person-fill fs-6 ms-1 flex-shrink-0"></i>
                     </div>
                   </div>
@@ -187,35 +197,35 @@
               <!-- البيانات الإضافية كمتبرع -->
               <template v-if="accountType === 'donor'">
                 <div class="p-3 bg-light rounded-3 border mb-3">
-                  <h6 class="text-danger fw-bold text-center mb-3 fs-8">بيانات إضافية للمتبرع</h6>
+                  <h6 class="text-danger fw-bold text-center mb-3 fs-8">{{ t('donorExtraInfoTitle') }}</h6>
 
-                  <div class="mb-2 text-end">
-                    <label class="form-label fs-8 text-dark fw-bold mb-1 d-block text-end">فصيلة الدم</label>
+                  <div class="mb-2" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
+                    <label class="form-label fs-8 text-dark fw-bold mb-1 d-block">{{ t('bloodTypeSelectLabel') }}</label>
                     <div class="input-group custom-input-group">
-                      <span class="input-group-text bg-white text-muted border-start-0 order-2"><i class="bi bi-droplet"></i></span>
-                      <select v-model="registerForm.bloodType" class="form-select border-end-0 text-end fs-8 order-1" required>
-                        <option value="" disabled selected>اختر فصيلة الدم</option>
+                      <span class="input-group-text bg-white text-muted" :class="currentLanguage === 'ar' ? 'border-start-0 order-2' : 'border-end-0 order-1'"><i class="bi bi-droplet"></i></span>
+                      <select v-model="registerForm.bloodType" class="form-select fs-8" :class="currentLanguage === 'ar' ? 'border-end-0 text-end order-1' : 'border-start-0 text-start order-2'" required>
+                        <option value="" disabled selected>{{ t('chooseBloodType') }}</option>
                         <option v-for="type in bloodTypes" :key="type.id" :value="type.id">{{ type.name }}</option>
                       </select>
                     </div>
                   </div>
 
-                  <div class="mb-2 text-end">
-                    <label class="form-label fs-8 text-dark fw-bold mb-1 d-block text-end">تاريخ الميلاد</label>
+                  <div class="mb-2" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
+                    <label class="form-label fs-8 text-dark fw-bold mb-1 d-block">{{ t('birthDate') }}</label>
                     <div class="input-group custom-input-group">
-                      <span class="input-group-text bg-white text-muted border-start-0 order-2"><i class="bi bi-calendar"></i></span>
-                      <input v-model="registerForm.birthDate" type="date" class="form-control border-end-0 text-end fs-8 order-1" required />
+                      <span class="input-group-text bg-white text-muted" :class="currentLanguage === 'ar' ? 'border-start-0 order-2' : 'border-end-0 order-1'"><i class="bi bi-calendar"></i></span>
+                      <input v-model="registerForm.birthDate" type="date" class="form-control fs-8" :class="currentLanguage === 'ar' ? 'border-end-0 text-end order-1' : 'border-start-0 text-start order-2'" required />
                     </div>
                   </div>
 
-                  <div class="mb-2 text-end">
-                    <label class="form-label fs-8 text-dark fw-bold mb-1 d-block text-end">الجنس</label>
+                  <div class="mb-2" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
+                    <label class="form-label fs-8 text-dark fw-bold mb-1 d-block">{{ t('gender') }}</label>
                     <div class="input-group custom-input-group">
-                      <span class="input-group-text bg-white text-muted border-start-0 order-2"><i class="bi bi-gender-ambiguous"></i></span>
-                      <select v-model="registerForm.gender" class="form-select border-end-0 text-end fs-8 order-1" required>
-                        <option value="" disabled selected>اختر الجنس</option>
-                        <option value="male">ذكر</option>
-                        <option value="female">أنثى</option>
+                      <span class="input-group-text bg-white text-muted" :class="currentLanguage === 'ar' ? 'border-start-0 order-2' : 'border-end-0 order-1'"><i class="bi bi-gender-ambiguous"></i></span>
+                      <select v-model="registerForm.gender" class="form-select fs-8" :class="currentLanguage === 'ar' ? 'border-end-0 text-end order-1' : 'border-start-0 text-start order-2'" required>
+                        <option value="" disabled selected>{{ t('chooseGender') }}</option>
+                        <option value="male">{{ t('male') }}</option>
+                        <option value="female">{{ t('female') }}</option>
                       </select>
                     </div>
                   </div>
@@ -225,57 +235,57 @@
               <!-- البيانات الإضافية كمستشفى/بنك دم -->
               <template v-if="accountType === 'hospital'">
                 <div class="p-3 bg-light rounded-3 border mb-3">
-                  <h6 class="text-danger fw-bold text-center mb-3 fs-8">بيانات الجهة الطبية</h6>
+                  <h6 class="text-danger fw-bold text-center mb-3 fs-8">{{ t('facilityExtraInfoTitle') }}</h6>
 
-                  <div class="mb-2 text-end">
-                    <label class="form-label fs-8 text-dark fw-bold mb-1 d-block text-end">اسم الجهة (اسم المستشفى أو بنك الدم)</label>
+                  <div class="mb-2" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
+                    <label class="form-label fs-8 text-dark fw-bold mb-1 d-block">{{ t('facilityName') }}</label>
                     <div class="input-group custom-input-group">
-                      <span class="input-group-text bg-white text-muted border-start-0 order-2"><i class="bi bi-building"></i></span>
-                      <input v-model="registerForm.facilityName" type="text" class="form-control border-end-0 text-end fs-8 order-1" placeholder="اسم الجهة" required />
+                      <span class="input-group-text bg-white text-muted" :class="currentLanguage === 'ar' ? 'border-start-0 order-2' : 'border-end-0 order-1'"><i class="bi bi-building"></i></span>
+                      <input v-model="registerForm.facilityName" type="text" class="form-control fs-8" :class="currentLanguage === 'ar' ? 'border-end-0 text-end order-1' : 'border-start-0 text-start order-2'" :placeholder="t('facilityNamePlaceholder')" required />
                     </div>
                   </div>
 
-                  <div class="mb-2 text-end">
-                    <label class="form-label fs-8 text-dark fw-bold mb-1 d-block text-end">نوع الجهة</label>
+                  <div class="mb-2" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
+                    <label class="form-label fs-8 text-dark fw-bold mb-1 d-block">{{ t('facilityType') }}</label>
                     <div class="row g-2">
                       <div class="col-6">
                         <div class="border rounded-3 p-2 text-center fs-8 bg-white d-flex align-items-center justify-content-between">
                           <input type="radio" v-model="registerForm.facilityType" value="blood_bank" class="form-check-input ms-0 custom-radio" />
-                          <span class="fw-bold">بنك دم</span>
+                          <span class="fw-bold">{{ t('bloodBankType') }}</span>
                         </div>
                       </div>
                       <div class="col-6">
                         <div class="border rounded-3 p-2 text-center fs-8 bg-white d-flex align-items-center justify-content-between">
                           <input type="radio" v-model="registerForm.facilityType" value="hospital" class="form-check-input ms-0 custom-radio" />
-                          <span class="fw-bold">مستشفى</span>
+                          <span class="fw-bold">{{ t('hospitalType') }}</span>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div class="mb-2 text-end">
-                    <label class="form-label fs-8 text-dark fw-bold mb-1 d-block text-end">رقم الترخيص</label>
+                  <div class="mb-2" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
+                    <label class="form-label fs-8 text-dark fw-bold mb-1 d-block">{{ t('licenseNumber') }}</label>
                     <div class="input-group custom-input-group">
-                      <span class="input-group-text bg-white text-muted border-start-0 order-2"><i class="bi bi-card-heading"></i></span>
-                      <input v-model="registerForm.licenseNumber" type="text" class="form-control border-end-0 text-end fs-8 order-1" placeholder="Medical License Number" required />
+                      <span class="input-group-text bg-white text-muted" :class="currentLanguage === 'ar' ? 'border-start-0 order-2' : 'border-end-0 order-1'"><i class="bi bi-card-heading"></i></span>
+                      <input v-model="registerForm.licenseNumber" type="text" class="form-control fs-8" :class="currentLanguage === 'ar' ? 'border-end-0 text-end order-1' : 'border-start-0 text-start order-2'" placeholder="Medical License Number" required />
                     </div>
                   </div>
 
-                  <div class="mb-2 text-end">
-                    <label class="form-label fs-8 text-dark fw-bold mb-1 d-block text-end">اسم المسؤول</label>
+                  <div class="mb-2" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
+                    <label class="form-label fs-8 text-dark fw-bold mb-1 d-block">{{ t('managerName') }}</label>
                     <div class="input-group custom-input-group">
-                      <span class="input-group-text bg-white text-muted border-start-0 order-2"><i class="bi bi-person"></i></span>
-                      <input v-model="registerForm.managerName" type="text" class="form-control border-end-0 text-end fs-8 order-1" placeholder="الاسم الأول" required />
+                      <span class="input-group-text bg-white text-muted" :class="currentLanguage === 'ar' ? 'border-start-0 order-2' : 'border-end-0 order-1'"><i class="bi bi-person"></i></span>
+                      <input v-model="registerForm.managerName" type="text" class="form-control fs-8" :class="currentLanguage === 'ar' ? 'border-end-0 text-end order-1' : 'border-start-0 text-start order-2'" :placeholder="t('managerNamePlaceholder')" required />
                     </div>
                   </div>
 
                   <!-- رفع نسخة من الترخيص -->
-                  <div class="mb-2 text-end">
-                    <label class="form-label fs-8 text-dark fw-bold mb-1 d-block text-end">رفع نسخة من الترخيص</label>
+                  <div class="mb-2" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
+                    <label class="form-label fs-8 text-dark fw-bold mb-1 d-block">{{ t('uploadLicenseLabel') }}</label>
                     <div class="upload-dashed-box border border-dashed rounded-3 p-3 text-center bg-white cursor-pointer" @click="triggerFileInput">
                       <i class="bi bi-file-earmark-arrow-up fs-3 text-muted d-block mb-1"></i>
                       <small class="text-muted d-block fs-8 text-truncate">
-                        {{ registerForm.licenseFile ? registerForm.licenseFile.name : 'اسحب الملف هنا او اختر ملف' }}
+                        {{ registerForm.licenseFile ? registerForm.licenseFile.name : t('dragOrChooseFile') }}
                       </small>
                       <small class="text-muted d-block fs-9">PDF / Image</small>
                       <input type="file" ref="fileInput" @change="handleFileUpload" class="d-none" id="licenseFile" accept=".pdf, .jpg, .jpeg, .png" />
@@ -285,20 +295,20 @@
               </template>
 
               <!-- الموافقة على الشروط -->
-              <div class="form-check text-end mb-3 fs-8 d-flex align-items-center justify-content-center gap-1">
+              <div class="form-check mb-3 fs-8 d-flex align-items-center justify-content-center gap-1" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
                 <input v-model="registerForm.terms" type="checkbox" class="form-check-input ms-0 custom-checkbox" id="termsCheck" required />
                 <label class="form-check-label text-dark fw-medium" for="termsCheck">
-                  أوافق على <a href="#" class="text-danger fw-bold text-decoration-none">الشروط والأحكام وسياسة الخصوصية</a>
+                  {{ t('agreeTerms') }} <a href="#" class="text-danger fw-bold text-decoration-none">{{ t('termsAndPrivacyLink') }}</a>
                 </label>
               </div>
 
               <button type="submit" class="btn btn-danger w-100 rounded-3 py-2 fw-bold text-white shadow-sm mb-2 btn-submit-red" :disabled="loading">
                 <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                {{ accountType === 'hospital' ? 'إرسال طلب التسجيل' : 'إنشاء حساب' }}
+                {{ accountType === 'hospital' ? t('submitHospitalRegister') : t('createAccountBtn') }}
               </button>
 
               <p class="text-center fs-8 text-muted mt-3 mb-0">
-                لديك حساب بالفعل؟ <a href="#" class="text-danger fw-bold text-decoration-none ms-1" @click.prevent="activeTab = 'login'">تسجيل الدخول</a>
+                {{ t('alreadyHaveAccount') }} <a href="#" class="text-danger fw-bold text-decoration-none ms-1" @click.prevent="activeTab = 'login'">{{ t('loginTab') }}</a>
               </p>
             </form>
 
@@ -317,16 +327,16 @@
 
           <div class="hero-content position-relative z-2 text-center pt-3 mx-auto">
             <h2 class="fw-bold hero-heading text-dark mb-1 text-center">
-              لأن الدقيقة تساوي <span class="text-danger">حياة</span>
+              {{ t('heroHeadingPart1') }} <span class="text-danger">{{ t('heroHeadingPart2') }}</span>
             </h2>
 
-            <!-- رسمة نبض القلب تسحب الآن من مجلد icons -->
+            <!-- رسمة نبض القلب -->
             <div class="pulse-line-wrapper my-2 mx-auto text-center">
               <img :src="getIconUrl('Vector 7.png')" alt="نبض القلب" class="pulse-vector-img mx-auto" />
             </div>
 
             <p class="hero-description text-dark fw-bold mb-3 mb-md-4 text-center">
-              نوصلك بالمتبرع المناسب في أسرع وقت لإنقاذ حياة محتاجة.
+              {{ t('heroDesc') }}
             </p>
 
             <!-- الأيقونات الأربع تسحب بشكل صحيح من مجلد icons -->
@@ -335,28 +345,28 @@
                 <div class="feature-icon-box mx-auto mb-2">
                   <img :src="getIconUrl('Frame 2147225319.png')" alt="إنقاذ الأرواح" class="feature-img" />
                 </div>
-                <span class="d-block feature-label text-dark fw-bold">إنقاذ الأرواح</span>
+                <span class="d-block feature-label text-dark fw-bold">{{ t('featureSavingLives') }}</span>
               </div>
 
               <div class="col-3">
                 <div class="feature-icon-box mx-auto mb-2">
                   <img :src="getIconUrl('Frame 2147225318.png')" alt="استجابة سريعة" class="feature-img" />
                 </div>
-                <span class="d-block feature-label text-dark fw-bold">استجابة سريعة</span>
+                <span class="d-block feature-label text-dark fw-bold">{{ t('featureFastResponse') }}</span>
               </div>
 
               <div class="col-3">
                 <div class="feature-icon-box mx-auto mb-2">
                   <img :src="getIconUrl('Frame 2147225317.png')" alt="مجتمع المتبرعين" class="feature-img" />
                 </div>
-                <span class="d-block feature-label text-dark fw-bold">مجتمع المتبرعين</span>
+                <span class="d-block feature-label text-dark fw-bold">{{ t('featureCommunity') }}</span>
               </div>
 
               <div class="col-3">
                 <div class="feature-icon-box mx-auto mb-2">
                   <img :src="getIconUrl('Frame 2147225316.png')" alt="آمن وموثوق" class="feature-img" />
                 </div>
-                <span class="d-block feature-label text-dark fw-bold">آمن وموثوق</span>
+                <span class="d-block feature-label text-dark fw-bold">{{ t('featureSafe') }}</span>
               </div>
             </div>
           </div>
@@ -374,6 +384,149 @@ import { useAuthStore } from '@/stores/authStore';
 
 const authStore = useAuthStore();
 const { login, register, loading, error } = useAuth();
+
+const currentLanguage = ref(localStorage.getItem('musaef_lang') || 'ar');
+
+const toggleLanguage = () => {
+  const newLang = currentLanguage.value === 'ar' ? 'en' : 'ar';
+  currentLanguage.value = newLang;
+  localStorage.setItem('musaef_lang', newLang);
+  document.documentElement.setAttribute('dir', newLang === 'ar' ? 'rtl' : 'ltr');
+  document.documentElement.setAttribute('lang', newLang);
+};
+
+const translations = {
+  ar: {
+    loginTab: 'تسجيل الدخول',
+    registerTab: 'إنشاء حساب',
+    email: 'البريد الإلكتروني',
+    emailPlaceholder: 'البريد الإلكتروني',
+    password: 'كلمة المرور',
+    passwordPlaceholder: 'كلمة المرور',
+    rememberMe: 'تذكرني',
+    forgotPassword: 'هل نسيت كلمة السر؟',
+    loginBtn: 'تسجيل الدخول',
+    orSocial: 'أو سجل الدخول عبر',
+    noAccount: 'ليس لديك حساب؟',
+    registerNew: 'إنشاء حساب جديد',
+    fullNamePlaceholder: 'الاسم كامل',
+    phonePlaceholder: 'رقم الهاتف',
+    passwordMinPlaceholder: 'كلمة المرور (8 أحرف على الأقل)',
+    confirmPasswordPlaceholder: 'تأكيد كلمة المرور',
+    accountTypeLabel: 'نوع الحساب',
+    hospitalAccount: 'مستشفى / بنك دم',
+    donorAccount: 'متبرع',
+    donorExtraInfoTitle: 'بيانات إضافية للمتبرع',
+    bloodTypeSelectLabel: 'فصيلة الدم',
+    chooseBloodType: 'اختر فصيلة الدم',
+    birthDate: 'تاريخ الميلاد',
+    gender: 'الجنس',
+    chooseGender: 'اختر الجنس',
+    male: 'ذكر',
+    female: 'أنثى',
+    facilityExtraInfoTitle: 'بيانات الجهة الطبية',
+    facilityName: 'اسم الجهة (اسم المستشفى أو بنك الدم)',
+    facilityNamePlaceholder: 'اسم الجهة',
+    facilityType: 'نوع الجهة',
+    bloodBankType: 'بنك دم',
+    hospitalType: 'مستشفى',
+    licenseNumber: 'رقم الترخيص',
+    managerName: 'اسم المسؤول',
+    managerNamePlaceholder: 'الاسم الأول',
+    uploadLicenseLabel: 'رفع نسخة من الترخيص',
+    dragOrChooseFile: 'اسحب الملف هنا أو اختر ملف',
+    agreeTerms: 'أوافق على',
+    termsAndPrivacyLink: 'الشروط والأحكام وسياسة الخصوصية',
+    submitHospitalRegister: 'إرسال طلب التسجيل',
+    createAccountBtn: 'إنشاء حساب',
+    alreadyHaveAccount: 'لديك حساب بالفعل؟',
+    heroHeadingPart1: 'لأن الدقيقة تساوي',
+    heroHeadingPart2: 'حياة',
+    heroDesc: 'نوصلك بالمتبرع المناسب في أسرع وقت لإنقاذ حياة محتاجة.',
+    featureSavingLives: 'إنقاذ الأرواح',
+    featureFastResponse: 'استجابة سريعة',
+    featureCommunity: 'مجتمع المتبرعين',
+    featureSafe: 'آمن وموثوق',
+    hospitalSuccessMsg: 'تم إرسال طلب تسجيل الجهة الطبية بنجاح. سيتم مراجعته والتواصل معكم قريباً.'
+  },
+  en: {
+    loginTab: 'Login',
+    registerTab: 'Register',
+    email: 'Email Address',
+    emailPlaceholder: 'Enter your email',
+    password: 'Password',
+    passwordPlaceholder: 'Enter password',
+    rememberMe: 'Remember Me',
+    forgotPassword: 'Forgot password?',
+    loginBtn: 'Sign In',
+    orSocial: 'Or sign in with',
+    noAccount: 'Don\'t have an account?',
+    registerNew: 'Create New Account',
+    fullNamePlaceholder: 'Full Name',
+    phonePlaceholder: 'Phone Number',
+    passwordMinPlaceholder: 'Password (min 8 chars)',
+    confirmPasswordPlaceholder: 'Confirm Password',
+    accountTypeLabel: 'Account Type',
+    hospitalAccount: 'Hospital / Blood Bank',
+    donorAccount: 'Donor',
+    donorExtraInfoTitle: 'Additional Donor Info',
+    bloodTypeSelectLabel: 'Blood Type',
+    chooseBloodType: 'Select blood type',
+    birthDate: 'Birth Date',
+    gender: 'Gender',
+    chooseGender: 'Select gender',
+    male: 'Male',
+    female: 'Female',
+    facilityExtraInfoTitle: 'Medical Facility Info',
+    facilityName: 'Facility Name (Hospital / Blood Bank)',
+    facilityNamePlaceholder: 'Facility name',
+    facilityType: 'Facility Type',
+    bloodBankType: 'Blood Bank',
+    hospitalType: 'Hospital',
+    licenseNumber: 'License Number',
+    managerName: 'Manager Name',
+    managerNamePlaceholder: 'First Name',
+    uploadLicenseLabel: 'Upload License Copy',
+    dragOrChooseFile: 'Drag file here or choose file',
+    agreeTerms: 'I agree to',
+    termsAndPrivacyLink: 'Terms, Conditions & Privacy Policy',
+    submitHospitalRegister: 'Submit Application',
+    createAccountBtn: 'Create Account',
+    alreadyHaveAccount: 'Already have an account?',
+    heroHeadingPart1: 'Because every minute equals',
+    heroHeadingPart2: 'Life',
+    heroDesc: 'Connecting you with the right donor quickly to save lives in need.',
+    featureSavingLives: 'Saving Lives',
+    featureFastResponse: 'Fast Response',
+    featureCommunity: 'Donor Community',
+    featureSafe: 'Safe & Trusted',
+    hospitalSuccessMsg: 'Medical facility registration request submitted successfully. We will review and contact you soon.'
+  }
+};
+
+const backendErrorDict = {
+  'يرجى إدخال بريد إلكتروني صحيح': 'Please enter a valid email address',
+  'كلمة المرور يجب ألا تقل عن 6 أحرف': 'Password must be at least 6 characters',
+  'كلمة المرور يجب ألا تقل عن 8 أحرف': 'Password must be at least 8 characters',
+  'كلمتا المرور غير متطابقتين': 'Passwords do not match',
+  'يجب الموافقة على الشروط والأحكام وسياسة الخصوصية': 'You must agree to Terms and Privacy Policy',
+  'بيانات الدخول غير صحيحة': 'Invalid login credentials',
+  'فشل تسجيل الدخول': 'Login failed',
+  'تعذر إنشاء الحساب حالياً': 'Unable to create account currently'
+};
+
+const t = (key) => {
+  const lang = currentLanguage.value === 'en' ? 'en' : 'ar';
+  return translations[lang][key] || key;
+};
+
+const translateBackendError = (err) => {
+  if (!err) return '';
+  if (currentLanguage.value === 'en') {
+    return backendErrorDict[err] || err;
+  }
+  return err;
+};
 
 const bloodTypes = ref([
   { id: 1, name: 'A+' },
@@ -414,12 +567,10 @@ const registerForm = ref({
   terms: false
 });
 
-// 1. دالة استدعاء الصور (تسحب من src/assets/images) باستخدام المسار المطلق لـ Vite
 const getImageUrl = (fileName) => {
   return new URL(`/src/assets/images/${fileName}`, import.meta.url).href;
 };
 
-// 2. دالة استدعاء الأيقونات (تسحب من src/assets/icons) باستخدام المسار المطلق لـ Vite
 const getIconUrl = (fileName) => {
   return new URL(`/src/assets/icons/${fileName}`, import.meta.url).href;
 };
@@ -433,13 +584,13 @@ const onRegister = async () => {
   successMessage.value = '';
   const result = await register(registerForm.value, accountType.value);
   if (result.success && accountType.value === 'hospital') {
-    successMessage.value = 'تم إرسال طلب تسجيل الجهة الطبية بنجاح. سيتم مراجعته والتواصل معكم قريباً.';
+    successMessage.value = t('hospitalSuccessMsg');
     activeTab.value = 'login';
   }
 };
 
 const handleSocialLogin = (provider) => {
-  console.log('تسجيل الدخول عبر:', provider);
+  console.log('Login via:', provider);
 };
 
 const triggerFileInput = () => {
@@ -463,10 +614,11 @@ const handleLogoFallback = (e) => {
 </script>
 
 <style scoped>
-.dir-rtl {
-  direction: rtl;
-  font-family: Arial, sans-serif;
+.auth-page-wrapper,
+.auth-page-wrapper * {
+  font-family: Arial, sans-serif !important;
 }
+
 .auth-page-wrapper {
   background-color: #f3f4f6;
 }
@@ -636,4 +788,6 @@ const handleLogoFallback = (e) => {
 .fs-9 { font-size: 0.72rem; }
 .cursor-pointer { cursor: pointer; }
 .transition-all { transition: all 0.2s ease-in-out; }
+.dir-rtl { direction: rtl; }
+.dir-ltr { direction: ltr; }
 </style>

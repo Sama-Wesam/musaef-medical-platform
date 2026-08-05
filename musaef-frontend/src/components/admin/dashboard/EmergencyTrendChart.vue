@@ -1,10 +1,10 @@
 <template>
-  <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white mb-3 mb-md-4 text-end dir-rtl">
+  <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white mb-3 mb-md-4" :class="currentLanguage === 'ar' ? 'dir-rtl text-end' : 'dir-ltr text-start'">
     <div class="d-flex justify-content-between align-items-center mb-3 mb-md-4">
-      <h6 class="fw-bold text-dark mb-0 fs-7">تطور الحالات الطارئة (آخر 6 أشهر)</h6>
+      <h6 class="fw-bold text-dark mb-0 fs-7">{{ t('trendTitle') }}</h6>
     </div>
 
-    <!-- المخطط البياني الملتف مع خاصية التمرير للحفاظ على الرسم البياني -->
+    <!-- المخطط البياني الملتف -->
     <div class="chart-scroll-wrapper overflow-x-auto">
       <div class="position-relative pt-2 pb-1 min-chart-width" style="height: 200px;">
         <div class="chart-y-axis d-flex flex-column justify-content-between position-absolute w-100 h-100 pe-2 text-muted fs-9">
@@ -43,48 +43,55 @@
         </div>
       </div>
 
-      <!-- ترتيب الأشهر المعدل من اليمين لليسار: يوليو، أغسطس، سبتمبر، أكتوبر، نوفمبر، ديسمبر -->
+      <!-- ترتيب الأشهر -->
       <div class="d-flex justify-content-between text-muted fs-8 pt-3 px-3 min-chart-width">
-        <span>يوليو</span>
-        <span>أغسطس</span>
-        <span>سبتمبر</span>
-        <span>أكتوبر</span>
-        <span>نوفمبر</span>
-        <span>ديسمبر</span>
+        <span>{{ translateMonth('jul') }}</span>
+        <span>{{ translateMonth('aug') }}</span>
+        <span>{{ translateMonth('sep') }}</span>
+        <span>{{ translateMonth('oct') }}</span>
+        <span>{{ translateMonth('nov') }}</span>
+        <span>{{ translateMonth('dec') }}</span>
       </div>
     </div>
   </div>
 </template>
+
+<script setup>
+import { computed } from 'vue';
+
+const currentLanguage = computed(() => localStorage.getItem('musaef_lang') || 'ar');
+
+const dictionary = {
+  ar: { trendTitle: 'تطور الحالات الطارئة (آخر 6 أشهر)' },
+  en: { trendTitle: 'Emergency Cases Trend (Last 6 Months)' }
+};
+
+const monthDict = {
+  ar: { jul: 'يوليو', aug: 'أغسطس', sep: 'سبتمبر', oct: 'أكتوبر', nov: 'نوفمبر', dec: 'ديسمبر' },
+  en: { jul: 'July', aug: 'August', sep: 'September', oct: 'October', nov: 'November', dec: 'December' }
+};
+
+const t = (key) => dictionary[currentLanguage.value === 'en' ? 'en' : 'ar'][key] || key;
+const translateMonth = (key) => monthDict[currentLanguage.value === 'en' ? 'en' : 'ar'][key];
+</script>
 
 <style scoped>
 .fs-7 { font-size: 0.9rem; }
 .fs-8 { font-size: 0.8rem; }
 .fs-9 { font-size: 0.72rem; }
 
-.min-chart-width {
-  min-width: 450px;
-}
+.min-chart-width { min-width: 450px; }
+@media (min-width: 768px) { .min-chart-width { min-width: 100%; } }
 
-@media (min-width: 768px) {
-  .min-chart-width {
-    min-width: 100%;
-  }
-}
-
-.chart-scroll-wrapper {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-.chart-scroll-wrapper::-webkit-scrollbar {
-  display: none;
-}
+.chart-scroll-wrapper { scrollbar-width: none; -ms-overflow-style: none; }
+.chart-scroll-wrapper::-webkit-scrollbar { display: none; }
 
 .tooltip-arrow {
-  width: 0;
-  height: 0;
+  width: 0; height: 0;
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
   border-top: 5px solid #2563EB;
 }
 .dir-rtl { direction: rtl; }
+.dir-ltr { direction: ltr; }
 </style>

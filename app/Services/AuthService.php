@@ -42,7 +42,7 @@ class AuthService
             $user = User::create([
                 'name'     => $data['name'],
                 'email'    => $data['email'],
-                'password' => $data['password'], // يتم تشفيرها تلقائياً بفضل $casts في موديل User
+                'password' => $data['password'], 
                 'role'     => 'donor',
             ]);
 
