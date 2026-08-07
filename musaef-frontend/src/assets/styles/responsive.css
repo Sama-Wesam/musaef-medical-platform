@@ -1,0 +1,278 @@
+/* Hospital Layout */
+@media (max-width: 992px) {
+  .hospital-layout .menu-toggle {
+    display: flex;
+  }
+
+  .hospital-layout .layout-body {
+    display: block;
+  }
+
+  .hospital-layout .sidebar {
+    width: 250px;
+    min-width: 250px;
+    height: calc(100vh - 68px);
+    min-height: 0;
+    position: fixed;
+    top: 68px;
+    right: -270px;
+    z-index: 1050;
+    padding: 20px 14px 14px;
+    overflow-y: auto;
+    border-left: 1px solid var(--color-border-light);
+    box-shadow: -8px 0 25px rgb(15 23 42 / 15%);
+    transition: right 0.3s ease;
+  }
+
+  .hospital-layout .sidebar.open {
+    right: 0;
+  }
+
+  .hospital-layout .sidebar-overlay {
+    position: fixed;
+    top: 68px;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1040;
+    display: block;
+    padding: 0;
+    border: 0;
+    background-color: rgb(15 23 42 / 38%);
+    cursor: pointer;
+  }
+
+  .hospital-layout .main-area {
+    width: 100%;
+  }
+
+  .hospital-layout .page-wrapper {
+    padding: 18px;
+  }
+
+  .hospital-layout .search-box {
+    width: 280px;
+    margin-right: auto;
+  }
+}
+
+@media (max-width: 820px) {
+  .hospital-layout .topbar {
+    padding: 0 14px;
+    gap: 10px;
+  }
+
+  .hospital-layout .header-doctor-info {
+    display: none;
+  }
+
+  .hospital-layout .header-doctor-image {
+    width: 42px;
+    height: 42px;
+  }
+
+  .hospital-layout .search-box {
+    width: auto;
+    flex: 1;
+    margin-right: 0;
+  }
+}
+
+@media (max-width: 550px) {
+  .hospital-layout .topbar {
+    height: 62px;
+    min-height: 62px;
+    padding: 0 10px;
+    gap: 7px;
+  }
+
+  .hospital-layout .blood-status {
+    display: none;
+  }
+
+  .hospital-layout .sidebar {
+    top: 62px;
+    width: min(280px, 84vw);
+    min-width: 0;
+    height: calc(100vh - 62px);
+    right: -100%;
+  }
+
+  .hospital-layout .sidebar.open {
+    right: 0;
+  }
+
+  .hospital-layout .sidebar-overlay {
+    top: 62px;
+  }
+
+  .hospital-layout .page-wrapper {
+    min-height: calc(100vh - 62px);
+    padding: 13px;
+  }
+}
+
+
+/* Blood Inventory */
+
+@media (max-width: 950px) {
+  .blood-inventory-page .inventory-layout {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'main'
+      'side';
+  }
+
+  .blood-inventory-page .inventory-sidebar {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 650px) {
+  .blood-inventory-page .forms-grid,
+  .blood-inventory-page .inventory-sidebar {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* Emergency Requests */
+
+@media (max-width: 950px) {
+  .emergency-page .requests-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .emergency-page .details-column {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .emergency-page .toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .emergency-page .filter-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .emergency-page .details-column {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* Facility Settings */
+
+@media (max-width: 900px) {
+  .facility-settings-page .profile-layout {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'information'
+      'map';
+  }
+}
+
+@media (max-width: 600px) {
+  .facility-settings-page .page-heading h1 {
+    font-size: 16px;
+  }
+
+  .facility-settings-page .page-heading p {
+    font-size: 10px;
+  }
+}
+
+/* Notifications */
+
+@media (max-width: 600px) {
+  .notifications-page .page-heading {
+    flex-direction: column;
+  }
+
+  .notifications-page .read-all-button {
+    width: 100%;
+  }
+}
+
+/* Logo */
+.hospital-layout .header-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: auto;
+}
+
+.hospital-layout .header-logo img {
+  width: 200px;
+  height: auto;
+}
+
+/* Tablet */
+@media (max-width: 820px) {
+  .hospital-layout .header-logo img {
+    width: 55px;
+  }
+
+  .hospital-layout .notification-button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .hospital-layout .search-box input {
+    font-size: 14px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 550px) {
+  .hospital-layout .header-logo img {
+    width: 55px;
+  }
+
+  .hospital-layout .search-box {
+    display: none;
+  }
+
+  .hospital-layout .notification-button span {
+    width: 16px;
+    height: 16px;
+    font-size: 10px;
+  }
+}
+.mobile-search {
+  display: none;
+}
+
+@media (max-width: 550px) {
+  .mobile-search {
+    display: flex;
+    align-items: center;
+    position: relative;
+    margin-bottom: 20px;
+  }
+
+  .mobile-search input {
+    width: 100%;
+    padding: 10px 40px 10px 10px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+  }
+
+  .mobile-search i {
+    position: absolute;
+    right: 12px;
+    color: #777;
+  }
+
+  /* إخفاء البحث الموجود في الهيدر */
+  .hospital-layout .topbar .search-box {
+    display: none;
+  }
+}
