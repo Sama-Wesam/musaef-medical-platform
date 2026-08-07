@@ -1,0 +1,169 @@
+{
+  "info": {
+    "name": "Musaef API - منصة مسعف",
+    "description": "مجموعة مسارات API الخاصة بمشروع منصة مسعف لاختبارها وتوثيقها.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. المصادقة (Auth)",
+      "item": [
+        {
+          "name": "تسجيل الدخول (Login)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"shifa@musaef.com\",\n  \"password\": \"password123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/login", "host": ["{{base_url}}"], "path": ["login"] }
+          }
+        },
+        {
+          "name": "إنشاء حساب متبرع (Register)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"أحمد المتبرع\",\n  \"email\": \"ahmed@donor.com\",\n  \"password\": \"password123\",\n  \"blood_type_id\": 1,\n  \"birth_date\": \"1995-05-20\",\n  \"gender\": \"male\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/register/donor", "host": ["{{base_url}}"], "path": ["register", "donor"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. المستشفى (Hospital)",
+      "item": [
+        {
+          "name": "إنشاء طلب طوارئ",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"blood_type_id\": 1,\n  \"units_required\": 5,\n  \"emergency_level\": \"critical\",\n  \"description\": \"حالة نزيف حاد في قسم الطوارئ\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/hospital/requests", "host": ["{{base_url}}"], "path": ["hospital", "requests"] }
+          }
+        },
+        {
+          "name": "عرض مخزون الدم",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/hospital/inventory", "host": ["{{base_url}}"], "path": ["hospital", "inventory"] }
+          }
+        },
+        {
+          "name": "تأكيد إتمام التبرع",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"donor_id\": 19,\n  \"emergency_request_id\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/donations/confirm", "host": ["{{base_url}}"], "path": ["donations", "confirm"] }
+          }
+        },
+        {
+          "name": "تحديث مخزون الدم يدوياً",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"blood_type_id\": 1,\n  \"quantity\": 10\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{base_url}}/hospital/inventory/update", "host": ["{{base_url}}"], "path": ["hospital", "inventory", "update"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. الإدارة (Admin)",
+      "item": [
+        {
+          "name": "إحصائيات الداشبورد",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/admin/dashboard", "host": ["{{base_url}}"], "path": ["admin", "dashboard"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. المتبرع (Donor)",
+      "item": [
+        {
+          "name": "عرض الملف الشخصي",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/donor/profile", "host": ["{{base_url}}"], "path": ["donor", "profile"] }
+          }
+        },
+        {
+          "name": "عرض المستشفيات القريبة",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/donor/nearby-hospitals", "host": ["{{base_url}}"], "path": ["hospitals", "nearby"] }
+          }
+        },
+        {
+          "name": "قبول نداء طوارئ",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/donor/emergencies/1/respond", "host": ["{{base_url}}"], "path": ["emergencies", "1", "accept"] }
+          }
+        },
+        {
+          "name": "استعراض المكافآت والنقاط",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/donor/rewards", "host": ["{{base_url}}"], "path": ["rewards"] }
+          }
+        },
+        {
+          "name": "بيانات بطاقة المتبرع QR",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/donor/qr-card", "host": ["{{base_url}}"], "path": ["donor", "qr-card"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. مسارات عامة (Public)",
+      "item": [
+        {
+          "name": "عرض حالات الطوارئ النشطة",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/emergencies/active", "host": ["{{base_url}}"], "path": ["emergencies", "active"] }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:8000/api", "type": "string" },
+    { "key": "token", "value": "ضعي_التوكن_هنا", "type": "string" }
+  ]
+}
