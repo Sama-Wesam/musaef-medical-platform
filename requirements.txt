@@ -1,32 +1,44 @@
 # =========================================================
-# Musaef Medical Platform - Machine Learning & AI Services
-# Requirements File for Python Environment
+# Musaef Medical Platform - AI & Machine Learning Engine
+# Python Requirements
 # =========================================================
 
-# --- 1. Machine Learning & Core AI Frameworks ---
-scikit-learn==1.9.0      # Models: RandomForest, IsolationForest, MinMaxScaler
-scipy==1.18.0             # Scientific & mathematical computations for ML
-joblib==1.5.3            # Model persistence & parallel processing
-threadpoolctl==3.6.0     # Thread pool control for scientific calculations
+# ---------------------------------------------------------
+# Machine Learning & Artificial Intelligence
+# ---------------------------------------------------------
+scikit-learn==1.9.0
+scipy==1.18.0
+joblib==1.5.3
+threadpoolctl==3.6.0
 
-# --- 2. Data Processing & Manipulation ---
-pandas==3.0.5            # Dataframe handling, request/donor log analysis
-numpy==2.5.1             # Fast array calculations & distance formulas (ETA)
-python-dateutil==2.9.0.post0 # Advanced date parsing & manipulation
-tzdata==2026.3           # Timezone data management for pandas
-narwhals==2.24.0         # Lightweight dataframe compatibility layer
-six==1.17.0              # Python 2 and 3 compatibility utilities
+# ---------------------------------------------------------
+# Data Processing & Analytics
+# ---------------------------------------------------------
+numpy==2.5.1
+pandas==3.0.5
+python-dateutil==2.9.0.post0
+tzdata==2026.3
+narwhals==2.24.0
+six==1.17.0
 
-# --- 3. Geospatial & HeatMap Generation ---
-folium==0.20.0           # Interactive map generation (HeatMap plugin)
-branca==0.8.2            # HTML & Folium map rendering components
-xyzservices==2026.3.0    # Map tile provider metadata for Folium
+# ---------------------------------------------------------
+# Geospatial Analysis & Heat Maps
+# ---------------------------------------------------------
+folium==0.20.0
+branca==0.8.2
+xyzservices==2026.3.0
 
-# --- 4. Utilities & Environment Dependencies ---
-jinja2==3.1.4            # HTML templating engine used by Folium
-markupsafe==2.1.5        # Safe string handling for HTML rendering
-requests==2.31.0         # HTTP library for internal fetching
-urllib3==2.2.1           # HTTP client dependency for requests
-certifi==2024.2.2        # SSL certificates for requests
-charset-normalizer==3.3.2 # Character encoding validation
-idna==3.7                # Internationalized Domain Names in Applications
+# ---------------------------------------------------------
+# HTTP Communication
+# ---------------------------------------------------------
+requests==2.31.0
+urllib3==2.2.1
+certifi==2024.2.2
+charset-normalizer==3.3.2
+idna==3.7
+
+# ---------------------------------------------------------
+# HTML Rendering (Folium Dependencies)
+# ---------------------------------------------------------
+jinja2==3.1.4
+MarkupSafe==2.1.5
