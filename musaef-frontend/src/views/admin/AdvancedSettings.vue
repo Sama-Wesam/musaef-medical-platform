@@ -64,6 +64,7 @@
       <AiSettingsTab
         v-else-if="settingsStore.activeTab === 'ai'"
         :aiSettings="settingsStore.aiSettings"
+        :aiMetrics="settingsStore.aiMetrics"
       />
 
       <EmailSettingsTab

@@ -8,20 +8,20 @@
 
     <div class="d-flex flex-column gap-2 mb-3 flex-grow-1">
       <!-- في حال لا توجد تنبيهات -->
-      <div v-if="alerts.length === 0" class="text-center text-muted py-4 fs-8">
+      <div v-if="normalizedAlerts.length === 0" class="text-center text-muted py-4 fs-8">
         {{ t('noAlerts') }}
       </div>
 
-      <!-- عرض عناصر قائمة التنبيهات مع دالة الترجمة الشاملة لجميع الحالات -->
+      <!-- عرض عناصر قائمة التنبيهات -->
       <div v-for="(alertItem, idx) in normalizedAlerts" :key="idx" class="p-2.5 bg-light rounded-3 d-flex align-items-center justify-content-between fs-8 border-start border-4 border-danger">
         <div class="d-flex align-items-center gap-2">
-          <span class="fw-bold text-dark" dir="ltr">{{ alertItem.type || 'O-' }}</span>
+          <span class="fw-bold text-dark" dir="ltr">{{ alertItem.blood_type || alertItem.type || 'O-' }}</span>
           <span class="badge rounded-pill px-2 py-1 fs-9" :class="getBadgeClass(alertItem.status)">
             {{ translateStatus(alertItem.status) }}
           </span>
         </div>
         <small class="text-muted fs-9">
-          {{ currentLocale === 'en' ? `Available: ${alertItem.available || 2} units only` : `المتوفر: ${alertItem.available || 2} وحدة فقط` }}
+          {{ currentLocale === 'en' ? `Available: ${alertItem.units ?? alertItem.available ?? 0} units only` : `المتوفر: ${alertItem.units ?? alertItem.available ?? 0} وحدة فقط` }}
         </small>
       </div>
     </div>
@@ -97,15 +97,8 @@ const props = defineProps({
   }
 });
 
-// قائمة التنبيهات النموذجية الاحتياطية لضمان مطابقة الصور واستعراض كافة أنواع الحالات
-const fallbackAlerts = [
-  { type: 'O-', status: 'حرج', available: 2 },
-  { type: 'O-', status: 'منخفض', available: 2 },
-  { type: 'O-', status: 'منخفض جداً (حرج)', available: 2 }
-];
-
 const normalizedAlerts = computed(() => {
-  return (props.alerts && props.alerts.length > 0) ? props.alerts : fallbackAlerts;
+  return props.alerts || [];
 });
 
 const handleViewAllAlerts = () => {

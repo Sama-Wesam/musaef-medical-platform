@@ -4,7 +4,8 @@
       {{ t('achievementBadges') }}
     </h5>
 
-    <div class="row g-3 g-md-4 text-center">
+    <!-- حالة وجود شارات مستحقة -->
+    <div v-if="badges && badges.length > 0" class="row g-3 g-md-4 text-center">
       <div v-for="badge in translatedBadges" :key="badge.id" class="col-12 col-sm-6 col-xl-3">
         <div class="p-3 border rounded-4 bg-white h-100 shadow-2xs d-flex flex-column align-items-center justify-content-center">
           <img :src="getIconUrl(badge.image)" :alt="badge.title" class="badge-card-img mb-2 mb-md-3" />
@@ -13,6 +14,12 @@
           <small class="text-secondary fw-bold fs-9">{{ translateDate(badge.date) }}</small>
         </div>
       </div>
+    </div>
+
+    <!-- حالة عدم حصول المتبرع على شارات بعد -->
+    <div v-else class="text-center py-4 text-muted">
+      <i class="bi bi-award fs-1 text-secondary opacity-50 d-block mb-2"></i>
+      <p class="mb-0 fs-8 fw-medium">{{ t('noBadgesYet') }}</p>
     </div>
   </div>
 </template>
@@ -30,8 +37,14 @@ const props = defineProps({
 const currentLanguage = computed(() => localStorage.getItem('musaef_lang') || 'ar');
 
 const translations = {
-  ar: { achievementBadges: 'شارات الإنجاز' },
-  en: { achievementBadges: 'Achievement Badges' }
+  ar: {
+    achievementBadges: 'شارات الإنجاز',
+    noBadgesYet: 'لم تحرز أي شارات بعد، تبرعك القادم يفتح أول شارة إنجاز!'
+  },
+  en: {
+    achievementBadges: 'Achievement Badges',
+    noBadgesYet: 'No badges unlocked yet. Your next donation will unlock your first badge!'
+  }
 };
 
 const badgeDict = {
@@ -59,6 +72,7 @@ const translateDate = (date) => {
 };
 
 const translatedBadges = computed(() => {
+  if (!props.badges) return [];
   return props.badges.map(b => {
     if (currentLanguage.value === 'en' && badgeDict[b.title]) {
       return {
@@ -97,6 +111,7 @@ const getIconUrl = (fileName) => {
 .section-title-line { border-bottom: 2px solid #dc2626; padding-bottom: 4px; }
 .fs-6 { font-size: 1.05rem; }
 .fs-7 { font-size: 0.92rem; }
+.fs-8 { font-size: 0.82rem; }
 .fs-9 { font-size: 0.72rem; }
 .shadow-2xs { box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); }
 </style>

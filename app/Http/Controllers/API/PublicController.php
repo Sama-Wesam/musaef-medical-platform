@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\App;
 use App\AI\FacilityRecommendationEngine;
+use App\AI\EmergencyPriorityEngine;
 
 class PublicController extends Controller
 {
@@ -49,9 +50,9 @@ class PublicController extends Controller
     }
 
     /**
-     * جلب أحدث الحالات الطارئة
+     * جلب أحدث الحالات الطارئة مرتبة بحسب أولوية الذكاء الاصطناعي
      */
-    public function getUrgentRequests()
+    public function getUrgentRequests(EmergencyPriorityEngine $priorityEngine)
     {
         try {
             $rawRequests = DB::table('blood_requests')
@@ -91,6 +92,18 @@ class PublicController extends Controller
                 ];
             })->toArray();
 
+            // 🤖 ربط البيانات بمحرك الذكاء الاصطناعي لتقييم الأولوية وترتيب الحالات
+            try {
+                $sortedByAI = $priorityEngine->sortRequests($requestsArray);
+                if (!empty($sortedByAI)) {
+                    $requestsArray = $sortedByAI;
+                }
+            } catch (\Exception $aiEx) {
+                // في حال حدثت مشكلة في تشغيل سكريبت بايثون، يتم تسجيل الخطأ والاحتفاظ بالبيانات دون إيقاف النظام
+                \Log::warning('AI Priority Engine Error: ' . $aiEx->getMessage());
+            }
+
+            // إرجاع أول 4 حالات الأكثر أولوية
             return response()->json(array_slice($requestsArray, 0, 4), 200);
 
         } catch (\Exception $e) {

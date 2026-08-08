@@ -97,8 +97,9 @@
           <div class="col-12 col-lg-6">
             <div class="card border-0 rounded-4 p-3 p-md-4 bg-white shadow-sm h-100 d-flex flex-column justify-content-between">
               <div>
-                <h5 class="fw-bold text-dark mb-3 mb-md-4 fs-6 fs-md-5" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
-                  {{ t('humanImpactTitle') }}
+                <h5 class="fw-bold text-dark mb-3 mb-md-4 fs-6 fs-md-5 d-flex align-items-center justify-content-between" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
+                  <span>{{ t('humanImpactTitle') }}</span>
+                  <span class="badge bg-danger-subtle text-danger fs-10 rounded-pill px-2 py-1 fw-bold"><i class="bi bi-robot me-1"></i>AI Impact Analytics</span>
                 </h5>
 
                 <div class="row align-items-center text-center gy-3">
@@ -120,8 +121,10 @@
                 </div>
               </div>
 
-              <div class="p-2.5 p-md-3 bg-pink-light rounded-3 text-center mt-3 mt-md-4 border-0">
-                <span class="text-danger fw-bold fs-8">{{ t('lifeImpactMsg') }}</span>
+              <!-- رسالة التحليل الذكي المخصصة من الذكاء الاصطناعي -->
+              <div class="p-2.5 p-md-3 bg-pink-light rounded-3 text-center mt-3 mt-md-4 border-0 d-flex align-items-center justify-content-center gap-2">
+                <i class="bi bi-stars text-danger fs-6 flex-shrink-0"></i>
+                <span class="text-danger fw-bold fs-8">{{ cardData?.ai_impact_statement || t('lifeImpactMsg') }}</span>
               </div>
             </div>
           </div>
@@ -166,7 +169,7 @@
           </div>
         </div>
 
-        <!-- 3. شارات الإنجاز -->
+        <!-- 3. شارات الإنجاز (تم ربطها ديناميكياً) -->
         <AchievementBadges :badges="badgesList" class="mb-3 mb-md-4" />
 
         <!-- 4. قسم سجل التبرعات -->
@@ -694,6 +697,7 @@ const donorAvatar = computed(() => {
   return defaultAvatarImg;
 });
 
+// استقبال الشارات المستحقة ديناميكياً من الـ Backend
 const badgesList = ref([
   { id: 1, title: 'منقذ حياة', desc: 'تم إنقاذ أكثر من 10 حالات', date: '1 يونيو 2024', image: 'badge-hero.png' },
   { id: 2, title: '10 تبرعات', desc: 'تم إنجاز 10 تبرعات', date: '20 مايو 2025', image: 'badge-10.png' },
@@ -712,6 +716,7 @@ const fetchAchievementsData = async () => {
       userPoints.value = payload.points;
     }
 
+    // استبدال الشارات الافتراضية بالشارات الحقيقية الآتية من Backend الـ AI
     if (payload.badges && Array.isArray(payload.badges) && payload.badges.length) {
       badgesList.value = payload.badges.filter(b => b !== null);
     }

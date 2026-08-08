@@ -56,10 +56,10 @@
           <div class="row text-center fw-bold text-dark fs-8 py-2 px-3 mb-3 border-bottom border-light text-nowrap">
             <div class="col-2 text-start ps-3">{{ t('colName') }}</div>
             <div class="col-2">{{ t('colPhone') }}</div>
-            <div class="col-2">{{ t('colBlood') }}</div>
-            <div class="col-2">{{ t('colLocation') }}</div>
+            <div class="col-1">{{ t('colBlood') }}</div>
+            <div class="col-2">{{ t('colActivityScore') }}</div>
             <div class="col-2">{{ t('colStatus') }}</div>
-            <div class="col-2 text-center">{{ t('colActions') }}</div>
+            <div class="col-3 text-center">{{ t('colActions') }}</div>
           </div>
 
           <div class="d-flex flex-column gap-2.5">
@@ -68,25 +68,45 @@
               :key="user.id || user.phone"
               class="row align-items-center text-center py-3 px-3 rounded-4 bg-light-subtle row-card border border-light-subtle transition-all text-nowrap"
             >
-              <div class="col-2 text-start fw-bold text-dark fs-8 ps-3 text-truncate">{{ getDonorName(user.name) }}</div>
+              <div class="col-2 text-start fw-bold text-dark fs-8 ps-3 text-truncate">{{ getDonorName(user) }}</div>
               <div class="col-2 text-muted fs-8 dir-ltr">{{ user.phone || '—' }}</div>
-              <div class="col-2 fw-bold text-dark fs-8">{{ user.bloodType || user.blood_type || 'O+' }}</div>
-              <div class="col-2 text-muted fs-8 text-truncate">{{ getLocationName(user.location || user.address) }}</div>
+              <div class="col-1 fw-bold text-dark fs-8">{{ user.bloodType || user.blood_type || 'O+' }}</div>
+
+              <!-- مؤشر النشاط (Activity Score) للذكاء الاصطناعي -->
+              <div class="col-2">
+                <div class="d-flex align-items-center justify-content-center gap-1">
+                  <div class="progress w-100" style="height: 6px; max-width: 70px;">
+                    <div
+                      class="progress-bar rounded-pill"
+                      :class="(user.activity_score || 75) >= 60 ? 'bg-success' : 'bg-warning'"
+                      :style="{ width: (user.activity_score || 75) + '%' }"
+                    ></div>
+                  </div>
+                  <span class="fs-9 fw-bold text-muted">{{ user.activity_score || 75 }}%</span>
+                </div>
+              </div>
+
               <div class="col-2">
                 <span class="fw-bold fs-8 px-2.5 py-1 rounded-pill d-inline-block" :class="getStatusClass(user.status)">
                   {{ getStatusBadgeText(user.status) }}
                 </span>
               </div>
-              <!-- عمود الإجراءات / أزرار التعديل والحذف التفاعلية -->
-              <div class="col-2 d-flex align-items-center justify-content-center gap-2">
+
+              <!-- عمود الإجراءات والمراجعة الإدارية -->
+              <div class="col-3 d-flex align-items-center justify-content-center gap-1.5">
+                <!-- زر المراجعة الإدارية / تقييم الذكاء الاصطناعي -->
+                <button
+                  class="btn btn-sm btn-outline-info text-dark border-0 bg-info-subtle rounded-3 px-2 py-1 fs-9 d-flex align-items-center gap-1 action-btn"
+                  :title="t('aiReview')"
+                  @click="triggerAiReview(user)"
+                >
+                  🤖 <span>{{ t('aiReview') }}</span>
+                </button>
                 <button
                   class="btn btn-sm btn-outline-warning text-dark border-0 bg-warning-subtle rounded-3 px-2 py-1 fs-9 d-flex align-items-center gap-1 action-btn"
                   :title="t('edit')"
                   @click="accountsStore.editItem(user, t('donorWord'))"
                 >
-                  <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                  </svg>
                   <span>{{ t('edit') }}</span>
                 </button>
                 <button
@@ -94,9 +114,6 @@
                   :title="t('delete')"
                   @click="accountsStore.deleteItem(user.id || user.phone, t('donorWord'))"
                 >
-                  <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                  </svg>
                   <span>{{ t('delete') }}</span>
                 </button>
               </div>
@@ -129,15 +146,16 @@ const dictionary = {
   ar: {
     searchPlaceholder: 'ابحث عن مريض أو متبرع...',
     filterAll: 'جميع الفصائل / النشاط',
-    activeAi: 'نشط',
-    suspendedAi: 'معلق',
+    activeAi: 'نشط (AI)',
+    suspendedAi: 'معلق (AI)',
     addDonor: 'إضافة متبرع',
     colName: 'الاسم',
     colPhone: 'الهاتف',
     colBlood: 'فصيلة الدم',
-    colLocation: 'الموقع',
+    colActivityScore: 'مؤشر النشاط',
     colStatus: 'حالة الحساب (AI)',
-    colActions: 'الإجراءات',
+    colActions: 'الإجراءات والمراجعة',
+    aiReview: 'مراجعة AI',
     edit: 'تعديل',
     delete: 'حذف',
     donorWord: 'متبرع'
@@ -145,68 +163,61 @@ const dictionary = {
   en: {
     searchPlaceholder: 'Search for patient or donor...',
     filterAll: 'All Types / Activity',
-    activeAi: 'Active',
-    suspendedAi: 'Suspended',
+    activeAi: 'Active (AI)',
+    suspendedAi: 'Suspended (AI)',
     addDonor: 'Add Donor',
     colName: 'Name',
     colPhone: 'Phone',
     colBlood: 'Blood Type',
-    colLocation: 'Location',
+    colActivityScore: 'Activity Score',
     colStatus: 'Account Status (AI)',
-    colActions: 'Actions',
+    colActions: 'Actions & Review',
+    aiReview: 'AI Review',
     edit: 'Edit',
     delete: 'Delete',
     donorWord: 'Donor'
   }
 };
 
-const namesMap = {
-  'shimaa': { ar: 'شيماء', en: 'shimaa' },
-  'YASSER ALQRINAWI': { ar: 'ياسر القرناوي', en: 'YASSER ALQRINAWI' },
-  'أحمد المتبرع': { ar: 'أحمد المتبرع', en: 'Ahmed Donor' },
-  'Ahmed Donor': { ar: 'أحمد المتبرع', en: 'Ahmed Donor' },
-  'Hamza Nabeel': { ar: 'حمزة نبيل', en: 'Hamza Nabeel' },
-  'Sama Wesam': { ar: 'سما وسام', en: 'Sama Wesam' },
-  'مياساء المطرفي': { ar: 'ميساء المطرفي', en: 'Maysaa Al-Matrafi' }
-};
-
-const locationsMap = {
-  'Gaza': { ar: 'غزة', en: 'Gaza' },
-  'غزة': { ar: 'غزة', en: 'Gaza' },
-  'Deir al-Balah': { ar: 'دير البلح', en: 'Deir al-Balah' },
-  'Khan Younis': { ar: 'خانيونس', en: 'Khan Younis' },
-  'Rafah': { ar: 'رفح', en: 'Rafah' }
-};
-
 const t = (key) => dictionary[currentLanguage.value === 'en' ? 'en' : 'ar'][key] || key;
-const getDonorName = (name) => (namesMap[name] ? namesMap[name][currentLanguage.value === 'en' ? 'en' : 'ar'] : name);
-const getLocationName = (loc) => (locationsMap[loc] ? locationsMap[loc][currentLanguage.value === 'en' ? 'en' : 'ar'] : loc || (currentLanguage.value === 'en' ? 'Gaza' : 'غزة'));
+
+// دالة مساعدة لاستخراج اسم المتبرع بأمان وتجنب خطأ TypeError
+const getDonorName = (donor) => {
+  if (!donor) return 'غير محدد';
+  if (typeof donor === 'string') return donor;
+  return donor.name || donor.full_name || donor.user?.name || 'متبرع';
+};
 
 const displayDonors = computed(() => {
   const activeList = props.donorsList && props.donorsList.length ? props.donorsList : accountsStore.donors;
   if (props.selectedFilter === 'active_ai') {
-    return activeList.filter(user => user.status === 'نشط' || user.status === 'active');
+    return activeList.filter(user => user.status === 'نشط' || user.status === 'active' || user.status === 'active_ai');
   }
   if (props.selectedFilter === 'suspended_ai') {
-    return activeList.filter(user => user.status === 'معلق' || user.status === 'suspended');
+    return activeList.filter(user => user.status === 'معلق' || user.status === 'suspended' || user.status === 'suspended_ai');
   }
   return activeList;
 });
 
 const getStatusClass = (status) => {
   switch (status) {
-    case 'نشط': case 'active': case 'Active': return 'text-success bg-success-subtle';
-    case 'معلق': case 'suspended': case 'Suspended': return 'text-warning-emphasis bg-warning-subtle';
-    case 'ملغي': case 'cancelled': case 'Cancelled': return 'text-danger bg-danger-subtle';
+    case 'نشط': case 'active': case 'active_ai': return 'text-success bg-success-subtle';
+    case 'معلق': case 'suspended': case 'suspended_ai': return 'text-warning-emphasis bg-warning-subtle';
+    case 'ملغي': case 'cancelled': return 'text-danger bg-danger-subtle';
     default: return 'text-success bg-success-subtle';
   }
 };
 
 const getStatusBadgeText = (status) => {
-  if (status === 'معلق' || status === 'suspended' || status === 'Suspended') {
-    return currentLanguage.value === 'en' ? 'Suspended' : 'معلق';
+  if (status === 'معلق' || status === 'suspended' || status === 'suspended_ai') {
+    return currentLanguage.value === 'en' ? 'Suspended (AI)' : 'معلق (AI)';
   }
-  return currentLanguage.value === 'en' ? 'Active' : 'نشط';
+  return currentLanguage.value === 'en' ? 'Active (AI)' : 'نشط (AI)';
+};
+
+// تشغيل المراجعة الإدارية عبر الذكاء الاصطناعي
+const triggerAiReview = (user) => {
+  accountsStore.reviewDonorWithAi(user);
 };
 </script>
 
@@ -216,9 +227,10 @@ const getStatusBadgeText = (status) => {
 .bg-light-subtle { background-color: #f9fafb !important; }
 .bg-success-subtle { background-color: #d1fae5 !important; }
 .bg-warning-subtle { background-color: #fef3c7 !important; }
+.bg-info-subtle { background-color: #e0f2fe !important; }
 .bg-danger-subtle { background-color: #fee2e2 !important; }
 .row-card:hover { background-color: #f3f4f6 !important; }
 .action-btn { transition: all 0.2s ease; cursor: pointer; }
 .action-btn:hover { transform: translateY(-1px); filter: brightness(0.95); }
-.min-w-table { min-width: 750px; }
+.min-w-table { min-width: 800px; }
 </style>

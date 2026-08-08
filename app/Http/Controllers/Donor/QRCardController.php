@@ -16,10 +16,11 @@ class QRCardController extends Controller
     public function show(Request $request)
     {
         $user = $request->user();
-        $donor = $user->donor ?? null;
+        $donor = $user->donor;
 
+        // التحقق من وجود حساب متبرع مرتبط للمستخدم
         if (!$donor) {
-            return $this->notFoundResponse('بيانات المتبرع غير موجودة');
+            return $this->notFoundResponse('بيانات المتبرع غير موجودة لهذا المستخدم');
         }
 
         // تحميل علاقة فصيلة الدم
@@ -30,11 +31,11 @@ class QRCardController extends Controller
             'donor_name' => $user->name,
             'blood_type' => $donor->bloodType->type ?? 'غير محدد',
             'phone' => $donor->phone ?? $user->phone,
-            'qr_code_data' => json_encode([
+            'qr_code_data' => [
                 'donor_id' => $donor->id,
                 'user_id' => $user->id,
                 'verified' => true
-            ]),
+            ],
             'status' => 'active'
         ];
 

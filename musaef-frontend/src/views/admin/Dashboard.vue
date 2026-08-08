@@ -5,7 +5,7 @@
       <!-- 1. الكروت الإحصائية الـ 5 العلوية -->
       <StatsOverviewCards :stats="dashboardStore.stats" />
 
-      <!-- 2. رادار الطوارئ المباشر + توزيع الطلبات -->
+      <!-- 2. رادار الطوارئ المباشر (Leaflet Heatmap) + توزيع الطلبات -->
       <div class="row g-3 g-lg-4 mb-3 mb-md-4">
         <div class="col-12 col-lg-7">
           <EmergencyRadarMap />

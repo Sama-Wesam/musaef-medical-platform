@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Donor;
 
+use App\Http\Controllers\Controller; // استخدام الكنترولر الأساسي بشكل قياسي
 use App\Services\RewardService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
 
 class RewardsController extends Controller
 {
@@ -20,14 +20,19 @@ class RewardsController extends Controller
 
     public function index(Request $request)
     {
-        $donorId = $request->user()->donor->id;
-        
+        $donor = $request->user()->donor;
+
+        // التحقق من وجود حساب متبرع
+        if (!$donor) {
+            return $this->notFoundResponse('بيانات المتبرع غير موجودة');
+        }
+
         $data = [
-            'total_points' => $this->rewardService->getDonorPoints($donorId),
-            'history' => $this->rewardService->getDonorHistory($donorId),
+            'total_points' => $this->rewardService->getDonorPoints($donor->id),
+            'history' => $this->rewardService->getDonorHistory($donor->id),
             'available_badges' => $this->rewardService->getAvailableBadges()
         ];
 
-        return $this->successResponse($data, 'تم جلب بيانات المكافآت والنقاط');
+        return $this->successResponse($data, 'تم جلب بيانات المكافآت والنقاط بنجاح');
     }
 }

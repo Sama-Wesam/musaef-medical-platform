@@ -96,13 +96,15 @@ const dictionary = {
 
 const t = (key) => dictionary[currentLanguage.value === 'en' ? 'en' : 'ar'][key] || key;
 
-const activeTab = ref('general');
+const activeTab = ref('profile');
 const hospitalData = ref({
-  name: '',
-  contact_email: '',
-  phone_number: '',
-  city: 'رفح',
-  address: '',
+  name: 'مجمع الشفاء الطبي',
+  contact_email: 'alawda@musaef.com',
+  phone_number: '082824400',
+  city: 'غزة',
+  address: 'غزة - الرمال',
+  latitude: 31.514,
+  longitude: 34.448,
   working_hours: '24 ساعة 7 أيام في الأسبوع'
 });
 
@@ -115,8 +117,10 @@ const fetchHospitalProfile = async () => {
         name: data.user?.name || data.name || hospitalData.value.name,
         contact_email: data.contact_email || data.user?.email || hospitalData.value.contact_email,
         phone_number: data.phone_number || data.phone || hospitalData.value.phone_number,
-        city: data.city || hospitalData.value.city || 'رفح',
+        city: data.city || hospitalData.value.city || 'غزة',
         address: data.address || hospitalData.value.address,
+        latitude: parseFloat(data.latitude) || hospitalData.value.latitude || 31.514,
+        longitude: parseFloat(data.longitude) || hospitalData.value.longitude || 34.448,
         working_hours: data.working_hours || hospitalData.value.working_hours || (currentLanguage.value === 'en' ? '24 Hours 7 Days a Week' : '24 ساعة 7 أيام في الأسبوع')
       };
     }

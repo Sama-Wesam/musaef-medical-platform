@@ -232,15 +232,15 @@ const openRequestModal = (requestItem) => {
 };
 
 const fallbackRequests = [
-  { id: 1, hospital: 'مستشفى أصلان/أبو يوسف النجار', location: 'رفح - الشابورة', bloodType: 'AB+', units: 3, distance: 2.7, urgency: 'عالية', matchScore: 98, recommendationText: 'متوافق مع فصيلة دمك ونطاقك الجغرافي المباشر', img: getImageUrl('hospital.png') },
-  { id: 2, hospital: 'مستشفى كمال عدوان', location: 'شمال غزة - بيت لاهيا', bloodType: 'AB-', units: 5, distance: 2.6, urgency: 'حرجة جداً', matchScore: 98, recommendationText: 'متوافق مع فصيلة دمك ونطاقك الجغرافي المباشر', img: getImageUrl('hospital.png') },
-  { id: 3, hospital: 'المستشفى الإندونيسي', location: 'شمال غزة - بيت لاهيا', bloodType: 'AB-', units: 3, distance: 4.2, urgency: 'حرجة جداً', matchScore: 97, recommendationText: 'متوافق مع فصيلة دمك ونطاقك الجغرافي المباشر', img: getImageUrl('hospital.png') },
-  { id: 4, hospital: 'مجمع الشفاء الطبي', location: 'غزة - الرمال', bloodType: 'O+', units: 5, distance: 3.6, urgency: 'حرجة جداً', matchScore: 97, recommendationText: 'متوافق مع فصيلة دمك ونطاقك الجغرافي المباشر', img: getImageUrl('hospital.png') },
-  { id: 5, hospital: 'مجمع ناصر الطبي', location: 'خانيونس - وسط المدينة', bloodType: 'A-', units: 2, distance: 1.8, urgency: 'حرجة جداً', matchScore: 96, recommendationText: 'متوافق مع فصيلة دمك ونطاقك الجغرافي المباشر', img: getImageUrl('hospital.png') },
-  { id: 6, hospital: 'جمعية بنك الدم المركزي', location: 'غزة - الرمال شارع الوحدة', bloodType: 'AB+', units: 4, distance: 3.0, urgency: 'حرجة جداً', matchScore: 93, recommendationText: 'متوافق مع فصيلة دمك ونطاقك الجغرافي المباشر', img: getImageUrl('hospital.png') },
-  { id: 7, hospital: 'مستشفى الأهلي العربي (المعمداني)', location: 'غزة - الزيتون', bloodType: 'O+', units: 3, distance: 3.9, urgency: 'حرجة جداً', matchScore: 92, recommendationText: 'متوافق مع فصيلة دمك ونطاقك الجغرافي المباشر', img: getImageUrl('hospital.png') },
-  { id: 8, hospital: 'بنك الدم المركزي - وزارة الصحة', location: 'غزة - النصر', bloodType: 'AB-', units: 5, distance: 4.4, urgency: 'حرجة جداً', matchScore: 90, recommendationText: 'متوافق مع فصيلة دمك ونطاقك الجغرافي المباشر', img: getImageUrl('hospital.png') },
-  { id: 9, hospital: 'مستشفى أصدقاء المريض الخيري', location: 'غزة - فلسطين', bloodType: 'A-', units: 8, distance: 2.8, urgency: 'حرجة', matchScore: 95, recommendationText: 'متوافق مع فصيلة دمك ونطاقك الجغرافي المباشر', img: getImageUrl('hospital.png') }
+  { id: 1, hospital: 'مستشفى أصلان/أبو يوسف النجار', location: 'رفح - الشابورة', bloodType: 'AB+', units: 3, distance: 2.7, urgency: 'عالية', matchScore: 98, recommendationText: 'متوافق مع فصيلة دمك ونطاقك الجغرافي المباشر', img: getImageUrl('hospital.png'), lat: 31.2968, lng: 34.2435 },
+  { id: 2, hospital: 'مستشفى كمال عدوان', location: 'شمال غزة - بيت لاهيا', bloodType: 'AB-', units: 5, distance: 2.6, urgency: 'حرجة جداً', matchScore: 98, recommendationText: 'متوافق مع فصيلة دمك ونطاقك الجغرافي المباشر', img: getImageUrl('hospital.png'), lat: 31.5364, lng: 34.4962 },
+  { id: 3, hospital: 'المستشفى الإندونيسي', location: 'شمال غزة - بيت لاهيا', bloodType: 'AB-', units: 3, distance: 4.2, urgency: 'حرجة جداً', matchScore: 97, recommendationText: 'متوافق مع فصيلة دمك ونطاقك الجغرافي المباشر', img: getImageUrl('hospital.png'), lat: 31.5388, lng: 34.5050 },
+  { id: 4, hospital: 'مجمع الشفاء الطبي', location: 'غزة - الرمال', bloodType: 'O+', units: 5, distance: 3.6, urgency: 'حرجة جداً', matchScore: 97, recommendationText: 'متوافق مع فصيلة دمك ونطاقك الجغرافي المباشر', img: getImageUrl('hospital.png'), lat: 31.5247, lng: 34.4447 },
+  { id: 5, hospital: 'مجمع ناصر الطبي', location: 'خانيونس - وسط المدينة', bloodType: 'A-', units: 2, distance: 1.8, urgency: 'حرجة جداً', matchScore: 96, recommendationText: 'متوافق مع فصيلة دمك ونطاقك الجغرافي المباشر', img: getImageUrl('hospital.png'), lat: 31.3462, lng: 34.3031 },
+  { id: 6, hospital: 'جمعية بنك الدم المركزي', location: 'غزة - الرمال شارع الوحدة', bloodType: 'AB+', units: 4, distance: 3.0, urgency: 'حرجة جداً', matchScore: 93, recommendationText: 'متوافق مع فصيلة دمك ونطاقك الجغرافي المباشر', img: getImageUrl('hospital.png'), lat: 31.5210, lng: 34.4530 },
+  { id: 7, hospital: 'مستشفى الأهلي العربي (المعمداني)', location: 'غزة - الزيتون', bloodType: 'O+', units: 3, distance: 3.9, urgency: 'حرجة جداً', matchScore: 92, recommendationText: 'متوافق مع فصيلة دمك ونطاقك الجغرافي المباشر', img: getImageUrl('hospital.png'), lat: 31.5082, lng: 34.4632 },
+  { id: 8, hospital: 'بنك الدم المركزي - وزارة الصحة', location: 'غزة - النصر', bloodType: 'AB-', units: 5, distance: 4.4, urgency: 'حرجة جداً', matchScore: 90, recommendationText: 'متوافق مع فصيلة دمك ونطاقك الجغرافي المباشر', img: getImageUrl('hospital.png'), lat: 31.5312, lng: 34.4501 },
+  { id: 9, hospital: 'مستشفى أصدقاء المريض الخيري', location: 'غزة - فلسطين', bloodType: 'A-', units: 8, distance: 2.8, urgency: 'حرجة', matchScore: 95, recommendationText: 'متوافق مع فصيلة دمك ونطاقك الجغرافي المباشر', img: getImageUrl('hospital.png'), lat: 31.5175, lng: 34.4412 }
 ];
 
 const parseRequestsData = (rawData) => {
@@ -263,7 +263,9 @@ const parseRequestsData = (rawData) => {
       urgency: urgencyLabel,
       matchScore: item.match_score || item.match_rate || Math.floor(Math.random() * (99 - 85 + 1)) + 85,
       recommendationText: 'متوافق مع فصيلة دمك ونطاقك الجغرافي المباشر',
-      img: item.hospital_image ? item.hospital_image : getImageUrl('hospital.png')
+      img: item.hospital_image ? item.hospital_image : getImageUrl('hospital.png'),
+      lat: item.hospital?.latitude || item.latitude || null,
+      lng: item.hospital?.longitude || item.longitude || null
     };
   });
 };

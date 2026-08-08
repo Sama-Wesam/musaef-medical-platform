@@ -7,6 +7,10 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+// استدعاء حزم قناة الفايربيز FCM
+use NotificationChannels\Fcm\FcmChannel;
+use NotificationChannels\Fcm\FcmMessage;
+use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
 
 class EmergencyNotification extends Notification implements ShouldQueue
 {
@@ -24,11 +28,11 @@ class EmergencyNotification extends Notification implements ShouldQueue
 
     /**
      * Get the notification's delivery channels.
-     * يمكن إضافة قنوات أخرى لاحقاً مثل 'fcm' (Firebase) أو SMS
+     * تم تفعيل قنوات: قاعدة البيانات، البريد الإلكتروني، وإشعار الفوري FCM[cite: 53, 55]
      */
     public function via(object $notifiable): array
     {
-        return ['database', 'mail'];
+        return ['database', 'mail', FcmChannel::class];
     }
 
     /**
@@ -40,13 +44,34 @@ class EmergencyNotification extends Notification implements ShouldQueue
         $bloodType = $this->bloodRequest->bloodType->name ?? '';
 
         return (new MailMessage)
-                    ->error() // يعطي لون أحمر للإيميل ليدل على الطوارئ
+                    ->error()
                     ->subject('🚨 نداء طوارئ عاجل من مسعف!')
                     ->greeting('مرحباً يا بطل،')
                     ->line("مستشفى {$hospitalName} في حاجة ماسة لمتبرعين بفصيلة دم {$bloodType}.")
                     ->line("مستوى الحالة: " . strtoupper($this->bloodRequest->emergency_level))
                     ->action('عرض التفاصيل والتبرع', url("/emergency/{$this->bloodRequest->id}"))
                     ->line('تذكر: كل دقيقة قد تنقذ حياة.');
+    }
+
+    /**
+     * Get the FCM representation of the notification.
+     */
+    public function toFcm(object $notifiable): FcmMessage
+    {
+        $hospitalName = $this->bloodRequest->hospital->user->name ?? 'مستشفى';
+        $bloodType = $this->bloodRequest->bloodType->name ?? '';
+
+        return FcmMessage::create()
+            ->setData([
+                'id' => (string) $this->bloodRequest->id,
+                'type' => 'emergency',
+                'emergency_level' => $this->bloodRequest->emergency_level,
+            ])
+            ->setNotification(
+                FcmNotification::create()
+                    ->setTitle('🚨 نداء طوارئ عاجل!')
+                    ->setBody("مستشفى {$hospitalName} بحاجة ماسة لـ {$this->bloodRequest->units_required} وحدات من فصيلة {$bloodType}.")
+            );
     }
 
     /**

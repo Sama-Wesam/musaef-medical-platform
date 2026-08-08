@@ -5,9 +5,14 @@
       <h6 class="fw-bold text-dark mb-0 fs-7">{{ t('title') }}</h6>
     </div>
 
+    <!-- عرض بيانات التنبؤ القادمة ديناميكياً -->
     <div class="p-3 bg-light rounded-3 mb-3 border-start border-4 border-danger">
-      <p class="fw-bold text-dark fs-8 mb-1">{{ t('predictionText') }}</p>
-      <small class="text-muted fs-9">{{ t('recommendation') }}</small>
+      <p class="fw-bold text-dark fs-8 mb-1">
+        {{ prediction?.title || t('predictionText') }}
+      </p>
+      <small class="text-muted fs-9">
+        {{ prediction?.description || t('recommendation') }}
+      </small>
     </div>
 
     <div class="position-relative mb-3" style="height: 90px;">
@@ -31,6 +36,25 @@
       <span v-if="isLoading" class="spinner-border spinner-border-sm me-1"></span>
       <span>{{ isLoading ? t('analyzing') : t('viewReport') }}</span>
     </button>
+
+    <!-- Modal التقرير الشامل لملف الذكاء الاصطناعي -->
+    <div v-if="showModal" class="modal-backdrop-custom d-flex align-items-center justify-content-center">
+      <div class="modal-card bg-white p-4 rounded-4 shadow-lg text-start" :class="currentLocale === 'ar' ? 'text-end' : 'text-start'" style="max-width: 500px; width: 90%;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold mb-0 text-danger fs-6">🤖 {{ t('modalTitle') }}</h5>
+          <button type="button" class="btn-close" @click="showModal = false"></button>
+        </div>
+        <hr class="my-2" />
+        <div class="my-3 fs-8 text-secondary">
+          <p class="mb-2"><strong>{{ t('targetGroup') }}:</strong> <span class="badge bg-danger">{{ reportData?.predicted_group || prediction?.predicted_group || 'O-' }}</span></p>
+          <p class="mb-2"><strong>{{ t('title') }}:</strong> {{ reportData?.title || prediction?.title }}</p>
+          <p class="mb-0"><strong>{{ t('recommendation') }}:</strong> {{ reportData?.description || prediction?.description }}</p>
+        </div>
+        <div class="mt-4 text-end">
+          <button class="btn btn-secondary btn-sm rounded-pill px-4" @click="showModal = false">{{ t('close') }}</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -38,7 +62,16 @@
 import { ref, computed } from 'vue';
 import apiClient from '@/api/axios';
 
+const props = defineProps({
+  prediction: {
+    type: Object,
+    default: () => ({})
+  }
+});
+
 const isLoading = ref(false);
+const showModal = ref(false);
+const reportData = ref(null);
 const currentLocale = computed(() => localStorage.getItem('musaef_lang') || 'ar');
 
 const dictionary = {
@@ -48,7 +81,10 @@ const dictionary = {
     recommendation: 'زيادة حملات التبرع لهذه الفصيلة لضمان توفر المخزون الحرج.',
     now: 'الان', h24: '24 ساعة', h48: '48 ساعة', h72: '72 ساعة',
     analyzing: 'جاري تحليل التقرير...',
-    viewReport: 'عرض التقرير الكامل للذكاء الاصطناعي 📊'
+    viewReport: 'عرض التقرير الكامل للذكاء الاصطناعي 📊',
+    modalTitle: 'تقرير الذكاء الاصطناعي الشامل',
+    targetGroup: 'الفصيلة المستهدفة بالنقص',
+    close: 'إغلاق'
   },
   en: {
     title: 'AI Predictions (Blood Demand Forecast AI)',
@@ -56,7 +92,10 @@ const dictionary = {
     recommendation: 'Increase donation campaigns for this group to ensure critical stock.',
     now: 'Now', h24: '24 Hours', h48: '48 Hours', h72: '72 Hours',
     analyzing: 'Analyzing report...',
-    viewReport: 'View Full AI Report 📊'
+    viewReport: 'View Full AI Report 📊',
+    modalTitle: 'Comprehensive AI Report',
+    targetGroup: 'Targeted Shortage Blood Type',
+    close: 'Close'
   }
 };
 
@@ -66,15 +105,16 @@ const fetchAiForecastReport = async () => {
   isLoading.value = true;
   try {
     const res = await apiClient.get('/hospital/ai-forecast-report');
-    alert(currentLocale.value === 'en'
-      ? `🤖 AI Report (Blood Demand Forecast):\n- Highest Demand Group: O+\n- Expected Increase: 35%\n- Recommendation: Launch emergency campaign.`
-      : `🤖 تقرير الذكاء الاصطناعي الشامل:\n- الفصيلة الأكثر طلباً: O+\n- معدل الاستهلاك المتوقع: مرتفع بـ 35%\n- التوصية: إطلاق حملة طارئة فورية.`);
+    if (res && res.data && res.data.success) {
+      reportData.value = res.data.data;
+    } else {
+      reportData.value = props.prediction;
+    }
   } catch (err) {
-    alert(currentLocale.value === 'en'
-      ? `🤖 AI Report (Blood Demand Forecast AI):\n- Deficit Analysis: O+ group will face a potential shortage in the next 72h.\n- Immediate Recommendation: Direct calls to 45 matching donors.`
-      : `🤖 تقرير الذكاء الاصطناعي الشامل:\n- تحليل النقص: فصيلة O+ ستواجه عجزاً محتملاً خلال 72 ساعة القادمة.\n- التوصية الفورية: توجيه نداءات لـ 45 متبرعاً مطابقاً.`);
+    reportData.value = props.prediction;
   } finally {
     isLoading.value = false;
+    showModal.value = true;
   }
 };
 </script>
@@ -86,4 +126,14 @@ const fetchAiForecastReport = async () => {
 .fs-10 { font-size: 0.65rem; }
 .dir-rtl { direction: rtl; }
 .dir-ltr { direction: ltr; }
+
+.modal-backdrop-custom {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1050;
+}
 </style>

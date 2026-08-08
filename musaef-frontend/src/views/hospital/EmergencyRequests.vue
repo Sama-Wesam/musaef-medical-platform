@@ -34,7 +34,12 @@
           <div class="d-flex flex-column gap-3 sticky-top-custom">
             <RequestDetailsCard :request="selectedRequest" />
             <RespondersCard :donors="selectedRequest.responders || []" />
+
+            <!-- بطاقة الخريطة التفاعلية بالدوائر الحرارية -->
             <LocationMapCard
+              :latitude="parseFloat(selectedRequest.latitude) || 31.5"
+              :longitude="parseFloat(selectedRequest.longitude) || 34.45"
+              :requestId="selectedRequest.id"
               @accept="handleAccept"
               @reject="handleReject"
             />
@@ -78,6 +83,8 @@ const emergencyRequests = ref([
     status: 'active',
     hospital_name: 'مستشفى الشفاء الطبي',
     location: 'غزة - الرمال',
+    latitude: 31.514,
+    longitude: 34.448,
     created_at: '15-05-2026 14:30',
     responders: [
       { id: 101, name: 'أحمد محمد', blood_type: 'O-', match_score: 95, eta_minutes: 4, distance_km: 1.1 },
@@ -95,6 +102,8 @@ const emergencyRequests = ref([
     status: 'active',
     hospital_name: 'مستشفى القدس الطبي',
     location: 'غزة - تل الهوى',
+    latitude: 31.502,
+    longitude: 34.439,
     created_at: 'منذ 20 دقيقة',
     responders: [
       { id: 104, name: 'سليم حسن', blood_type: 'A+', match_score: 92, eta_minutes: 6, distance_km: 1.5 }
@@ -110,6 +119,8 @@ const emergencyRequests = ref([
     status: 'processing',
     hospital_name: 'مستشفى القدس',
     location: 'غزة - تل الهوى',
+    latitude: 31.502,
+    longitude: 34.439,
     created_at: 'منذ 45 دقيقة',
     responders: [
       { id: 105, name: 'محمود علي', blood_type: 'B-', match_score: 88, eta_minutes: 8, distance_km: 2.1 }
@@ -125,6 +136,8 @@ const emergencyRequests = ref([
     status: 'processing',
     hospital_name: 'مستشفى العودة',
     location: 'شمال غزة',
+    latitude: 31.543,
+    longitude: 34.498,
     created_at: 'منذ ساعة',
     responders: []
   },
@@ -138,6 +151,8 @@ const emergencyRequests = ref([
     status: 'completed',
     hospital_name: 'مجمع ناصر الطبي',
     location: 'خانيونس',
+    latitude: 31.345,
+    longitude: 34.303,
     created_at: 'منذ ساعتين',
     responders: [
       { id: 106, name: 'خالد عبد الله', blood_type: 'O+', match_score: 97, eta_minutes: 5, distance_km: 1.0 }
@@ -157,7 +172,7 @@ const filterCounts = computed(() => {
 const filteredRequests = computed(() => {
   const list = emergencyRequests.value || [];
   if (filter.value === 'covering') return list.filter(r => r.coverage < 100 && r.status !== 'completed' && r.status !== 'مكتملة');
-  if (filter.value === 'completed') return list.filter(r => r.coverage >= 100 || r.status === 'completed' || r.status === 'مكتملة');
+  if (filter.value === 'completed') return list.filter(r => r.coverage >= 100 || r.status === 'completed' || r.status !== 'مكتملة');
   return list;
 });
 
@@ -190,6 +205,8 @@ const handleCreateEmergency = async () => {
     status: 'active',
     hospital_name: 'مستشفى الشفاء الطبي',
     location: 'غزة - الرمال',
+    latitude: 31.514,
+    longitude: 34.448,
     created_at: currentLanguage.value === 'en' ? 'Just now' : 'الآن',
     responders: [
       { id: 301, name: 'Instant Response Donor', blood_type: formattedType, match_score: 98, eta_minutes: 4, distance_km: 1.1 }
@@ -216,7 +233,7 @@ const handleCreateEmergency = async () => {
     : `🚨 تم إطلاق النداء الطارئ (${newRequest.code}) وتنبيه المتبرعين المطابقين فوراً!`);
 };
 
-const handleAccept = async () => {
+const handleAccept = async (reqId) => {
   if (selectedRequest.value) {
     selectedRequest.value.status = 'completed';
     selectedRequest.value.coverage = 100;
@@ -226,7 +243,7 @@ const handleAccept = async () => {
   }
 };
 
-const handleReject = async () => {
+const handleReject = async (reqId) => {
   if (selectedRequest.value) {
     selectedRequest.value.status = 'rejected';
     alert(currentLanguage.value === 'en'
@@ -251,6 +268,8 @@ const fetchRequests = async () => {
         status: 'active',
         hospital_name: item.hospital?.facility_name || 'مستشفى الشفاء الطبي',
         location: item.hospital?.address || 'غزة - الرمال',
+        latitude: parseFloat(item.hospital?.latitude) || 31.514,
+        longitude: parseFloat(item.hospital?.longitude) || 34.448,
         created_at: currentLanguage.value === 'en' ? 'Just now' : 'منذ قليل',
         responders: [
           { id: 1, name: 'أحمد محمد', blood_type: 'O-', match_score: 95, eta_minutes: 5, distance_km: 1.2 }

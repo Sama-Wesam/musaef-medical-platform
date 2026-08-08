@@ -1,8 +1,13 @@
 <template>
-  <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white h-100 text-start d-flex flex-column justify-content-between" :dir="langStore.dir">
+  <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white h-100 d-flex flex-column justify-content-between" :dir="langStore.dir">
     <div>
-      <!-- عنوان القائمة -->
-      <h6 class="fw-bold text-dark mb-3 fs-7">{{ t('title') }}</h6>
+      <!-- عنوان القائمة (تم تعديله ليظهر في أقصى اليمين) -->
+      <h6
+        class="fw-bold text-dark mb-3 fs-7"
+        :style="{ textAlign: langStore.dir === 'rtl' ? 'right' : 'left' }"
+      >
+        {{ t('title') }}
+      </h6>
 
       <!-- أزرار الفلترة بحسب مستوى الخطورة -->
       <EmergencyCasesFilter :filter="filter" @update:filter="$emit('update:filter', $event)" />

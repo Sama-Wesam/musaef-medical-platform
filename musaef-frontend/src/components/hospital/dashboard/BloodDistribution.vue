@@ -9,7 +9,7 @@
       </div>
       <div class="row align-items-center g-3">
         <div class="col-12 col-sm-6 order-2 order-sm-1" :class="currentLocale === 'ar' ? 'text-end' : 'text-start'">
-          <div v-for="(type, index) in bloodTypes" :key="index" class="blood-row">
+          <div v-for="(type, index) in displayDistribution" :key="index" class="blood-row">
             <span class="text-muted small">{{ type.percentage }}</span>
             <div class="d-flex align-items-center gap-2">
               <strong>{{ type.name }}</strong>
@@ -20,7 +20,7 @@
         <div class="col-12 col-sm-6 text-center order-1 order-sm-2">
           <div class="donut-chart-mock">
             <div class="donut-content">
-              <h3>159</h3>
+              <h3>{{ totalUnits }}</h3>
               <small>{{ t('totalUnits') }}</small>
             </div>
           </div>
@@ -31,7 +31,14 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
+
+const props = defineProps({
+  distribution: {
+    type: Array,
+    default: () => []
+  }
+});
 
 const currentLocale = computed(() => localStorage.getItem('musaef_lang') || 'ar');
 
@@ -50,13 +57,23 @@ const dictionary = {
 
 const t = (key) => dictionary[currentLocale.value === 'en' ? 'en' : 'ar'][key] || key;
 
-const bloodTypes = ref([
+const fallbackDistribution = [
   { name: '+O', percentage: '(41%)', color: 'bg-danger' },
   { name: '+A', percentage: '(22%)', color: 'bg-primary' },
   { name: '+B', percentage: '(13%)', color: 'bg-success' },
   { name: '+AB', percentage: '(15%)', color: 'bg-warning' },
   { name: '-O', percentage: '(6%)', color: 'bg-purple' }
-]);
+];
+
+const displayDistribution = computed(() => {
+  return props.distribution && props.distribution.length > 0 ? props.distribution : fallbackDistribution;
+});
+
+const totalUnits = computed(() => {
+  return props.distribution && props.distribution.length > 0
+    ? props.distribution.reduce((acc, cur) => acc + (parseInt(cur.percentage.replace(/\D/g, '')) || 0), 0)
+    : 159;
+});
 </script>
 
 <style scoped>

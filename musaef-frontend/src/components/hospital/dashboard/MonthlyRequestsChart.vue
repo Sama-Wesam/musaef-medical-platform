@@ -9,7 +9,7 @@
     </div>
     <div class="chart-scroll-wrapper">
       <div class="chart-container">
-        <div v-for="(month, index) in monthlyRequests" :key="index" class="chart-item">
+        <div v-for="(month, index) in displayMonthlyRequests" :key="index" class="chart-item">
           <div class="chart-bar-wrapper">
             <div class="chart-bar" :style="{ height: month.height + '%' }"></div>
           </div>
@@ -21,7 +21,14 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
+
+const props = defineProps({
+  chartData: {
+    type: Array,
+    default: () => []
+  }
+});
 
 const currentLocale = computed(() => localStorage.getItem('musaef_lang') || 'ar');
 
@@ -46,12 +53,16 @@ const dictionary = {
 
 const t = (key) => dictionary[currentLocale.value === 'en' ? 'en' : 'ar'][key] || key;
 
-const monthlyRequests = ref([
+const fallbackRequests = [
   { key: 'jan', height: 55 }, { key: 'feb', height: 100 }, { key: 'mar', height: 53 },
   { key: 'apr', height: 90 }, { key: 'may', height: 90 }, { key: 'jun', height: 68 },
   { key: 'jul', height: 100 }, { key: 'aug', height: 55 }, { key: 'sep', height: 82 },
   { key: 'oct', height: 45 }, { key: 'nov', height: 30 }, { key: 'dec', height: 100 }
-]);
+];
+
+const displayMonthlyRequests = computed(() => {
+  return props.chartData && props.chartData.length > 0 ? props.chartData : fallbackRequests;
+});
 
 const getMonthName = (key) => t(key);
 </script>

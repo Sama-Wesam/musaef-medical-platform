@@ -56,7 +56,7 @@ class DonationCenterController extends Controller
     public function getHeatMapData(Request $request, HeatMapAnalysis $heatMapAnalysis)
     {
         try {
-            // تجميع إحداثيات طلبات الدم الحالية
+            // تجميع إحداثيات طلبات الدم الحالية مع مستويات الإلحاح
             $requests = BloodRequest::with('hospital')
                 ->whereHas('hospital', function($q) {
                     $q->whereNotNull('latitude')->whereNotNull('longitude');
@@ -64,8 +64,11 @@ class DonationCenterController extends Controller
                 ->get()
                 ->map(function($req) {
                     return [
-                        'lat' => (float)$req->hospital->latitude,
-                        'lon' => (float)$req->hospital->longitude
+                        'lat'       => (float)$req->hospital->latitude,
+                        'lon'       => (float)$req->hospital->longitude,
+                        'urgency'   => $req->emergency_level,
+                        'units'     => $req->units_required,
+                        'hospital'  => $req->hospital->facility_name
                     ];
                 })->toArray();
 
@@ -83,7 +86,10 @@ class DonationCenterController extends Controller
             // توليد بيانات الخريطة الحرارية عبر بايثون
             $mapResult = $heatMapAnalysis->generateHeatMap($requests, $donors);
 
-            return $this->successResponse($mapResult, 'تم تحليل الخريطة الحرارية بنجاح');
+            return $this->successResponse([
+                'heatmap_data' => $mapResult,
+                'requests'     => $requests
+            ], 'تم تحليل الخريطة الحرارية بنجاح');
 
         } catch (\Exception $e) {
             return $this->errorResponse('فشل توليد الخريطة الحرارية: ' . $e->getMessage(), 500);
@@ -108,6 +114,8 @@ class DonationCenterController extends Controller
                     'patient_age'    => 30,
                     'hospital_name'  => optional($req->hospital)->facility_name ?? 'مستشفى الشفاء',
                     'location'       => optional($req->hospital)->address ?? 'غزة',
+                    'latitude'       => optional($req->hospital)->latitude,
+                    'longitude'      => optional($req->hospital)->longitude,
                     'blood_type'     => optional($req->bloodType)->name ?? 'O+',
                     'emergency_level'=> $req->emergency_level,
                     'created_at'     => $req->created_at->format('Y-m-d H:i')

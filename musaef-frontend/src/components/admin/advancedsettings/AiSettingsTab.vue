@@ -52,13 +52,31 @@
             </div>
 
             <!-- خوارزمية كشف وتصفية الحسابات الوهمية (FraudDetectionAI) -->
-            <div class="d-flex align-items-center justify-content-between p-2.5 p-md-3 border-top flex-wrap gap-2">
-              <div class="min-w-0">
-                <span class="fw-bold text-dark fs-8 d-block mb-1 text-truncate">{{ t('fraudTitle') }}</span>
-                <small class="text-muted fs-9 d-block text-truncate">{{ t('fraudDesc') }}</small>
+            <div class="p-2.5 p-md-3 border-top">
+              <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                <div class="min-w-0">
+                  <span class="fw-bold text-dark fs-8 d-block mb-1 text-truncate">{{ t('fraudTitle') }}</span>
+                  <small class="text-muted fs-9 d-block text-truncate">{{ t('fraudDesc') }}</small>
+                </div>
+                <div class="form-check form-switch m-0" :class="currentLanguage === 'ar' ? 'ms-auto ms-sm-0' : 'me-auto me-sm-0'">
+                  <input class="form-check-input custom-switch" type="checkbox" v-model="aiSettings.fakeAccountFilter" />
+                </div>
               </div>
-              <div class="form-check form-switch m-0" :class="currentLanguage === 'ar' ? 'ms-auto ms-sm-0' : 'me-auto me-sm-0'">
-                <input class="form-check-input custom-switch" type="checkbox" v-model="aiSettings.fakeAccountFilter" />
+
+              <!-- تفاصيل ديناميكية عن حالة تشغيل سكربت Python -->
+              <div v-if="aiSettings.fakeAccountFilter" class="bg-light p-2 rounded-3 mt-2 d-flex align-items-center justify-content-between fs-9 text-muted">
+                <div>
+                  <span class="badge bg-success-subtle text-success ms-1 me-1">{{ t('scriptActive') }}</span>
+                  <span>{{ t('lastAnalysis') }}: <strong>{{ settingsStore.aiMetrics.lastAnalysisTime }}</strong></span>
+                </div>
+                <button
+                  class="btn btn-sm btn-outline-danger py-0 px-2 fs-9 rounded-2"
+                  :disabled="settingsStore.aiMetrics.analyzingFraud"
+                  @click="settingsStore.triggerFraudAnalysis()"
+                >
+                  <span v-if="settingsStore.aiMetrics.analyzingFraud" class="spinner-border spinner-border-sm me-1"></span>
+                  {{ t('runAnalysisNow') }}
+                </button>
               </div>
             </div>
           </div>
@@ -89,12 +107,13 @@
         </div>
       </div>
 
-      <!-- العمود الآخر: حالة النماذج الذكية + مقاييس الأداء + زر الحفظ -->
+      <!-- العمود الآخر: حالة النماذج الذكية + مقاييس الأداء الديناميكية + زر الحفظ -->
       <div class="col-12 col-lg-4">
         <div class="d-flex flex-column gap-3">
           <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white">
             <h6 class="fw-bold text-dark mb-3 mb-md-4 fs-6">{{ t('modelsStatusTitle') }}</h6>
 
+            <!-- كارت دقة نموذج التنبؤ - عرض ديناميكي -->
             <div class="ai-stat-card p-3 rounded-4 mb-3 position-relative bg-light-subtle">
               <div class="d-flex justify-content-between align-items-start mb-2">
                 <div class="model-icon">
@@ -107,10 +126,13 @@
               </div>
               <div class="mt-3">
                 <span class="text-muted fs-9 d-block mb-1">{{ t('modelMetricsLabel') }}</span>
-                <h4 class="fw-bold text-purple mb-0 fs-4">49.2%</h4>
+                <h4 class="fw-bold text-purple mb-0 fs-4">
+                  {{ dynamicPredictionAccuracy }}%
+                </h4>
               </div>
             </div>
 
+            <!-- كارت الطلبات المنفذة للمطابقة - عرض ديناميكي -->
             <div class="ai-stat-card p-3 rounded-4 mb-3 position-relative bg-light-subtle">
               <div class="d-flex justify-content-between align-items-start mb-2">
                 <div class="model-icon">
@@ -123,7 +145,9 @@
               </div>
               <div class="mt-3">
                 <span class="text-muted fs-9 d-block mb-1">{{ t('processedSuccessfully') }}</span>
-                <h4 class="fw-bold text-success mb-1 fs-4">2,482</h4>
+                <h4 class="fw-bold text-success mb-1 fs-4">
+                  {{ dynamicExecutedRequests }}
+                </h4>
                 <span class="text-muted fs-9">{{ t('requestsExecuted') }}</span>
               </div>
             </div>
@@ -161,10 +185,28 @@ import { useSettingsStore } from '@/stores/settingsStore';
 const settingsStore = useSettingsStore();
 
 const props = defineProps({
-  aiSettings: Object
+  aiSettings: {
+    type: Object,
+    required: true
+  },
+  aiMetrics: {
+    type: Object,
+    default: () => ({})
+  }
 });
 
 const currentLanguage = computed(() => localStorage.getItem('musaef_lang') || 'ar');
+
+// قراءة الإحصائيات الديناميكية مع إمكانية الاعتماد على Prop أو Store
+const dynamicPredictionAccuracy = computed(() => {
+  const value = props.aiMetrics?.predictionAccuracy ?? settingsStore.aiMetrics?.predictionAccuracy;
+  return value !== undefined ? value : 49.2;
+});
+
+const dynamicExecutedRequests = computed(() => {
+  const value = props.aiMetrics?.executedRequests ?? settingsStore.aiMetrics?.executedRequests;
+  return value !== undefined ? value.toLocaleString() : '2,482';
+});
 
 const dictionary = {
   ar: {
@@ -173,6 +215,9 @@ const dictionary = {
     searchRadiusLabel: 'نطاق البحث الجغرافي الأقصى للـ AI (حول المستشفى)',
     fraudTitle: 'خوارزمية كشف وتصفية الحسابات الوهمية تلقائياً (Fraud Detection AI)',
     fraudDesc: 'تقوم AI بتحليل السجلات عبر fraud_detection.py وإيقاف الحسابات الوهمية تلقائياً',
+    scriptActive: 'السكربت نشط',
+    lastAnalysis: 'آخر تحليل',
+    runAnalysisNow: 'فحص الآن',
     forecastTitle: 'التحكم بنموذج التنبؤ بالطلب المستقبلي (Demand Forecast & Heatmap)',
     heatmapFrequencyLabel: 'دورية تحديث الخريطة الحرارية لنقص الفصائل (Heat Map Analysis)',
     every12h: 'كل 12 ساعة',
@@ -197,6 +242,9 @@ const dictionary = {
     searchRadiusLabel: 'Max AI Search Radius Around Hospital',
     fraudTitle: 'Automatic Fraud Detection Algorithm (Fraud Detection AI)',
     fraudDesc: 'AI analyzes logs via fraud_detection.py and automatically suspends fake accounts',
+    scriptActive: 'Script Active',
+    lastAnalysis: 'Last Analysis',
+    runAnalysisNow: 'Run Check',
     forecastTitle: 'Demand Forecast & Heatmap Control',
     heatmapFrequencyLabel: 'Heatmap Update Frequency for Blood Shortages',
     every12h: 'Every 12 Hours',

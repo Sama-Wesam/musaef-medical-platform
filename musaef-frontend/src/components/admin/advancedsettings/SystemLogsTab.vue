@@ -83,10 +83,10 @@
             <table class="table align-middle text-center border-0 fs-8 mb-0 min-w-table">
               <thead class="text-muted fw-normal border-bottom border-light">
                 <tr>
-                  <th class="py-2" :class="currentLanguage === 'ar' ? 'text-start' : 'text-start'">{{ t('patientName') }}</th>
+                  <th class="py-2 text-start">{{ t('patientName') }}</th>
                   <th class="py-2">{{ t('timeLabel') }}</th>
                   <th class="py-2">{{ t('ipLabel') }}</th>
-                  <th class="py-2" :class="currentLanguage === 'ar' ? 'text-end' : 'text-end'">{{ t('statusLabel') }}</th>
+                  <th class="py-2 text-end">{{ t('statusLabel') }}</th>
                 </tr>
               </thead>
               <tbody>

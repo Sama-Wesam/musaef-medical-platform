@@ -2,8 +2,8 @@
   <AdminLayout>
     <div class="radar-view container-fluid px-2 px-md-3" :dir="langStore.dir">
       <div class="row g-3 g-lg-4">
-        <!-- 1. قائمة الحالات الحرجة المباشرة -->
-        <div class="col-12 col-lg-5 col-xl-4 order-2 order-lg-1">
+        <!-- 1. قائمة الحالات الحرجة المباشرة (معدلة لتكون في أقصى اليمين) -->
+        <div class="col-12 col-lg-5 col-xl-4 order-1 order-lg-1">
           <CriticalCasesList
             v-model:filter="filter"
             :hospitals="filteredHospitals"
@@ -11,9 +11,12 @@
           />
         </div>
 
-        <!-- 2. الخريطة الجغرافية ودليل الخطورة -->
-        <div class="col-12 col-lg-7 col-xl-8 order-1 order-lg-2">
-          <RadarMap />
+        <!-- 2. الخريطة الجغرافية ودليل الخطورة (أصبحت إلى اليسار) -->
+        <div class="col-12 col-lg-7 col-xl-8 order-2 order-lg-2">
+          <RadarMap
+            :heat-data="heatMapPoints"
+            :hospitals="filteredHospitals"
+          />
         </div>
       </div>
     </div>
@@ -35,6 +38,7 @@ const currentLanguage = computed(() => langStore.currentLang);
 
 const filter = ref('all');
 const timerInterval = ref(null);
+const heatMapPoints = ref([]);
 
 // قاموس الترجمة لمستشفيات الرادار ومواقعها
 const hospitalNames = {
@@ -51,12 +55,14 @@ const locationNames = {
 
 const getEtaUnit = () => (currentLanguage.value === 'en' ? 'mins' : 'دقائق');
 
-// البيانات المبدئية للثلاث حالات
+// البيانات المبدئية للثلاث حالات شاملة الإحداثيات للخريطة
 const defaultHospitals = [
   {
     id: 1,
     name: 'مستشفى الكويتي',
     location: 'الجنوب - رفح',
+    lat: 31.296,
+    lng: 34.243,
     remainingSeconds: 324,
     timeLeft: '00:05:24',
     responseTimeVal: 6,
@@ -67,6 +73,8 @@ const defaultHospitals = [
     id: 2,
     name: 'مستشفى العودة',
     location: 'وسطى - النصيرات',
+    lat: 31.450,
+    lng: 34.380,
     remainingSeconds: 264,
     timeLeft: '00:04:24',
     responseTimeVal: 6,
@@ -77,6 +85,8 @@ const defaultHospitals = [
     id: 3,
     name: 'مستشفى ناصر',
     location: 'جنوب - خانيونس',
+    lat: 31.345,
+    lng: 34.303,
     remainingSeconds: 564,
     timeLeft: '00:09:24',
     responseTimeVal: 6,
@@ -122,6 +132,19 @@ const startCountdowns = () => {
   }, 1000);
 };
 
+// جلب تحليلات الخريطة الحرارية من الـ Backend
+const fetchHeatMapData = async () => {
+  try {
+    const res = await apiClient.get('/admin/analytics/heat-map');
+    const data = res.data?.data || res.data;
+    if (Array.isArray(data)) {
+      heatMapPoints.value = data;
+    }
+  } catch (err) {
+    console.warn('Using default heatmap coordinates.');
+  }
+};
+
 const fetchRadarData = async () => {
   try {
     const res = await apiClient.get('/admin/emergency-radar');
@@ -131,6 +154,8 @@ const fetchRadarData = async () => {
         id: item.id,
         name: item.hospital?.facility_name || item.name || 'مستشفى الكويتي',
         location: item.hospital?.address || item.location || 'غزة',
+        lat: parseFloat(item.hospital?.latitude || item.lat || 31.3),
+        lng: parseFloat(item.hospital?.longitude || item.lng || 34.3),
         remainingSeconds: item.remaining_seconds || 300,
         timeLeft: formatSeconds(item.remaining_seconds || 300),
         responseTimeVal: item.expected_response_time_val || 6,
@@ -145,6 +170,7 @@ const fetchRadarData = async () => {
 
 onMounted(() => {
   fetchRadarData();
+  fetchHeatMapData();
   startCountdowns();
 
   try {
@@ -154,6 +180,8 @@ onMounted(() => {
           id: e.bloodRequest?.id || Date.now(),
           name: e.bloodRequest?.facility_name || 'مستشفى الكويتي',
           location: e.bloodRequest?.address || 'غزة',
+          lat: parseFloat(e.bloodRequest?.latitude || 31.35),
+          lng: parseFloat(e.bloodRequest?.longitude || 34.32),
           remainingSeconds: 600,
           timeLeft: '00:10:00',
           responseTimeVal: 5,

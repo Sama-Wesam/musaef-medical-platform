@@ -100,10 +100,10 @@
         </div>
 
         <!-- Cards -->
-        <div class="row g-3 g-md-4" v-if="emergencyCases.length > 0">
+        <div class="row g-3 g-md-4" v-if="sortedEmergencyCases.length > 0">
           <div
             class="col-12 col-sm-6 col-xl-3"
-            v-for="(item, index) in emergencyCases"
+            v-for="(item, index) in sortedEmergencyCases"
             :key="index"
           >
             <div class="emergency-card h-100">
@@ -286,13 +286,21 @@ const fetchUrgentRequests = async () => {
         units: req.units_needed || 1,
         severity: req.severity || 'Critical',
         urgency_label: req.condition_type || '',
-        time: req.created_at || '2026-08-01 17:26'
+        time: req.created_at || '2026-08-01 17:26',
+        ai_priority_score: req.ai_priority_score || req.priority_score || 0 // 👈 حفظ درجة الأولوية
       }))
     }
   } catch (error) {
     console.error('Error fetching urgent requests:', error)
   }
 }
+
+// 2. إنشاء Computed Property لفرز الحالات تنازلياً بحسب درجة الأولوية
+const sortedEmergencyCases = computed(() => {
+  return [...emergencyCases.value].sort((a, b) => {
+    return (b.ai_priority_score || 0) - (a.ai_priority_score || 0)
+  })
+})
 
 const getSeverityText = (severity, fallback) => {
   if (severity === 'Critical') return t('home.veryCritical')
