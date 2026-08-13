@@ -5,7 +5,7 @@
     </h5>
     <div class="p-3 bg-light rounded-3 mb-3">
       <h6 class="fw-bold text-dark fs-8 mb-2">{{ t('notificationsAvailability') }}</h6>
-      <div class="form-check form-switch d-flex align-items-center justify-content-between p-0 flex-wrap gap-2" :dir="currentLanguage === 'ar' ? 'ltr' : 'ltr'">
+      <div class="form-check form-switch d-flex align-items-center justify-content-between p-0 flex-wrap gap-2" dir="ltr">
         <label class="form-check-label fs-8 text-secondary flex-grow-1 min-w-0" :class="currentLanguage === 'ar' ? 'text-end me-2' : 'text-start'" for="notifSwitch">{{ t('receiveUrgentNotifs') }}</label>
         <input
           class="form-check-input ms-0 custom-switch flex-shrink-0"

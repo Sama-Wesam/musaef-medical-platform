@@ -19,15 +19,18 @@
     <!-- 2. إطار الخريطة البرمجية التفاعلية -->
     <div id="musaef-leaflet-map" class="map-iframe"></div>
 
-    <!-- 3. كارت تفاصيل المستشفى العائم فوق الخريطة -->
-    <div v-if="selectedHospital" class="hospital-detail-card position-absolute bg-white rounded-4 p-3 p-md-4 shadow-lg" :class="currentLanguage === 'ar' ? 'dir-rtl' : 'dir-ltr'">
-      <!-- هيدر الكارت: زر الإغلاق والعنوان -->
+    <!-- 3. كارت تفاصيل المستشفى العائم -->
+    <div
+      v-if="selectedHospital"
+      class="hospital-detail-card position-absolute bg-white rounded-4 p-3 p-md-4 shadow-lg interactive-card cursor-pointer"
+      :class="currentLanguage === 'ar' ? 'dir-rtl' : 'dir-ltr'"
+      @click="$emit('select-request', selectedHospital)"
+    >
       <div class="d-flex align-items-center justify-content-between mb-2 mb-md-3 position-relative">
-        <button @click="closeCard" class="btn-close fs-9 m-0" aria-label="إغلاق"></button>
+        <button @click.stop="closeCard" class="btn-close fs-9 m-0" aria-label="إغلاق"></button>
         <span class="fw-bold text-dark fs-8 fs-md-7 mx-auto pe-2">{{ t('hospitalDetailsTitle') }}</span>
       </div>
 
-      <!-- صورة المستشفى والاسم -->
       <div class="hospital-info-box p-2.5 bg-light-subtle rounded-3 border mb-3">
         <div class="d-flex align-items-center gap-2">
           <div class="hospital-text-container min-w-0" :class="currentLanguage === 'ar' ? 'text-end ms-auto' : 'text-start me-auto'">
@@ -45,7 +48,6 @@
         </div>
       </div>
 
-      <!-- المسافة والوقت المتوقع -->
       <div class="row text-center g-2 mb-3">
         <div class="col-6">
           <div class="bg-light-subtle rounded-3 p-2 border h-100 d-flex flex-column align-items-center justify-content-center">
@@ -66,7 +68,6 @@
         </div>
       </div>
 
-      <!-- الفصائل المطلوبة -->
       <div class="mb-3 text-center">
         <small class="text-dark fs-8 d-block mb-1.5 fw-bold">{{ t('requiredBloodType') }}</small>
         <div class="d-flex gap-2 justify-content-center flex-wrap">
@@ -76,7 +77,6 @@
         </div>
       </div>
 
-      <!-- عدد الوحدات ومستوى الخطورة -->
       <div class="bg-light-subtle rounded-3 p-2.5 p-md-3 border mb-3">
         <div class="row align-items-center text-center g-0">
           <div class="col-6 border-end" :class="currentLanguage === 'en' ? 'border-end' : 'border-start border-end-0'">
@@ -92,8 +92,7 @@
         </div>
       </div>
 
-      <!-- أزرار التفاعل -->
-      <button @click="$emit('select-request', selectedHospital)" class="btn btn-danger w-100 py-2 fw-bold fs-8 rounded-3 shadow-2xs">
+      <button class="btn btn-danger w-100 py-2 fw-bold fs-8 rounded-3 shadow-2xs">
         {{ t('startNavigation') }}
       </button>
     </div>
@@ -180,7 +179,6 @@ const locationDict = {
   'رفح - الجنينة': 'Rafah - Al-Jnena'
 };
 
-// إحداثيات جغرافية متناسقة لمواقع المراكز والمستشفيات
 const hospitalCoordinates = {
   'مستشفى أصلان/أبو يوسف النجار': [31.2968, 34.2435],
   'مستشفى كمال عدوان': [31.5364, 34.4962],
@@ -221,7 +219,6 @@ const handleHospitalFallback = (e) => {
 
 const selectedHospital = ref(null);
 
-// تحميل مكتبات Leaflet ديناميكياً من الـ CDN لتسهيل التشغيل المباشر
 const loadLeafletScripts = () => {
   return new Promise((resolve) => {
     if (window.L && window.L.heatLayer) {
@@ -254,7 +251,6 @@ const initMap = async () => {
 
   if (!document.getElementById('musaef-leaflet-map')) return;
 
-  // إنشاء الخريطة وتحديد المركز على غزة
   map = window.L.map('musaef-leaflet-map').setView([31.42, 34.38], 11);
 
   window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -274,18 +270,17 @@ const updateMapElements = () => {
   const heatPoints = [];
 
   props.requests.forEach((req) => {
-    const coords = req.lat && req.lng
-      ? [req.lat, req.lng]
-      : (hospitalCoordinates[req.hospital] || [31.50, 34.45]);
+    // جلب الإحداثيات المباشرة من قاعدة البيانات مع fallback إذا لم تتوفر
+    const coords = (req.lat && req.lng)
+      ? [parseFloat(req.lat), parseFloat(req.lng)]
+      : (hospitalCoordinates[req.hospital] || [31.5247, 34.4447]);
 
-    // تحديد كثافة النقطة الحرارية بناءً على درجة الخطورة وعدد الوحدات المطلوبة
     let intensity = 0.6;
     if (req.urgency === 'حرجة جداً' || req.urgency === 'critical') intensity = 1.0;
     else if (req.urgency === 'عالية' || req.urgency === 'high') intensity = 0.8;
 
     heatPoints.push([...coords, intensity]);
 
-    // إنشاء أيقونة مخصصة للعلامات
     const customIcon = window.L.divIcon({
       className: 'custom-map-pin',
       html: `<div class="pin-marker ${intensity === 1.0 ? 'pulse-red' : ''}"><i class="bi bi-geo-alt-fill"></i></div>`,
@@ -301,7 +296,6 @@ const updateMapElements = () => {
     markersGroup.addLayer(marker);
   });
 
-  // إضافة طبقة الخريطة الحرارية الملونة (Heat Map Layer)
   if (heatPoints.length > 0 && showHeatmap.value && window.L.heatLayer) {
     heatmapLayer = window.L.heatLayer(heatPoints, {
       radius: 35,
@@ -321,9 +315,11 @@ const toggleHeatmapLayer = () => {
   }
 };
 
-watch(() => props.requests, () => {
-  if (props.requests && props.requests.length > 0) {
-    selectedHospital.value = props.requests[0];
+watch(() => props.requests, (newRequests) => {
+  if (newRequests && newRequests.length > 0) {
+    if (!selectedHospital.value) {
+      selectedHospital.value = newRequests[0];
+    }
     updateMapElements();
   }
 }, { deep: true });
@@ -385,6 +381,14 @@ const closeCard = () => {
 .hospital-text-container { max-width: calc(100% - 70px); }
 .hospital-img-fixed-box { width: 60px; height: 48px; overflow: hidden; border-radius: 6px; }
 .hospital-fixed-img { width: 100% !important; height: 100% !important; object-fit: cover !important; display: block; }
+
+.interactive-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.interactive-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15) !important;
+}
 
 .bg-pink-light { background-color: #fdecec; }
 .bg-light-subtle { background-color: #f8fafc; }

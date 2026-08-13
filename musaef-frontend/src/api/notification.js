@@ -1,13 +1,13 @@
 import apiClient from './axios';
 
 export default {
-  // جلب قائمة الإشعارات الخاصة بالمستخدم بشكل ديناميكي حسب دوره
-  getNotifications() {
+  // جلب قائمة الإشعارات الخاصة بالمستخدم بشكل ديناميكي حسب دوره المحدث في localStorage مع دعم الفلترة
+  getNotifications(params = {}, config = {}) {
     const userRole = localStorage.getItem('user_role') || 'donor';
-    return apiClient.get(`/${userRole}/notifications`);
+    return apiClient.get(`/${userRole}/notifications`, { params, ...config });
   },
 
-  // تحديد إشعار معين أو جميع الإشعارات كـ "مقروءة"
+  // تحديد إشعار معين أو جميع الإشعارات كـ "مقروءة" بناءً على دور المستخدم
   markAsRead(notificationId = null) {
     const userRole = localStorage.getItem('user_role') || 'donor';
 

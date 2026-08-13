@@ -4,6 +4,9 @@
       v-for="item in items"
       :key="item.id"
       :item="item"
+      @markRead="$emit('markRead', $event)"
+      @delete="$emit('delete', $event)"
+      @click="$emit('itemClick', $event)"
     />
 
     <div v-if="items.length === 0" class="text-center text-muted py-5 px-3 fs-8 bg-white rounded-4 shadow-sm">
@@ -25,6 +28,8 @@ defineProps({
     default: 'لا توجد إشعارات لعرضها حالياً'
   }
 });
+
+defineEmits(['markRead', 'delete', 'itemClick']);
 </script>
 
 <style scoped>

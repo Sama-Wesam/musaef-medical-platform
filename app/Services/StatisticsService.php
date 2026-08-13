@@ -15,10 +15,10 @@ class StatisticsService
     public function getAdminDashboardStats(): array
     {
         return [
-            'total_donors' => Donor::count(),
-            'active_emergencies' => BloodRequest::whereIn('status', ['pending', 'searching'])->count(),
-            'verified_hospitals' => Hospital::where('is_verified', true)->count(),
-            'successful_donations' => Donation::where('status', 'successful')->count(),
+            'total_donors'         => Donor::count(),
+            'active_emergencies'   => BloodRequest::whereIn('status', ['pending', 'searching'])->count(),
+            'verified_hospitals'   => Hospital::where('is_verified', true)->count(),
+            'successful_donations' => Donation::whereIn('status', ['successful', 'completed'])->count(),
         ];
     }
 
@@ -28,28 +28,30 @@ class StatisticsService
     public function getHospitalDashboardStats(int $hospitalId): array
     {
         return [
-            'my_active_requests' => BloodRequest::where('hospital_id', $hospitalId)
-                                                ->whereIn('status', ['pending', 'searching'])->count(),
-            'total_blood_received' => Donation::where('hospital_id', $hospitalId)
-                                              ->where('status', 'successful')->sum('units_donated'),
+            'my_active_requests'   => BloodRequest::where('hospital_id', $hospitalId)
+                ->whereIn('status', ['pending', 'searching'])
+                ->count(),
+            'total_blood_received' => (int) Donation::where('hospital_id', $hospitalId)
+                ->whereIn('status', ['successful', 'completed'])
+                ->sum('units_donated'),
         ];
     }
 
     /**
      * إحصائيات لوحة تحكم المتبرع (Donor Dashboard)
-     * تحسين الأداء عبر بناء الاستعلام مرة واحدة لاستخراج الإحصائيات
      */
     public function getDonorDashboardStats(int $donorId): array
     {
-        $successfulDonations = Donation::where('donor_id', $donorId)
-            ->where('status', 'successful');
+        $stats = Donation::where('donor_id', $donorId)
+            ->whereIn('status', ['successful', 'completed'])
+            ->selectRaw('COUNT(*) as total_donations, COALESCE(SUM(units_donated), 0) as units_donated')
+            ->first();
 
-        $totalDonations = $successfulDonations->count();
-        $unitsDonated = $successfulDonations->sum('units_donated');
+        $units = $stats ? (int) $stats->units_donated : 0;
 
         return [
-            'total_donations' => $totalDonations,
-            'lives_saved'     => $unitsDonated * 3, // تقدير حسابي: كل وحدة قد تنقذ 3 أرواح
+            'total_donations' => $stats ? (int) $stats->total_donations : 0,
+            'lives_saved'     => $units * 3, // تقدير حسابي: كل وحدة تبرع تنقذ 3 أرواح
         ];
     }
 }

@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class MatchingResult extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'blood_request_id',
         'donor_id',
@@ -16,16 +19,15 @@ class MatchingResult extends Model
 
     protected $casts = [
         'match_score' => 'decimal:2',
+        'eta_minutes' => 'integer',
         'is_notified' => 'boolean',
     ];
 
-    // الطلب
     public function bloodRequest()
     {
         return $this->belongsTo(BloodRequest::class);
     }
 
-    // المتبرع المرشح
     public function donor()
     {
         return $this->belongsTo(Donor::class);

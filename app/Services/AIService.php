@@ -8,31 +8,23 @@ use App\AI\ResponsePrediction;
 
 class AIService
 {
-    protected $demandForecast;
-    protected $heatMap;
-    protected $responsePrediction;
-
     public function __construct(
-        BloodDemandForecast $demandForecast,
-        HeatMapAnalysis $heatMap,
-        ResponsePrediction $responsePrediction
-    ) {
-        $this->demandForecast = $demandForecast;
-        $this->heatMap = $heatMap;
-        $this->responsePrediction = $responsePrediction;
-    }
+        protected BloodDemandForecast $demandForecast,
+        protected HeatMapAnalysis $heatMap,
+        protected ResponsePrediction $responsePrediction
+    ) {}
 
-    public function getHospitalDemandForecast(int $hospitalId, int $bloodTypeId)
+    public function getHospitalDemandForecast(int $hospitalId, int $bloodTypeId): mixed
     {
         return $this->demandForecast->predictShortage($hospitalId, $bloodTypeId);
     }
 
-    public function getLiveHeatMapData()
+    public function getLiveHeatMapData(): mixed
     {
         return $this->heatMap->generateEmergencyHotspots();
     }
 
-    public function getDonorResponseProbability(int $donorId)
+    public function getDonorResponseProbability(int $donorId): mixed
     {
         return $this->responsePrediction->predictProbability($donorId);
     }

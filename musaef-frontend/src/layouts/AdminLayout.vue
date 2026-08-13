@@ -31,15 +31,20 @@ const currentLocale = computed(() => localStorage.getItem('musaef_lang') || 'ar'
 
 .main-body-wrapper {
   width: 100%;
+  position: relative;
 }
 
 .bg-light-gray {
   background-color: #f8fafc;
 }
 
+/* تعديل الاستجابة للشاشات الصغيرة */
 @media (max-width: 991.98px) {
   .sidebar-container {
-    display: none;
+    /* السماح للسايدبار الثابت الموضعي بالظهور بدون تقييد الحاوية */
+    width: 0;
+    height: 0;
+    overflow: visible;
   }
 }
 </style>

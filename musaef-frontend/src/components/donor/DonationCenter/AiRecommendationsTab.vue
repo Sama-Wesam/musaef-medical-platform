@@ -23,7 +23,10 @@
     <!-- شبكة كروت التوصيات -->
     <div v-else class="row g-3 g-md-4 mb-4">
       <div v-for="aiItem in sortedAiRequests" :key="aiItem.id" class="col-12 col-md-6 col-lg-4">
-        <div class="card border-0 rounded-4 p-3 bg-white shadow-2xs h-100 d-flex flex-column justify-content-between">
+        <div
+          class="card border-0 rounded-4 p-3 bg-white shadow-2xs h-100 d-flex flex-column justify-content-between interactive-card cursor-pointer"
+          @click="$emit('select-request', aiItem)"
+        >
           <div>
             <!-- شارة التطابق ومستوى الخطورة -->
             <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
@@ -47,7 +50,7 @@
               </div>
             </div>
 
-            <!-- التفاصيل الأساسية: المسافة، عدد الوحدات، فصيلة الدم -->
+            <!-- التفاصيل الأساسية -->
             <div class="row text-center align-items-center my-3 py-2 bg-light-subtle rounded-3 g-0 border border-light">
               <div class="col-4">
                 <small class="text-muted fs-9 d-block mb-1">{{ t('distance') }}</small>
@@ -63,14 +66,14 @@
               </div>
             </div>
 
-            <!-- سبب الترشيح من الذكاء الاصطناعي -->
+            <!-- سبب الترشيح -->
             <div class="p-2 bg-success bg-opacity-10 text-success rounded-3 fs-9 text-center mb-3">
               <i class="bi bi-check-circle-fill me-1"></i> {{ translateRecommendation(aiItem.recommendationText) }}
             </div>
           </div>
 
           <!-- زر عرض التفاصيل -->
-          <button @click="$emit('select-request', aiItem)" class="btn btn-outline-danger w-100 py-2 fw-bold fs-8 border-danger-subtle figma-btn-radius">
+          <button class="btn btn-outline-danger w-100 py-2 fw-bold fs-8 border-danger-subtle figma-btn-radius">
             {{ t('viewDetails') }}
           </button>
         </div>
@@ -206,6 +209,15 @@ const sortedAiRequests = computed(() => {
 .hospital-box-img { width: 55px; height: 50px; object-fit: cover; }
 @media (min-width: 768px) { .hospital-box-img { width: 65px; height: 55px; } }
 
+.interactive-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.interactive-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08) !important;
+}
+
+.cursor-pointer { cursor: pointer; }
 .border-danger-subtle { border-color: #fca5a5 !important; }
 .figma-btn-radius { border-radius: 6px !important; }
 

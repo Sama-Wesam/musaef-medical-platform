@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\LocationTrait;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -25,6 +26,10 @@ class Hospital extends Model
         'is_verified',
     ];
 
+    protected $hidden = [
+        'created_at',
+    ];
+
     protected $casts = [
         'is_verified' => 'boolean',
         'latitude'    => 'float',
@@ -33,28 +38,28 @@ class Hospital extends Model
 
     protected $appends = ['name'];
 
-    public function getNameAttribute()
+    public function getNameAttribute(): ?string
     {
         return $this->facility_name;
     }
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function bloodRequests()
     {
-        return $this->hasMany(BloodRequest::class);
+        return $this->hasMany(BloodRequest::class, 'hospital_id');
     }
 
     public function bloodInventories()
     {
-        return $this->hasMany(BloodInventory::class);
+        return $this->hasMany(BloodInventory::class, 'hospital_id');
     }
 
     public function donations()
     {
-        return $this->hasMany(Donation::class);
+        return $this->hasMany(Donation::class, 'hospital_id');
     }
 }

@@ -13,9 +13,9 @@ class BloodTypeSeeder extends Seeder
     public function run(): void
     {
         $bloodTypes = [
-            'O+', 'O-', 
-            'A+', 'A-', 
-            'B+', 'B-', 
+            'O+', 'O-',
+            'A+', 'A-',
+            'B+', 'B-',
             'AB+', 'AB-'
         ];
 

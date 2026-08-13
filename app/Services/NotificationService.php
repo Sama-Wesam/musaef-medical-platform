@@ -2,16 +2,13 @@
 
 namespace App\Services;
 
-use App\Repositories\NotificationRepository;
+use App\Repositories\Contracts\NotificationRepositoryInterface;
 
 class NotificationService
 {
-    protected $notificationRepo;
-
-    public function __construct(NotificationRepository $notificationRepo)
-    {
-        $this->notificationRepo = $notificationRepo;
-    }
+    public function __construct(
+        protected NotificationRepositoryInterface $notificationRepo
+    ) {}
 
     public function getUserUnreadNotifications(int $userId)
     {

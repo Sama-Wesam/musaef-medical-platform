@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
+  // ضمان توجيه الطلبات إلى سيرفر الباك إند المباشر (Port 8000) أو الاعتماد على المسار المحلي المقترح
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
   headers: {
     'Accept': 'application/json'
   },
@@ -10,14 +11,30 @@ const apiClient = axios.create({
 
 apiClient.interceptors.request.use(
   (config) => {
-    // 1. تمرير اللغة الحالية إلى Laravel Middleware عبر Header
     const currentLang = localStorage.getItem('musaef_lang') || 'ar';
     config.headers['Accept-Language'] = currentLang;
+
+    // معالجة المسارات المكررة تلقائياً لضمان عدم وجود خلل مثل /api/api
+    if (config.url) {
+      if (config.baseURL === 'http://localhost:8000' && !config.url.startsWith('/api') && !config.url.startsWith('http')) {
+        config.url = `/api${config.url.startsWith('/') ? '' : '/'}${config.url}`;
+      } else if (config.url.startsWith('/api/api/')) {
+        config.url = config.url.replace('/api/api/', '/api/');
+      }
+    }
 
     if (config.data instanceof FormData) {
       delete config.headers['Content-Type'];
     } else {
       config.headers['Content-Type'] = 'application/json';
+    }
+
+    // ⚡ تعزيز دورات الـ Polling والطلبات الفورية بمنع التخزين المؤقت (Cache Busting) عبر طابع زمني خفيف
+    if (config.method === 'get') {
+      config.params = {
+        _t: Date.now(),
+        ...(config.params || {})
+      };
     }
 
     const isAuthPath = config.url?.includes('/login') || config.url?.includes('/register');
@@ -27,7 +44,6 @@ apiClient.interceptors.request.use(
       return config;
     }
 
-    // قراءة التوكن الموحد بنظافة
     const token = localStorage.getItem('token') || localStorage.getItem('musaef_token');
 
     if (token && token !== 'null' && token !== 'undefined') {
@@ -42,19 +58,17 @@ apiClient.interceptors.request.use(
 );
 
 apiClient.interceptors.response.use(
-  (response) => response.data,
+  (response) => response,
   (error) => {
     const isAuthRequest = error.config?.url?.includes('/login') || error.config?.url?.includes('/register');
 
     if (error.response?.status === 401 && !isAuthRequest) {
-      // تفريغ كافة بيانات التوكن والجلسة لمنع التكرار
       localStorage.removeItem('token');
       localStorage.removeItem('musaef_token');
       localStorage.removeItem('user');
       localStorage.removeItem('musaef_user');
       localStorage.removeItem('user_role');
 
-      // توجيه لصفحة اللوجن فقط إذا لم تكن الصفحة الحالية هي اللوجن لمنع الحلقة التكرارية
       if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
         window.location.href = '/login';
       }

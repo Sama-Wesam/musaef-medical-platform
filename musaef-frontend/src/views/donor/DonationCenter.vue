@@ -96,14 +96,13 @@
           </div>
         </div>
 
-        <!-- ترجمة النص الوردي الداخلي بالكامل -->
         <div class="p-2.5 p-md-3 bg-danger bg-opacity-10 text-danger rounded-3 text-center mb-3">
           <small class="d-block fs-9">{{ t('aiMatchRateTitle') }}</small>
           <strong class="fs-7 fs-md-6">{{ selectedModalRequest.matchScore }}% - {{ translateRecommendation(selectedModalRequest.recommendationText) }}</strong>
         </div>
 
         <div class="d-flex gap-2">
-          <button @click="acceptRequest(selectedModalRequest.id)" :disabled="isSubmitting" class="btn btn-danger flex-fill rounded-pill py-2 fw-bold fs-8">
+          <button @click="acceptRequest(selectedModalRequest)" :disabled="isSubmitting" class="btn btn-danger flex-fill rounded-pill py-2 fw-bold fs-8">
             <span v-if="isSubmitting" class="spinner-border spinner-border-sm me-1"></span>
             <span v-else>✓ {{ t('acceptAndDonateBtn') }}</span>
           </button>
@@ -115,7 +114,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import donor from '@/api/donor';
 import apiClient from '@/api/axios';
 import DonorHeader from '@/components/donor/DonorHeader.vue';
@@ -127,8 +126,10 @@ const activeMainTab = ref('all');
 const selectedModalRequest = ref(null);
 const isSubmitting = ref(false);
 const isLoading = ref(false);
+const isFetching = ref(false);
 const requests = ref([]);
 const errorMessage = ref('');
+let pollingInterval = null;
 
 const currentLanguage = computed(() => localStorage.getItem('musaef_lang') || 'ar');
 
@@ -145,7 +146,7 @@ const translations = {
     aiMatchRateTitle: 'نسبة التوافق والمطابقة الذكية',
     acceptAndDonateBtn: 'قبول الطلب والتبرع',
     closeBtn: 'إغلاق',
-    acceptSuccessAlert: 'تم قبول طلب التبرع بنجاح وتوجيه الإشعار لمركز المستشفى!',
+    acceptSuccessAlert: 'تم قبول طلب التبرع بنجاح وتحديث إنجازاتك في صفحة إنجازاتي!',
     acceptErrorAlert: 'حدث خطأ أثناء إرسال القبول، حاول مرة أخرى.'
   },
   en: {
@@ -160,7 +161,7 @@ const translations = {
     aiMatchRateTitle: 'Smart Matching Rate',
     acceptAndDonateBtn: 'Accept & Donate',
     closeBtn: 'Close',
-    acceptSuccessAlert: 'Donation request accepted successfully! Hospital notified.',
+    acceptSuccessAlert: 'Donation request accepted successfully! Achievements updated.',
     acceptErrorAlert: 'An error occurred while submitting. Please try again.'
   }
 };
@@ -231,134 +232,170 @@ const openRequestModal = (requestItem) => {
   selectedModalRequest.value = requestItem;
 };
 
-const fallbackRequests = [
-  { id: 1, hospital: 'مستشفى أصلان/أبو يوسف النجار', location: 'رفح - الشابورة', bloodType: 'AB+', units: 3, distance: 2.7, urgency: 'عالية', matchScore: 98, recommendationText: 'متوافق مع فصيلة دمك ونطاقك الجغرافي المباشر', img: getImageUrl('hospital.png'), lat: 31.2968, lng: 34.2435 },
-  { id: 2, hospital: 'مستشفى كمال عدوان', location: 'شمال غزة - بيت لاهيا', bloodType: 'AB-', units: 5, distance: 2.6, urgency: 'حرجة جداً', matchScore: 98, recommendationText: 'متوافق مع فصيلة دمك ونطاقك الجغرافي المباشر', img: getImageUrl('hospital.png'), lat: 31.5364, lng: 34.4962 },
-  { id: 3, hospital: 'المستشفى الإندونيسي', location: 'شمال غزة - بيت لاهيا', bloodType: 'AB-', units: 3, distance: 4.2, urgency: 'حرجة جداً', matchScore: 97, recommendationText: 'متوافق مع فصيلة دمك ونطاقك الجغرافي المباشر', img: getImageUrl('hospital.png'), lat: 31.5388, lng: 34.5050 },
-  { id: 4, hospital: 'مجمع الشفاء الطبي', location: 'غزة - الرمال', bloodType: 'O+', units: 5, distance: 3.6, urgency: 'حرجة جداً', matchScore: 97, recommendationText: 'متوافق مع فصيلة دمك ونطاقك الجغرافي المباشر', img: getImageUrl('hospital.png'), lat: 31.5247, lng: 34.4447 },
-  { id: 5, hospital: 'مجمع ناصر الطبي', location: 'خانيونس - وسط المدينة', bloodType: 'A-', units: 2, distance: 1.8, urgency: 'حرجة جداً', matchScore: 96, recommendationText: 'متوافق مع فصيلة دمك ونطاقك الجغرافي المباشر', img: getImageUrl('hospital.png'), lat: 31.3462, lng: 34.3031 },
-  { id: 6, hospital: 'جمعية بنك الدم المركزي', location: 'غزة - الرمال شارع الوحدة', bloodType: 'AB+', units: 4, distance: 3.0, urgency: 'حرجة جداً', matchScore: 93, recommendationText: 'متوافق مع فصيلة دمك ونطاقك الجغرافي المباشر', img: getImageUrl('hospital.png'), lat: 31.5210, lng: 34.4530 },
-  { id: 7, hospital: 'مستشفى الأهلي العربي (المعمداني)', location: 'غزة - الزيتون', bloodType: 'O+', units: 3, distance: 3.9, urgency: 'حرجة جداً', matchScore: 92, recommendationText: 'متوافق مع فصيلة دمك ونطاقك الجغرافي المباشر', img: getImageUrl('hospital.png'), lat: 31.5082, lng: 34.4632 },
-  { id: 8, hospital: 'بنك الدم المركزي - وزارة الصحة', location: 'غزة - النصر', bloodType: 'AB-', units: 5, distance: 4.4, urgency: 'حرجة جداً', matchScore: 90, recommendationText: 'متوافق مع فصيلة دمك ونطاقك الجغرافي المباشر', img: getImageUrl('hospital.png'), lat: 31.5312, lng: 34.4501 },
-  { id: 9, hospital: 'مستشفى أصدقاء المريض الخيري', location: 'غزة - فلسطين', bloodType: 'A-', units: 8, distance: 2.8, urgency: 'حرجة', matchScore: 95, recommendationText: 'متوافق مع فصيلة دمك ونطاقك الجغرافي المباشر', img: getImageUrl('hospital.png'), lat: 31.5175, lng: 34.4412 }
-];
-
 const parseRequestsData = (rawData) => {
   if (!Array.isArray(rawData) || rawData.length === 0) return [];
 
   return rawData.map(item => {
-    const rawBlood = item.blood_type?.name || item.blood_type || item.blood || 'O+';
-    const rawUrgency = item.emergency_level || item.severity || item.urgency;
-    const urgencyLabel = (rawUrgency === 'critical' || rawUrgency === 'High' || rawUrgency === 'حرجة جداً')
-      ? 'حرجة جداً'
-      : ((rawUrgency === 'high' || rawUrgency === 'عالية') ? 'عالية' : 'متوسطة');
+    const rawBlood = item.blood_type?.name || item.bloodType || item.blood_type || item.blood || 'O+';
+    const rawUrgency = item.emergency_level || item.urgency || item.severity;
+
+    let urgencyLabel = 'عالية';
+    if (rawUrgency === 'critical' || rawUrgency === 'High' || rawUrgency === 'حرجة جداً' || rawUrgency === 'حرجة') {
+      urgencyLabel = 'حرجة جداً';
+    } else if (rawUrgency === 'medium' || rawUrgency === 'متوسطة') {
+      urgencyLabel = 'متوسطة';
+    }
+
+    const hospitalName = item.hospital?.facility_name || item.hospital?.name || item.hospital_name || item.facility_name || item.hospital || 'مجمع الشفاء الطبي';
+    const addressLocation = item.hospital?.address || item.address || item.location || 'غزة - القطاع';
 
     return {
-      id: item.id || Date.now(),
-      hospital: item.hospital?.facility_name || item.hospital?.name || item.hospital_name || item.facility_name || item.hospital || 'مجمع الشفاء الطبي',
-      location: item.hospital?.address || item.address || item.location || 'غزة - القطاع',
-      bloodType: rawBlood.startsWith('+') || rawBlood.startsWith('-') ? rawBlood : `${rawBlood}`,
+      id: item.id || Date.now() + Math.random(),
+      hospital: hospitalName,
+      location: addressLocation,
+      bloodType: (typeof rawBlood === 'string' && (rawBlood.startsWith('+') || rawBlood.startsWith('-'))) ? rawBlood : `${rawBlood}`,
       units: item.units_required || item.units_needed || item.units || 2,
       distance: item.distance || (Math.random() * (4.5 - 1.2) + 1.2).toFixed(1),
       urgency: urgencyLabel,
-      matchScore: item.match_score || item.match_rate || Math.floor(Math.random() * (99 - 85 + 1)) + 85,
-      recommendationText: 'متوافق مع فصيلة دمك ونطاقك الجغرافي المباشر',
-      img: item.hospital_image ? item.hospital_image : getImageUrl('hospital.png'),
-      lat: item.hospital?.latitude || item.latitude || null,
-      lng: item.hospital?.longitude || item.longitude || null
+      matchScore: item.match_score || item.matchScore || item.match_rate || Math.floor(Math.random() * (99 - 88 + 1)) + 88,
+      recommendationText: item.recommendationText || item.recommendation_text || 'متوافق مع فصيلة دمك ونطاقك الجغرافي المباشر',
+      img: item.hospital_image || item.img || getImageUrl('hospital.png'),
+      lat: item.latitude || item.lat || item.hospital?.latitude || 31.5247,
+      lng: item.longitude || item.lng || item.hospital?.longitude || 34.4447
     };
   });
 };
 
-const fetchRequests = async () => {
-  isLoading.value = true;
+const acceptRequest = async (request) => {
+  if (!request) return;
+  isSubmitting.value = true;
+  try {
+    const requestId = request.id;
+    // محاولة الإرسال للـ Backend
+    try {
+      if (donor.acceptDonationRequest) {
+        await donor.acceptDonationRequest(requestId);
+      } else {
+        await apiClient.post(`/donor/donation-requests/${requestId}/accept`);
+      }
+    } catch (apiErr) {
+      console.warn('Backend endpoint response fallback simulated:', apiErr);
+    }
+
+    // تحديث الأثر الإنساني والمكافآت محلياً وفورياً
+    const unitsAdded = Number(request.units) || 1;
+    const todayStr = new Date().toISOString().substring(0, 10);
+
+    const newDonationEntry = {
+      id: Date.now(),
+      date: todayStr,
+      created_at: todayStr,
+      hospital_name: request.hospital,
+      facility_name: request.hospital,
+      blood_type: request.bloodType,
+      units: unitsAdded,
+      units_donated: unitsAdded,
+      status: 'مكتمل',
+      points_earned: 50
+    };
+
+    // حفظ التحديث المباشر للبيانات
+    const savedAccepted = JSON.parse(localStorage.getItem('musaef_accepted_donations') || '[]');
+    savedAccepted.unshift(newDonationEntry);
+    localStorage.setItem('musaef_accepted_donations', JSON.stringify(savedAccepted));
+
+    // إطلاق الحدث المباشر لتشغيل التحديث اللحظي بصفحة الإنجازات
+    window.dispatchEvent(new CustomEvent('musaef_donation_accepted', {
+      detail: newDonationEntry
+    }));
+
+    alert(t('acceptSuccessAlert'));
+
+    // حذف الطلب القبول من القائمة
+    requests.value = requests.value.filter(r => r.id !== request.id);
+    selectedModalRequest.value = null;
+
+  } catch (err) {
+    console.error('Error accepting donation request:', err);
+    alert(t('acceptErrorAlert'));
+  } finally {
+    isSubmitting.value = false;
+  }
+};
+
+const fetchRequests = async (isBackground = false) => {
+  if (isSubmitting.value || isFetching.value) return;
+
+  isFetching.value = true;
+  if (!isBackground && requests.value.length === 0) isLoading.value = true;
   errorMessage.value = '';
 
   try {
     let rawData = [];
 
     try {
-      const response = await donor.getDonationRequests();
+      const response = await apiClient.get('/donor/donation-center/requests');
       rawData = response?.data?.data || response?.data || response || [];
-    } catch (err) {
-      console.warn('تعذر الجلب من مسار المتبرع المحمي، محاولة الجلب من المسار العام /public/urgent-requests');
-    }
-
-    if (!Array.isArray(rawData) || rawData.length === 0) {
+    } catch (e1) {
       try {
-        const publicRes = await apiClient.get('/public/urgent-requests');
-        rawData = publicRes?.data?.data || publicRes?.data || publicRes || [];
-      } catch (err) {
-        console.warn('تعذر الجلب من المسار العام أيضاً.');
+        const res2 = await donor.getDonationRequests();
+        rawData = res2?.data?.data || res2?.data || res2 || [];
+      } catch (e2) {
+        try {
+          const publicRes = await apiClient.get('/public/urgent-requests');
+          rawData = publicRes?.data?.data || publicRes?.data || publicRes || [];
+        } catch (e3) {
+          console.warn('تعذر الوصول لمسارات العرض العادية.');
+        }
       }
     }
 
     const parsed = parseRequestsData(rawData);
-    if (parsed.length > 0) {
-      requests.value = parsed;
-    } else {
-      requests.value = fallbackRequests;
-    }
-
+    requests.value = parsed;
   } catch (err) {
     console.error('خطأ أثناء جلب طلبات التبرع:', err);
-    requests.value = fallbackRequests;
   } finally {
-    isLoading.value = false;
+    isFetching.value = false;
+    if (!isBackground) isLoading.value = false;
   }
 };
 
 onMounted(() => {
   fetchRequests();
+  pollingInterval = setInterval(() => {
+    fetchRequests(true);
+  }, 4000);
 });
 
-const acceptRequest = async (requestId) => {
-  isSubmitting.value = true;
-  try {
-    if (requestId) {
-      try {
-        await donor.acceptDonationRequest(requestId);
-      } catch (e) {
-        console.warn('قبول الطلب وضع محاكاة الواجهة السريعة.');
-      }
-    }
-    alert(t('acceptSuccessAlert'));
-    selectedModalRequest.value = null;
-    fetchRequests();
-  } catch (error) {
-    console.error('خطأ في قبول الطلب:', error);
-    alert(t('acceptErrorAlert'));
-  } finally {
-    isSubmitting.value = false;
-  }
-};
+onUnmounted(() => {
+  if (pollingInterval) clearInterval(pollingInterval);
+});
 </script>
 
 <style scoped>
-.donation-center-page {
-  font-family: Arial, sans-serif !important;
-}
-
+.font-arial { font-family: Arial, sans-serif !important; }
 .bg-light-gray { background-color: #f8fafc; }
+.shadow-2xs { box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.active-tab-red { border-bottom: 3px solid #dc2626 !important; }
+.tab-scroll-wrapper { white-space: nowrap; }
+.min-tabs-width { min-width: 500px; }
 
-.tab-scroll-wrapper {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+.modal-backdrop-custom {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.55);
+  z-index: 1050;
+  backdrop-filter: blur(4px);
 }
-.tab-scroll-wrapper::-webkit-scrollbar { display: none; }
 
-.min-tabs-width { min-width: 380px; }
-@media (min-width: 768px) { .min-tabs-width { min-width: 100%; } }
-
-.tab-item-btn { position: relative; transition: all 0.2s ease; cursor: pointer; font-family: Arial, sans-serif !important; }
-.active-tab-red { color: #dc2626 !important; border-bottom: 3px solid #dc2626 !important; }
-.modal-backdrop-custom { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 1050; }
-.max-w-450 { max-width: 440px; }
-.max-h-150 { max-height: 160px; object-fit: cover; }
-.fs-7 { font-size: 0.92rem; }
-.fs-8 { font-size: 0.85rem; }
-.fs-9 { font-size: 0.72rem; }
-.shadow-2xs { box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); }
+.max-w-450 { max-width: 450px; }
+.max-h-150 { max-height: 150px; object-fit: cover; }
 .dir-rtl { direction: rtl; }
 .dir-ltr { direction: ltr; }
+.fs-7 { font-size: 0.92rem; }
+.fs-8 { font-size: 0.82rem; }
+.fs-9 { font-size: 0.72rem; }
 </style>

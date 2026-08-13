@@ -17,7 +17,7 @@ class UserFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'phone' => fake()->unique()->phoneNumber(), // توليد رقم هاتف عشوائي للطوارئ
-            'role' => fake()->randomElement(['donor', 'hospital']), // أدوار النظام القياسية
+            'role' => fake()->randomElement(['donor', 'hospital']), // أدوار النظام القياسي
             'is_active' => true,
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),

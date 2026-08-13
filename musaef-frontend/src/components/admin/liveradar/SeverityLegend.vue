@@ -27,23 +27,12 @@ const langStore = useLangStore();
 const currentLanguage = computed(() => langStore.currentLang);
 
 const dictionary = {
-  ar: {
-    title: 'مستوى الخطورة',
-    critical: 'حرجة',
-    medium: 'متوسطة',
-    low: 'منخفضة'
-  },
-  en: {
-    title: 'Severity Level',
-    critical: 'Critical',
-    medium: 'Medium',
-    low: 'Low'
-  }
+  ar: { title: 'مستوى الخطورة', critical: 'حرجة', medium: 'متوسطة', low: 'منخفضة' },
+  en: { title: 'Severity Level', critical: 'Critical', medium: 'Medium', low: 'Low' }
 };
 
 const t = (key) => dictionary[currentLanguage.value === 'en' ? 'en' : 'ar'][key] || key;
 
-// الضبط التلقائي لموقع مربع الدليل في الأسفل بحسب اللغة (يمين أو يسار)
 const positionStyle = computed(() => {
   return currentLanguage.value === 'en'
     ? { left: '12px', right: 'auto' }
@@ -54,33 +43,8 @@ const positionStyle = computed(() => {
 <style scoped>
 .fs-8 { font-size: 0.8rem; }
 .fs-9 { font-size: 0.72rem; }
-
-.dot-indicator {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  display: inline-block;
-  flex-shrink: 0;
-}
-
-@media (min-width: 768px) {
-  .dot-indicator {
-    width: 12px;
-    height: 12px;
-  }
-}
-
-.severity-legend-box {
-  border: 1px solid #e5e7eb;
-  bottom: 12px;
-  width: 120px;
-  z-index: 10;
-}
-
-@media (min-width: 768px) {
-  .severity-legend-box {
-    bottom: 24px;
-    width: 140px;
-  }
-}
+.dot-indicator { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+@media (min-width: 768px) { .dot-indicator { width: 12px; height: 12px; } }
+.severity-legend-box { border: 1px solid #e5e7eb; bottom: 12px; width: 120px; z-index: 10; }
+@media (min-width: 768px) { .severity-legend-box { bottom: 24px; width: 140px; } }
 </style>

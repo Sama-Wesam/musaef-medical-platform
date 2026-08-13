@@ -11,21 +11,30 @@ Artisan::command('inspire', function () {
 
 // ================== أوامر وجدولة منصة مسعف الأوتوماتيكية ==================
 
-// 1. تنظيف طلبات الطوارئ المنتهية الصلاحية كل 6 ساعات
-Schedule::command('emergencies:clean')->everySixHours();
+// 1. تنظيف طلبات الطوارئ منتهية الصلاحية (كل ساعة مع منع التداخل)
+Schedule::command('emergencies:clean')
+    ->hourly()
+    ->withoutOverlapping()
+    ->onOneServer();
 
-// 2. إرسال التقارير اليومية لجميع المدراء كل يوم الساعة 8 صباحاً
-Schedule::command('reports:send-daily')->dailyAt('08:00');
+// 2. إرسال التقارير اليومية لجميع المدراء صباحاً الساعة 06:00
+Schedule::command('reports:send-daily')
+    ->dailyAt('06:00')
+    ->withoutOverlapping()
+    ->appendOutputTo(storage_path('logs/daily_reports.log'));
 
-// 3. فحص مستويات مخزون الدم وإرسال التنبيهات للمستشفيات مرتين يومياً (الساعة 1 صباحاً و 1 ظهراً)
-Schedule::command('statistics:update-blood')->twiceDaily(1, 13);
+// 3. فحص مستويات مخزون الدم وإرسال التنبيهات (كل 6 ساعات)
+Schedule::command('statistics:update-blood')
+    ->everySixHours()
+    ->withoutOverlapping();
 
-// 4. تحديث التوقعات الذكية (AI Forecast) كل أسبوع لتوقع احتياجات المستشفيات
+// 4. تحديث التوقعات الذكية (AI Forecast) أسبوعياً يوم الأحد منتصف الليل
 Artisan::command('ai:forecast', function () {
-    $this->info('جاري تشغيل خوارزمية الذكاء الاصطناعي لتوقع احتياج الدم...');
-    // AIService لتوليد التقرير الأسبوعي
+    $this->info('جاري تشغيل خوارزمية الذكاء الاصطناعي لاحتياج المستشفيات...');
+    // AIService لتوليد التقرير الأسبوعي وتحليلات الخريطة الحرارية
     $this->info('تم التحديث بنجاح.');
 })->purpose('تحديث توقعات الذكاء الاصطناعي لاحتياج المستشفيات');
 
-// جدولة أمر الذكاء الاصطناعي ليعمل كل يوم أحد منتصف الليل
-Schedule::command('ai:forecast')->weeklyOn(0, '00:00');
+Schedule::command('ai:forecast')
+    ->weeklyOn(0, '00:00')
+    ->withoutOverlapping();

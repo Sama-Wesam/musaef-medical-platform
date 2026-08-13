@@ -16,7 +16,7 @@ class BloodRequestFactory extends Factory
         return [
             'hospital_id' => Hospital::factory(),
             'blood_type_id' => fake()->randomElement([1, 2, 3, 4, 5, 6, 7, 8]),
-            'units_required' => fake()->numberBetween(1, 15), // متوافق مع قيود الـ Validation والحد الأقصى
+            'units_required' => fake()->numberBetween(1, 15), // متوافق مع قيود الـ Validation والحد الأقصى[cite: 70]
             'emergency_level' => fake()->randomElement(['normal', 'high', 'critical']),
             'status' => fake()->randomElement(['pending', 'searching', 'accepted']),
         ];

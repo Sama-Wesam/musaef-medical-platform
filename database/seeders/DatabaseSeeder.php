@@ -11,13 +11,14 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // استدعاء ملفات الـ Seeders بالترتيب المنطقي لمنع أخطاء المفاتيح الأجنبية
+        // استدعاء ملفات الـ Seeders بالترتيب المنطقي الصحيح لمنع أخطاء المفاتيح الأجنبية وتجهيز رادار الطوارئ
         $this->call([
-            BloodTypeSeeder::class,   // 1. تهيئة فصائل الدم الثمانية
-            UserSeeder::class,        // 2. إنشاء حساب الأدمن
-            HospitalSeeder::class,    // 3. إنشاء المستشفيات وحساباتها
-            DonorSeeder::class,       // 4. إنشاء المتبرعين وتوزيعهُم في غزة
-            BloodRequestSeeder::class // 5. إطلاق النداءات والحالات الطارئة للحسابات
+            BloodTypeSeeder::class,      // 1. تهيئة فصائل الدم الثمانية
+            UserSeeder::class,           // 2. إنشاء حساب الأدمن الرئيسي
+            HospitalSeeder::class,       // 3. إنشاء المستشفيات وحساباتها الواقعية في قطاع غزة
+            DonorSeeder::class,          // 4. إنشاء المتبرعين وتوزيعهُم الجغرافي
+            BloodRequestSeeder::class,   // 5. إطلاق النداءات والحالات الطارئة النشطة للـ Polling
+            BloodInventorySeeder::class, // 6. تعبئة مخزون بنوك الدم بالأرقام الحقيقية لوحة التحكم
         ]);
     }
 }

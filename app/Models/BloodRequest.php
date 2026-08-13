@@ -2,10 +2,18 @@
 
 namespace App\Models;
 
+use App\Enums\EmergencyLevel;
+use App\Enums\RequestStatus;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class BloodRequest extends Model
 {
+    use HasFactory;
+
+    protected $table = 'blood_requests';
+
     protected $fillable = [
         'hospital_id',
         'blood_type_id',
@@ -14,31 +22,47 @@ class BloodRequest extends Model
         'status',
     ];
 
-    // المستشفى المنشئ للطلب
+    protected $casts = [
+        'hospital_id'     => 'integer',
+        'blood_type_id'   => 'integer',
+        'units_required'  => 'integer',
+    ];
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->whereIn('status', ['searching', 'pending', 'active', 'open']);
+    }
+
     public function hospital()
     {
         return $this->belongsTo(Hospital::class);
     }
 
-    // الفصيلة المطلوبة
     public function bloodType()
     {
         return $this->belongsTo(BloodType::class);
     }
 
-    // استجابات المتبرعين لهذا الطلب
     public function responses()
     {
-        return $this->hasMany(DonorResponse::class);
+        return $this->hasMany(DonorResponse::class, 'blood_request_id');
     }
 
-    // التبرعات التي تمت تلبية لهذا الطلب
+    public function donorResponses()
+    {
+        return $this->hasMany(DonorResponse::class, 'blood_request_id');
+    }
+
+    public function responders()
+    {
+        return $this->hasMany(DonorResponse::class, 'blood_request_id');
+    }
+
     public function donations()
     {
         return $this->hasMany(Donation::class);
     }
 
-    // نتائج المطابقة الذكية المرتبطة بالطلب
     public function matchingResults()
     {
         return $this->hasMany(MatchingResult::class);

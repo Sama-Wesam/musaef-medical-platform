@@ -25,11 +25,28 @@ class BloodRequestController extends Controller
     }
 
     /**
+     * ⚡ دالة مخصصة للـ Polling المباشر لطلبات التبرع النشطة
+     */
+    public function getLiveActiveRequests(Request $request)
+    {
+        $activeRequests = BloodRequest::with(['hospital:id,facility_name,address', 'bloodType:id,name'])
+            ->where('status', 'active')
+            ->latest()
+            ->take(10)
+            ->get();
+
+        return $this->successResponse([
+            'requests'  => $activeRequests,
+            'timestamp' => now()->toDateTimeString()
+        ], 'تم تحديث طلبات الدم الفعالة لحظياً');
+    }
+
+    /**
      * إنشاء طلب طارئ جديد للدم
      */
     public function store(Request $request)
     {
-        // 1. التعرف التلقائي وتحويل اسم الفصيلة النصي إلى blood_type_id 
+        // 1. التعرف التلقائي وتحويل اسم الفصيلة النصي إلى blood_type_id
         if (!$request->has('blood_type_id') && $request->has('blood_type')) {
             $bloodTypeName = trim($request->input('blood_type'));
             $bloodTypeRecord = BloodType::where('name', $bloodTypeName)

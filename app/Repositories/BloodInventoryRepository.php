@@ -3,9 +3,10 @@
 namespace App\Repositories;
 
 use App\Models\BloodInventory;
+use App\Repositories\Contracts\BloodInventoryRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 
-class BloodInventoryRepository
+class BloodInventoryRepository implements BloodInventoryRepositoryInterface
 {
     public function getInventoryForHospital(int $hospitalId): Collection
     {
@@ -14,6 +15,9 @@ class BloodInventoryRepository
             ->get();
     }
 
+    /**
+     * تحديث مخزون الدم باستخدام العمليات الحسابية الذرية
+     */
     public function updateInventory(int $hospitalId, int $bloodTypeId, int $units, string $operation = 'add'): bool
     {
         $inventory = BloodInventory::firstOrCreate(
@@ -22,14 +26,13 @@ class BloodInventoryRepository
         );
 
         if ($operation === 'add') {
-            $inventory->units_available += $units;
-        } elseif ($operation === 'sub' && $inventory->units_available >= $units) {
-            $inventory->units_available -= $units;
-        } else {
-            return false; // لا يمكن خصم كمية أكبر من المتاح
+            return (bool) $inventory->increment('units_available', $units, ['last_updated_at' => now()]);
         }
 
-        $inventory->last_updated_at = now();
-        return $inventory->save();
+        if ($operation === 'sub' && $inventory->units_available >= $units) {
+            return (bool) $inventory->decrement('units_available', $units, ['last_updated_at' => now()]);
+        }
+
+        return false;
     }
 }

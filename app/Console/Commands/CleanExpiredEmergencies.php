@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\BloodRequest;
-use Carbon\Carbon;
 
 class CleanExpiredEmergencies extends Command
 {
@@ -18,7 +17,7 @@ class CleanExpiredEmergencies extends Command
      * وصف الأمر
      * @var string
      */
-    protected $description = 'إلغاء طلبات الطوارئ التي انتهت مدة صلاحيتها ولم يتم تلبيتها.';
+    protected $description = 'إلغاء طلبات الطوارئ التي انتهت مدة صلاحيتها ولم يتم تلبيتها عبر استعلامات مباشرة لتحسين الأداء.';
 
     /**
      * تنفيذ الأمر
@@ -26,31 +25,28 @@ class CleanExpiredEmergencies extends Command
     public function handle()
     {
         $this->info('Starting to clean expired emergencies...');
-        
-        $expiredCount = 0;
-        
-        // جلب الطلبات المعلقة أو التي لا زالت قيد البحث
-        $requests = BloodRequest::whereIn('status', ['pending', 'searching'])->get();
 
-        foreach ($requests as $request) {
-            $hoursPassed = $request->created_at->diffInHours(Carbon::now());
-            $shouldCancel = false;
+        // إلغاء الحالات الحادة/الحرجة المنتهية بعد 24 ساعة بمختلف المسميات[cite: 19]
+        $critical = BloodRequest::whereIn('status', ['pending', 'searching'])
+            ->whereIn('emergency_level', ['critical', 'حرج', 'حادة', 'Critical', 'high_priority'])
+            ->where('created_at', '<=', now()->subHours(24))
+            ->update(['status' => 'cancelled']);
 
-            // تحديد مدة انتهاء الصلاحية بناءً على مستوى الطوارئ
-            if ($request->emergency_level === 'critical' && $hoursPassed > 24) {
-                $shouldCancel = true; // الحالات الحرجة تلغى أو تحدث بعد 24 ساعة
-            } elseif ($request->emergency_level === 'high' && $hoursPassed > 48) {
-                $shouldCancel = true;
-            } elseif ($request->emergency_level === 'normal' && $hoursPassed > 72) {
-                $shouldCancel = true;
-            }
+        // إلغاء الحالات العالية المنتهية بعد 48 ساعة بمختلف المسميات[cite: 19]
+        $high = BloodRequest::whereIn('status', ['pending', 'searching'])
+            ->whereIn('emergency_level', ['high', 'مرتفع', 'عالي', 'High'])
+            ->where('created_at', '<=', now()->subHours(48))
+            ->update(['status' => 'cancelled']);
 
-            if ($shouldCancel) {
-                $request->update(['status' => 'cancelled']);
-                $expiredCount++;
-            }
-        }
+        // إلغاء الحالات العادية المنتهية بعد 72 ساعة بمختلف المسميات[cite: 19]
+        $normal = BloodRequest::whereIn('status', ['pending', 'searching'])
+            ->whereIn('emergency_level', ['normal', 'عادي', 'متوسط', 'Medium', 'low', 'Low'])
+            ->where('created_at', '<=', now()->subHours(72))
+            ->update(['status' => 'cancelled']);
 
-        $this->info("تم بنجاح تنظيف وإلغاء {$expiredCount} طلب طوارئ منتهي الصلاحية.");
+        $totalExpired = $critical + $high + $normal;
+
+        $this->info("تم بنجاح تنظيف وإلغاء {$totalExpired} طلب طوارئ منتهي الصلاحية مباشرة.");
+        return 0;
     }
 }

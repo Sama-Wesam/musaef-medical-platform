@@ -48,9 +48,32 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 
-const currentLanguage = computed(() => localStorage.getItem('musaef_lang') || 'ar');
+defineProps({
+  selectedFilter: {
+    type: String,
+    default: 'all'
+  }
+});
+
+defineEmits(['update:selectedFilter', 'markAllAsRead']);
+
+const currentLanguage = ref(localStorage.getItem('musaef_lang') || 'ar');
+
+const updateLocale = () => {
+  currentLanguage.value = localStorage.getItem('musaef_lang') || 'ar';
+};
+
+onMounted(() => {
+  window.addEventListener('storage', updateLocale);
+  window.addEventListener('language-changed', updateLocale);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('storage', updateLocale);
+  window.removeEventListener('language-changed', updateLocale);
+});
 
 const translations = {
   ar: {
@@ -67,19 +90,7 @@ const translations = {
   }
 };
 
-const t = (key) => {
-  const lang = currentLanguage.value === 'en' ? 'en' : 'ar';
-  return translations[lang][key] || key;
-};
-
-defineProps({
-  selectedFilter: {
-    type: String,
-    default: 'all'
-  }
-});
-
-defineEmits(['update:selectedFilter', 'markAllAsRead']);
+const t = (key) => translations[currentLanguage.value === 'en' ? 'en' : 'ar'][key] || key;
 </script>
 
 <style scoped>

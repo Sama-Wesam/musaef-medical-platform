@@ -1,14 +1,9 @@
 import { defineStore } from 'pinia';
 import apiClient from '@/api/axios';
-import notificationApi from '@/api/notification';
 
 export const useNotificationStore = defineStore('notification', {
   state: () => ({
-    notifications: [
-      { id: 1, title: 'قام المتبرع احمد خالد بالاستجابة للنداء الطارئ رقم ER-2026-1847', desc: 'وهو في طريقة للمستشفى الان', time: 'منذ دقيقتين', read: false, type: 'emergency' },
-      { id: 2, title: 'تنبيه حرج: انخفض مخزون فصيلة الدم O- عن الحد الآمن', desc: 'يرجى إنشاء نداء استجابة فورية', time: 'منذ 10 دقائق', read: false, type: 'emergency' },
-      { id: 3, title: 'تم اعتماد وتوثيق أوراق المنشأة الطبية بنجاح', desc: 'من قبل بنك الدم المركزي', time: 'منذ 3 ساعات', read: true, type: 'general' }
-    ],
+    notifications: [], // تم جعلها تبدأ بمصفوفة فارغة لضمان عدم وجود إشعارات وهمية
     loading: false
   }),
 
@@ -17,21 +12,17 @@ export const useNotificationStore = defineStore('notification', {
   },
 
   actions: {
-    // 1. جلب قائمة الإشعارات من الباك إند ديناميكياً
     async fetchNotifications() {
       this.loading = true;
       try {
         const userRole = localStorage.getItem('user_role') || 'donor';
-        let response;
 
-        try {
-          response = await notificationApi.getNotifications();
-        } catch (e) {
-          response = await apiClient.get(`/${userRole}/notifications`);
-        }
+        // جلب الإشعارات عبر apiClient المعتمد مباشرة لتفادي مشاكل استيراد الملفات الفرعية
+        const response = await apiClient.get(`/${userRole}/notifications`);
 
         const list = Array.isArray(response) ? response : (response.data?.data || response.data || response.notifications || []);
-        if (Array.isArray(list) && list.length > 0) {
+
+        if (Array.isArray(list)) {
           this.notifications = list.map(item => ({
             id: item.id || Date.now(),
             title: item.data?.title || item.title || 'تنبيه جديد',
@@ -40,30 +31,27 @@ export const useNotificationStore = defineStore('notification', {
             read: Boolean(item.read_at || item.is_read || item.read),
             type: item.data?.type || item.type || 'emergency'
           }));
+        } else {
+          this.notifications = [];
         }
       } catch (err) {
-        console.warn('استخدام قائمة الإشعارات الافتراضية.');
+        console.warn('تعذر جلب الإشعارات حالياً، تم إرجاع قائمة فارغة.');
+        this.notifications = [];
       } finally {
         this.loading = false;
       }
     },
 
-    // 2. التأشير على جميع الإشعارات كمقروءة
     async markAllAsRead() {
       this.notifications.forEach(n => n.read = true);
       try {
         const userRole = localStorage.getItem('user_role') || 'donor';
-        try {
-          await notificationApi.markAsRead();
-        } catch (e) {
-          await apiClient.post(`/${userRole}/notifications/read-all`);
-        }
+        await apiClient.post(`/${userRole}/notifications/read-all`);
       } catch (err) {
         console.warn('تم تغيير حالة الإشعارات محلياً.');
       }
     },
 
-    // 3. التأشير على إشعار منفرد كمقروء
     async markAsRead(notificationId) {
       const notif = this.notifications.find(n => n.id === notificationId);
       if (notif) notif.read = true;
@@ -76,7 +64,6 @@ export const useNotificationStore = defineStore('notification', {
       }
     },
 
-    // 4. إدراج إشعار حي جديد مباشر
     addNotification(item) {
       this.notifications.unshift({
         id: item.id || Date.now(),

@@ -1,16 +1,13 @@
 <template>
   <div class="card border-0 shadow-sm rounded-4 overflow-hidden position-relative h-100 map-card" :dir="langStore.dir">
-    <!-- حاوية خريطة Leaflet التفاعلية -->
     <div id="hospitals-gaza-map" ref="mapContainer" class="w-100 h-100 min-map-height"></div>
 
-    <!-- مؤشر التحميل -->
     <div v-if="isLoading" class="map-loader position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center bg-white bg-opacity-75">
       <div class="spinner-border text-danger spinner-border-sm" role="status">
         <span class="visually-hidden">جاري تحميل خريطة التحليلات...</span>
       </div>
     </div>
 
-    <!-- شارة عنوان الخريطة -->
     <div
       class="position-absolute bg-white px-2.5 px-md-3 py-1.5 rounded-3 shadow-sm text-dark fw-bold fs-9 fs-md-8 title-badge"
       :class="langStore.isRtl ? 'badge-rtl' : 'badge-ltr'"
@@ -21,12 +18,17 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useLangStore } from '@/stores/langStore';
-import { useAnalyticsStore } from '@/stores/analyticsStore';
+
+const props = defineProps({
+  hospitalsData: {
+    type: Array,
+    default: () => []
+  }
+});
 
 const langStore = useLangStore();
-const analyticsStore = useAnalyticsStore();
 const currentLanguage = computed(() => langStore.currentLang);
 
 const mapContainer = ref(null);
@@ -43,7 +45,6 @@ const dictionary = {
 
 const t = (key) => dictionary[currentLanguage.value === 'en' ? 'en' : 'ar'][key] || key;
 
-// التحميل الديناميكي لسكربتات Leaflet
 const loadScript = (src) => {
   return new Promise((resolve, reject) => {
     if (document.querySelector(`script[src="${src}"]`)) {
@@ -75,7 +76,6 @@ const initMap = async () => {
 
     if (!mapContainer.value || !window.L) return;
 
-    // تهيئة الخريطة بمركز قطاع غزة
     mapInstance = window.L.map(mapContainer.value, {
       zoomControl: false,
       attributionControl: false
@@ -103,34 +103,38 @@ const renderHospitalsData = () => {
 
   markersGroup = window.L.layerGroup().addTo(mapInstance);
 
-  // مواضع المستشفيات الرئيسية في القطاع
-  const defaultHospitals = [
-    { name: 'مستشفى الشفاء', nameEn: 'Al-Shifa Hospital', lat: 31.514, lng: 34.448, need: 95 },
-    { name: 'مستشفى القدس', nameEn: 'Al-Quds Hospital', lat: 31.502, lng: 34.439, need: 88 },
-    { name: 'مستشفى ناصر', nameEn: 'Nasser Hospital', lat: 31.345, lng: 34.303, need: 82 },
-    { name: 'مستشفى الأوروبي', nameEn: 'European Hospital', lat: 31.301, lng: 34.332, need: 75 },
-    { name: 'مستشفى الأندونيسي', nameEn: 'Indonesian Hospital', lat: 31.543, lng: 34.498, need: 68 }
-  ];
+  const hospitalsList = (props.hospitalsData && props.hospitalsData.length > 0)
+    ? props.hospitalsData
+    : [
+        { name: 'مستشفى الشفاء', lat: 31.514, lng: 34.448, percent: 95 },
+        { name: 'مستشفى القدس', lat: 31.502, lng: 34.439, percent: 88 },
+        { name: 'مستشفى ناصر', lat: 31.345, lng: 34.303, percent: 82 },
+        { name: 'مستشفى الأوروبي', lat: 31.301, lng: 34.332, percent: 75 },
+        { name: 'مستشفى الأندونيسي', lat: 31.543, lng: 34.498, percent: 68 }
+      ];
 
   const heatData = [];
 
-  defaultHospitals.forEach((h) => {
-    const intensity = h.need / 100;
-    heatData.push([h.lat, h.lng, intensity]);
+  hospitalsList.forEach((h) => {
+    const lat = h.lat || 31.4;
+    const lng = h.lng || 34.4;
+    const need = h.percent || 50;
+    const intensity = need / 100;
+
+    heatData.push([lat, lng, intensity]);
 
     const customIcon = window.L.divIcon({
       className: 'hospital-ai-marker',
-      html: `<div class="hospital-pin-badge">${h.need}%</div>`,
+      html: `<div class="hospital-pin-badge">${need}%</div>`,
       iconSize: [32, 32],
       iconAnchor: [16, 16]
     });
 
-    const displayName = currentLanguage.value === 'en' ? h.nameEn : h.name;
-    const marker = window.L.marker([h.lat, h.lng], { icon: customIcon });
+    const marker = window.L.marker([lat, lng], { icon: customIcon });
     marker.bindPopup(`
       <div class="p-1 text-center">
-        <strong class="d-block text-dark fs-8 fw-bold">${displayName}</strong>
-        <span class="badge bg-danger text-white mt-1 fs-9">${t('needLevel')}: ${h.need}%</span>
+        <strong class="d-block text-dark fs-8 fw-bold">${h.name}</strong>
+        <span class="badge bg-danger text-white mt-1 fs-9">${t('needLevel')}: ${need}%</span>
       </div>
     `);
 
@@ -151,6 +155,10 @@ const renderHospitalsData = () => {
     }).addTo(mapInstance);
   }
 };
+
+watch(() => props.hospitalsData, () => {
+  renderHospitalsData();
+}, { deep: true });
 
 onMounted(() => {
   initMap();

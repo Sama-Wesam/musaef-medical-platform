@@ -2,7 +2,7 @@
   <div class="card border-0 shadow-sm p-3 rounded-4 bg-white" :class="currentLanguage === 'ar' ? 'dir-rtl text-end' : 'dir-ltr text-start'">
     <strong class="text-dark fs-8 d-block mb-2">{{ t('locationMap') }}</strong>
 
-    <!-- خريطة تفاعلية بالدوائر الحرارية بدلاً من iframe -->
+    <!-- خريطة تفاعلية بالدوائر الحرارية -->
     <div class="map-wrapper rounded-3 overflow-hidden border position-relative mb-3" style="height: 140px;">
       <div id="request-location-map" ref="mapContainer" class="w-100 h-100"></div>
 
@@ -18,18 +18,21 @@
     <div class="d-flex align-items-center gap-2">
       <button
         type="button"
-        @click="$emit('accept', requestId)"
-        class="btn btn-danger flex-fill rounded-3 py-2 fw-bold fs-8 text-nowrap shadow-2xs"
+        @click.stop="$emit('accept', requestId)"
+        :disabled="isProcessing"
+        class="btn btn-danger flex-fill rounded-3 py-2 fw-bold fs-8 text-nowrap shadow-2xs d-flex align-items-center justify-content-center gap-1"
       >
-        {{ t('acceptRequest') }}
+        <span v-if="isProcessing" class="spinner-border spinner-border-sm me-1" role="status"></span>
+        <span>{{ t('acceptRequest') }}</span>
       </button>
 
       <button
         type="button"
-        @click="$emit('reject', requestId)"
-        class="btn btn-outline-danger flex-fill rounded-3 py-2 fw-bold fs-8 text-nowrap"
+        @click.stop="$emit('reject', requestId)"
+        :disabled="isProcessing"
+        class="btn btn-outline-danger flex-fill rounded-3 py-2 fw-bold fs-8 text-nowrap d-flex align-items-center justify-content-center gap-1"
       >
-        {{ t('rejectRequest') }}
+        <span>{{ t('rejectRequest') }}</span>
       </button>
     </div>
   </div>
@@ -50,6 +53,10 @@ const props = defineProps({
   requestId: {
     type: [String, Number],
     default: null
+  },
+  isProcessing: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -136,7 +143,6 @@ const initMap = async () => {
 const updateMapContent = (lat, lng) => {
   if (!mapInstance || !window.L) return;
 
-  // 1. تحديث أو إضافة Marker
   if (markerInstance) {
     mapInstance.removeLayer(markerInstance);
   }
@@ -151,7 +157,6 @@ const updateMapContent = (lat, lng) => {
   markerInstance = window.L.marker([lat, lng], { icon: customIcon }).addTo(mapInstance);
   markerInstance.bindPopup(`<div class="fs-8 fw-bold text-danger text-center p-1">${t('emergencyLocation')}</div>`);
 
-  // 2. تحديث رسم الدوائر الحرارية Heatmap Overlay
   if (heatLayer) {
     mapInstance.removeLayer(heatLayer);
   }
@@ -180,7 +185,6 @@ const updateMapContent = (lat, lng) => {
   mapInstance.setView([lat, lng], 14);
 };
 
-// مراقبة تغيير الإحداثيات عند النقر على طلبات طوارئ مختلفة
 watch(() => [props.latitude, props.longitude], ([newLat, newLng]) => {
   if (newLat && newLng && mapInstance) {
     updateMapContent(parseFloat(newLat), parseFloat(newLng));
@@ -199,49 +203,18 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.fs-8 {
-  font-size: 0.8rem;
-}
-
-.map-wrapper {
-  border-color: #e2e8f0 !important;
-  z-index: 1;
-}
-
-.map-loader {
-  z-index: 10;
-}
-
-.dir-rtl {
-  direction: rtl;
-}
-
-.dir-ltr {
-  direction: ltr;
-}
-
-.shadow-2xs {
-  box-shadow: 0 1px 2px rgba(220, 53, 69, 0.15);
-}
-
-.btn-danger {
-  background-color: #dc3545;
-  border-color: #dc3545;
-}
-
-.btn-outline-danger {
-  color: #dc3545;
-  border-color: #dc3545;
-}
-
-.btn-outline-danger:hover {
-  background-color: #fee2e2;
-  color: #dc3545;
-}
+.fs-8 { font-size: 0.8rem; }
+.map-wrapper { border-color: #e2e8f0 !important; z-index: 1; }
+.map-loader { z-index: 10; }
+.dir-rtl { direction: rtl; }
+.dir-ltr { direction: ltr; }
+.shadow-2xs { box-shadow: 0 1px 2px rgba(220, 53, 69, 0.15); }
+.btn-danger { background-color: #dc3545; border-color: #dc3545; }
+.btn-outline-danger { color: #dc3545; border-color: #dc3545; }
+.btn-outline-danger:hover { background-color: #fee2e2; color: #dc3545; }
 </style>
 
 <style>
-/* تأثيرات الدبوس والتحذير المضيء على الخريطة الحرارية */
 .emergency-marker-pulse {
   width: 28px;
   height: 28px;

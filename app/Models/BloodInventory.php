@@ -2,28 +2,34 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class BloodInventory extends Model
 {
+    use HasFactory;
+
+    protected $table = 'blood_inventories';
+
     protected $fillable = [
         'hospital_id',
         'blood_type_id',
         'units_available',
-        'last_updated_at',
+        'min_threshold',
     ];
 
     protected $casts = [
-        'last_updated_at' => 'datetime',
+        'hospital_id'     => 'integer',
+        'blood_type_id'   => 'integer',
+        'units_available' => 'integer',
+        'min_threshold'   => 'integer',
     ];
 
-    // المستشفى صاحب المخزون
     public function hospital()
     {
         return $this->belongsTo(Hospital::class);
     }
 
-    // فصيلة الدم
     public function bloodType()
     {
         return $this->belongsTo(BloodType::class);

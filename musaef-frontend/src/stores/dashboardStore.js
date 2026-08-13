@@ -26,7 +26,7 @@ export const useDashboardStore = defineStore('dashboard', {
           this.kpiStats = { ...this.kpiStats, ...stats };
         }
       } catch (err) {
-        // الحفاظ على القيم التفاعلية الأولية
+        // الحفاظ على القيم الأولى عند أي تعذر
       } finally {
         this.loading = false;
       }

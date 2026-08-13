@@ -2,8 +2,7 @@
 
 namespace App\Services;
 
-use App\Repositories\EmergencyRepository;
-use App\Models\BloodRequest;
+use App\Repositories\Contracts\EmergencyRepositoryInterface;
 use App\Events\EmergencyCreated;
 use App\Events\EmergencyResolved;
 use App\Enums\RequestStatus;
@@ -12,46 +11,50 @@ use Exception;
 
 class EmergencyService
 {
-    protected $emergencyRepository;
-    protected $fraudDetectionAI;
+    public function __construct(
+        protected EmergencyRepositoryInterface $emergencyRepository,
+        protected FraudDetectionAI $fraudDetectionAI
+    ) {}
 
-    public function __construct(EmergencyRepository $emergencyRepository, FraudDetectionAI $fraudDetectionAI)
+    public function createEmergencyRequest(array $data, object $hospital)
     {
-        $this->emergencyRepository = $emergencyRepository;
-        $this->fraudDetectionAI = $fraudDetectionAI;
-    }
-
-    public function createEmergencyRequest(array $data, $hospital)
-    {
-        // 1. فحص الاحتيال بالذكاء الاصطناعي
         $fraudCheck = $this->fraudDetectionAI->analyzeRequest($data);
 
         if (isset($fraudCheck['is_fraud']) && $fraudCheck['is_fraud'] === true) {
             throw new Exception("تم حظر الطلب للاشتباه بسلوك غير معتاد (Spam).");
         }
 
-        // 2. إنشاء الطلب
+        $searchingStatus = defined('App\Enums\RequestStatus::SEARCHING') ? RequestStatus::SEARCHING->value : 'searching';
+
         $data['hospital_id'] = $hospital->id;
-        $data['status'] = RequestStatus::SEARCHING->value;
+        $data['status']      = $searchingStatus;
+
         $request = $this->emergencyRepository->createRequest($data);
 
-        // 3. إطلاق حدث الطوارئ (سيقوم بتشغيل AI المطابقة وإرسال الإشعارات)
         event(new EmergencyCreated($request));
 
         return $request;
     }
 
-    public function markAsCompleted(int $requestId)
+    public function markAsCompleted(int $requestId): bool
     {
         $request = $this->emergencyRepository->findById($requestId);
+        $completedStatus = defined('App\Enums\RequestStatus::COMPLETED') ? RequestStatus::COMPLETED->value : 'completed';
 
-        if ($request && $request->status !== RequestStatus::COMPLETED->value) {
-            $this->emergencyRepository->updateStatus($requestId, RequestStatus::COMPLETED->value);
+        // معالجة مرنة وشاملة لحالة الطلب سواء كانت Enum أو String
+        $currentStatus = match (true) {
+            $request?->status instanceof \UnitEnum => $request->status->value ?? $request->status->name,
+            is_object($request?->status) && method_exists($request->status, 'value') => $request->status->value,
+            default => (string) ($request?->status ?? ''),
+        };
 
-            // إخفاء الحالة من الخريطة المباشرة
+        if ($request && $currentStatus !== $completedStatus) {
+            $this->emergencyRepository->updateStatus($requestId, $completedStatus);
+
             event(new EmergencyResolved($request));
             return true;
         }
+
         return false;
     }
 }

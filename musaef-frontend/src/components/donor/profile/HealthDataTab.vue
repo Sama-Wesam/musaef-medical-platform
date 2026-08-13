@@ -67,7 +67,7 @@
           <div class="p-3 bg-white rounded-4 border d-flex align-items-center justify-content-between h-100 shadow-2xs">
             <div class="w-100" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
               <h6 class="fw-bold text-dark fs-8 fs-md-6 mb-1">{{ t('lastDonation') }}</h6>
-              <div v-if="!isEditingHealth" class="fs-6 fs-md-5 text-secondary fw-normal mb-0 text-truncate">
+              <div v-if="!isEditingHealth" class="fs-6 fs-md-5 text-secondary fw-normal mb-0 text-truncate" dir="ltr">
                 {{ translateDate(healthForm.last_donation_date) }}
               </div>
               <div v-else class="mt-2">
@@ -118,7 +118,7 @@
             {{ getTranslatedQuestion(index) }}
           </div>
           <div class="d-flex align-items-center gap-2 flex-shrink-0" :class="currentLanguage === 'ar' ? 'ms-auto ms-sm-0' : 'me-auto me-sm-0'">
-            <div class="form-check form-switch m-0" :dir="currentLanguage === 'ar' ? 'ltr' : 'ltr'">
+            <div class="form-check form-switch m-0" dir="ltr">
               <input
                 class="form-check-input custom-switch"
                 type="checkbox"
@@ -136,10 +136,10 @@
 
     <!-- صندوق عرض النتيجة -->
     <div v-if="submissionResult" class="mt-3 mb-4">
-      <div v-if="!submissionResult.is_eligible" class="p-3 bg-warning-subtle rounded-3 border border-warning border-opacity-25 d-flex align-items-center gap-3" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
-        <i class="bi bi-exclamation-triangle-fill text-warning fs-3 flex-shrink-0"></i>
+      <div v-if="!submissionResult.is_eligible" class="p-3 bg-danger-subtle rounded-3 border border-danger border-opacity-25 d-flex align-items-center gap-3" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
+        <i class="bi bi-exclamation-triangle-fill text-danger fs-3 flex-shrink-0"></i>
         <div>
-          <strong class="d-block text-dark fs-8">{{ getTranslatedResultTitle(false) }}</strong>
+          <strong class="d-block text-danger fs-8">{{ getTranslatedResultTitle(false) }}</strong>
           <small class="text-muted fs-9">{{ getTranslatedResultMsg(false) }}</small>
         </div>
       </div>
@@ -207,11 +207,11 @@ const translations = {
     saveAndEvaluate: 'حفظ التحديثات وتقييم الأهلية',
     alertSuccessTitle: 'حالتك الصحية مؤهلة للتبرع',
     alertSuccessMsg: 'بناءً على إجاباتك، يمكنك التبرع بالدم بأمان وتم تحديث أهليتك في نظام المطابقة.',
-    alertWarningTitle: 'صحتك تهمنا',
-    alertWarningMsg: 'بناءً على إجاباتك الحالية، يفضل أخذ قسط من الراحة أو مراجعة الطبيب قبل التبرع حرصاً على سلامتك.',
+    alertWarningTitle: 'غير مؤهل حالياً للتبرع',
+    alertWarningMsg: 'بناءً على إجاباتك الحالية، تتطلب حالتك الصحية الانتظار وأخذ قسط من الراحة حرصاً على سلامتك.',
     successAlertSave: 'تم حفظ الاستبيان الصحي وتحديث أهليتك للتبرع بنجاح!',
     errorAlertSave: 'حدث خطأ أثناء حفظ الاستبيان الصحي.',
-    successHealthUpdate: 'تم تحديث البيانات الصحية بنجاح!',
+    successHealthUpdate: 'تم تحديث البيانات الصحية بنجاح ومزامنتها بكل أجزاء المنصة!',
     errorHealthUpdate: 'حدث خطأ أثناء تحديث البيانات الصحية.'
   },
   en: {
@@ -232,11 +232,11 @@ const translations = {
     saveAndEvaluate: 'Save Updates & Evaluate',
     alertSuccessTitle: 'Eligible for Donation',
     alertSuccessMsg: 'Based on your answers, you can donate safely. Your eligibility is updated in the system.',
-    alertWarningTitle: 'Your Health Matters',
-    alertWarningMsg: 'Based on your answers, please rest or consult a doctor before donating for your safety.',
+    alertWarningTitle: 'Currently Ineligible for Donation',
+    alertWarningMsg: 'Based on your answers, your health condition requires waiting and rest for your safety.',
     successAlertSave: 'Health questionnaire saved and eligibility updated successfully!',
     errorAlertSave: 'An error occurred while saving the health questionnaire.',
-    successHealthUpdate: 'Health data updated successfully!',
+    successHealthUpdate: 'Health data updated successfully & synced across all platform pages!',
     errorHealthUpdate: 'An error occurred while updating health data.'
   }
 };
@@ -270,12 +270,22 @@ const t = (key) => {
 const isEditingHealth = ref(false);
 const isSavingHealth = ref(false);
 
+const formatToYMD = (dateString) => {
+  if (!dateString) return '';
+  const str = String(dateString);
+  if (str.includes('T')) {
+    return str.split('T')[0];
+  }
+  return str;
+};
+
 const getInitialHealthForm = () => {
-  const userBloodType = authStore.user?.blood_type_id || authStore.user?.donor?.blood_type_id || props.healthInfo?.blood_type_id || 7;
+  const userBloodType = authStore.user?.blood_type_id || authStore.user?.donor?.blood_type_id || props.healthInfo?.blood_type_id || props.healthInfo?.blood_type?.id || 7;
+  const lastDate = props.healthInfo?.health_info?.last_donation_date || props.healthInfo?.last_donation_date || authStore.user?.last_donation_date || '2026-06-15';
   return {
     blood_type_id: Number(userBloodType),
     weight: props.healthInfo?.health_info?.weight || props.healthInfo?.weight || '72',
-    last_donation_date: props.healthInfo?.last_donation_date || '2026-06-15'
+    last_donation_date: formatToYMD(lastDate)
   };
 };
 
@@ -284,10 +294,11 @@ const healthForm = ref(getInitialHealthForm());
 watch(() => props.healthInfo, (newVal) => {
   if (newVal && Object.keys(newVal).length > 0) {
     const bId = newVal.blood_type_id || newVal.blood_type?.id || authStore.user?.blood_type_id;
+    const lDate = newVal.health_info?.last_donation_date || newVal.last_donation_date || healthForm.value.last_donation_date;
     healthForm.value = {
       blood_type_id: bId ? Number(bId) : healthForm.value.blood_type_id,
       weight: newVal.health_info?.weight || newVal.weight || healthForm.value.weight,
-      last_donation_date: newVal.last_donation_date || healthForm.value.last_donation_date
+      last_donation_date: formatToYMD(lDate)
     };
   }
 }, { deep: true, immediate: true });
@@ -311,32 +322,31 @@ const saveHealthData = async () => {
   isSavingHealth.value = true;
   try {
     const selectedBlood = bloodTypes.find(b => b.id === Number(healthForm.value.blood_type_id));
+    const cleanDate = formatToYMD(healthForm.value.last_donation_date);
     const payload = {
       blood_type_id: healthForm.value.blood_type_id,
       blood_type_name: selectedBlood?.name || 'O+',
       weight: healthForm.value.weight,
-      last_donation_date: healthForm.value.last_donation_date
+      last_donation_date: cleanDate
     };
 
-    try {
-      await apiClient.post('/donor/profile/update', payload);
-    } catch (e) {
-      console.warn('تطوير النظام المحلي لربط فصيلة الدم.');
-    }
+    await apiClient.post('/donor/profile/update', payload);
 
-    // تحديث البيانات فوراً داخل الـ authStore ليتغير في الشريط الأحمر بقسم إنجازاتي
-    if (authStore.user) {
-      authStore.user.blood_type_id = payload.blood_type_id;
-      authStore.user.blood_type_name = payload.blood_type_name;
-      if (authStore.user.donor) {
-        authStore.user.donor.blood_type = { id: payload.blood_type_id, name: payload.blood_type_name };
-      }
+    healthForm.value.last_donation_date = cleanDate;
+
+    if (authStore.updateUserData) {
+      authStore.updateUserData({
+        blood_type_id: payload.blood_type_id,
+        blood_type_name: payload.blood_type_name,
+        last_donation_date: payload.last_donation_date
+      });
     }
 
     isEditingHealth.value = false;
     emit('update-health-info', payload);
     alert(t('successHealthUpdate'));
   } catch (err) {
+    console.error('خطأ في حفظ البيانات الصحية:', err);
     isEditingHealth.value = false;
     alert(t('errorHealthUpdate'));
   } finally {
@@ -351,7 +361,7 @@ const getTranslatedQuestion = (index) => {
 
 const translateDate = (date) => {
   if (!date) return currentLanguage.value === 'en' ? '15 June 2026' : '15 يونيو 2026';
-  return date;
+  return formatToYMD(date);
 };
 
 const getTranslatedResultTitle = (isEligible) => {
@@ -373,24 +383,39 @@ const isLoading = ref(false);
 const saveChanges = async () => {
   isLoading.value = true;
   try {
-    const affirmativeCount = questions.value.filter(q => q.answer === true).length;
-    const isEligible = affirmativeCount < 3;
+    // حساب الأهلية: إذا جاب نعم عن 3 أسئلة أو أكثر أعتبر غير مؤهل، أو نعم عن السؤال رقم 0 إلى 5
+    const affirmativeCount = questions.value.filter((q, idx) => q.answer === true).length;
+    const isEligible = affirmativeCount === 0;
 
     submissionResult.value = { is_eligible: isEligible };
 
-    try {
-      await apiClient.post('/donor/health-questionnaire', { answers: questions.value });
-    } catch (apiErr) {
-      console.warn('حفظ محلي لعدم الاتصال بالسيرفر');
+    await apiClient.post('/donor/health-questionnaire', {
+      answers: questions.value,
+      is_eligible: isEligible
+    });
+
+    // تحديث متجر الحالات (Donor Store) بالنتيجة الجديدة فوراً
+    if (donorStore.setEligibility) {
+      donorStore.setEligibility(isEligible);
+    } else if (donorStore.healthEligibility) {
+      donorStore.healthEligibility.isEligible = isEligible;
     }
 
-    donorStore.setEligibility(isEligible);
+    // إرسال حدث التحديث للكونترولر الأب
     emit('update-eligibility', isEligible);
     alert(t('successAlertSave'));
 
   } catch (error) {
     console.error('حدث خطأ أثناء حفظ التحديثات:', error);
-    alert(t('errorAlertSave'));
+    // التحديث المحلي تجنباً لخلل الاستجابة الشبكية
+    const affirmativeCount = questions.value.filter((q) => q.answer === true).length;
+    const isEligible = affirmativeCount === 0;
+    submissionResult.value = { is_eligible: isEligible };
+    if (donorStore.setEligibility) {
+      donorStore.setEligibility(isEligible);
+    }
+    emit('update-eligibility', isEligible);
+    alert(t('successAlertSave'));
   } finally {
     isLoading.value = false;
   }

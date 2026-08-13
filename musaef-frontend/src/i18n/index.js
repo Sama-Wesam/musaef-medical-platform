@@ -786,4 +786,23 @@ export const i18n = createI18n({
   messages
 });
 
+/**
+ * دالة مساعدة لتغيير اللغة حركياً وتحديث الاتجاه في DOM و LocalStorage
+ */
+export function setLanguage(lang) {
+  if (!['ar', 'en'].includes(lang)) return;
+
+  // 1. تحديث قيمة اللغة في i18n
+  i18n.global.locale.value = lang;
+
+  // 2. حفظ الخيار في LocalStorage
+  localStorage.setItem('musaef_lang', lang);
+
+  // 3. تحديث الاتجاه ولغة المستند
+  if (typeof document !== 'undefined') {
+    document.documentElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+    document.documentElement.setAttribute('lang', lang);
+  }
+}
+
 export default i18n;

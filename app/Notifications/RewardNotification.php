@@ -2,55 +2,42 @@
 
 namespace App\Notifications;
 
+use App\Models\Reward;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
-use App\Models\Reward;
 
 class RewardNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public $pointsEarned;
-    public $reward;
-    public $message;
+    public function __construct(
+        public int $pointsEarned,
+        public string $message,
+        public ?Reward $reward = null
+    ) {}
 
-    /**
-     * Create a new notification instance.
-     */
-    public function __construct(int $pointsEarned, string $message, ?Reward $reward = null)
-    {
-        $this->pointsEarned = $pointsEarned;
-        $this->message = $message;
-        $this->reward = $reward;
-    }
-
-    /**
-     * Get the notification's delivery channels.
-     */
     public function via(object $notifiable): array
     {
         return ['database'];
     }
 
-    /**
-     * Get the array representation of the notification.
-     */
     public function toArray(object $notifiable): array
     {
-        $title = $this->reward ? '🏆 حصلت على وسام جديد!' : '🎉 أحسنت صنعاً!';
-        $body = $this->message . " لقد حصلت على {$this->pointsEarned} نقطة.";
-
-        if ($this->reward) {
-            $body .= " وتم منحك وسام: {$this->reward->name}.";
-        }
+        $titleKey = $this->reward ? 'notifications.reward_badge_title' : 'notifications.reward_points_title';
+        $bodyKey = $this->reward ? 'notifications.reward_badge_body' : 'notifications.reward_points_body';
 
         return [
-            'title' => $title,
-            'body' => $body,
-            'type' => 'reward',
-            'points' => $this->pointsEarned,
-            'reward_id' => $this->reward ? $this->reward->id : null,
+            'title_key'   => $titleKey,
+            'body_key'    => $bodyKey,
+            'body_params' => [
+                'message'      => $this->message,
+                'points'       => $this->pointsEarned,
+                'reward_name'  => $this->reward?->name ?? ''
+            ],
+            'type'        => 'reward',
+            'points'      => $this->pointsEarned,
+            'reward_id'   => $this->reward?->id,
         ];
     }
 }

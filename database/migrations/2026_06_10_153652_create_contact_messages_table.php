@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->string('subject');
             $table->text('message');
-            $table->boolean('is_read')->default(false); // لمتابعة الإدارة للرسائل المقروءة
+            $table->boolean('is_read')->default(false)->index(); // فهرس لتسريع تنبيهات الإدارة للرسائل الجديدة
             $table->timestamps();
         });
     }

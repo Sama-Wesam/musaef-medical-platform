@@ -2,15 +2,21 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Notification extends Model
 {
+    use HasFactory;
+
+    protected $table = 'notifications';
+
     protected $fillable = [
         'user_id',
         'title',
         'body',
-        'type', // emergency, info, reward, system
+        'type', // emergency, info, reward, system, fraud_alert, warning
         'related_id',
         'related_type',
         'is_read',
@@ -22,15 +28,35 @@ class Notification extends Model
         'read_at' => 'datetime',
     ];
 
-    // المستخدم صاحب الإشعار
-    public function user()
+    /**
+     * تحديث حالة الإشعار إلى "مقروء" وتسجيل وقت القراءة
+     */
+    public function markAsRead(): void
     {
-        return $this->belongsTo(User::class);
+        $this->update([
+            'is_read' => true,
+            'read_at' => now(),
+        ]);
     }
 
-    // علاقة مرنة (Polymorphic) لربط الإشعار بطلب دم أو مكافأة
+    /**
+     * Scope لجلب الإشعارات غير المقروءة فقط
+     */
+    public function scopeUnread(Builder $query): Builder
+    {
+        return $query->where('is_read', false);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * علاقة متعددة الأشكال (Polymorphic)
+     */
     public function related()
     {
-        return $this->morphTo();
+        return $this->morphTo(__FUNCTION__, 'related_type', 'related_id');
     }
 }

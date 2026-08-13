@@ -12,15 +12,20 @@ class HospitalFactory extends Factory
 
     public function definition(): array
     {
+        $company = fake()->company();
+
         return [
-            'user_id'        => User::factory(['role' => 'hospital']),
-            'facility_name'  => 'مستشفى ' . fake()->company(),
-            'facility_type'  => 'مستشفى عام',
-            'license_number' => 'LIC-' . fake()->unique()->numberBetween(100000, 999999),
-            'address'        => fake()->address(),
-            'latitude'       => fake()->latitude(31.2, 31.6),
-            'longitude'      => fake()->longitude(34.2, 34.6),
-            'is_verified'    => true,
+            'user_id'          => User::factory(['role' => 'hospital']),
+            'facility_name'    => 'مستشفى ' . $company,
+            'facility_name_en' => $company . ' Hospital',
+            'facility_type'    => 'مستشفى عام',
+            'facility_type_en' => 'General Hospital',
+            'license_number'   => 'LIC-' . fake()->unique()->numberBetween(100000, 999999),
+            'address'          => fake()->address(),
+            'address_en'       => fake()->address(),
+            'latitude'         => fake()->latitude(31.2, 31.6),
+            'longitude'        => fake()->longitude(34.2, 34.6),
+            'is_verified'      => true,
         ];
     }
 }

@@ -9,7 +9,7 @@
         <div class="row g-0 align-items-center hero-row">
 
           <!-- النص الوصفي -->
-          <div class="col-lg-6 hero-content d-flex align-items-center justify-content-end px-3 px-md-5">
+          <div class="col-lg-6 hero-content d-flex align-items-center justify-end px-3 px-md-5">
             <div class="hero-text-wrapper">
               <h1 class="fw-bold hero-main-title text-dark mb-1">{{ $t('guide.heroTitle') }}</h1>
               <h2 class="fw-bold hero-sub-title text-danger mb-3">{{ $t('guide.heroSubtitle') }}</h2>
@@ -26,6 +26,7 @@
                 :src="getImageUrl('blood-types-hero.png')"
                 :alt="$t('guide.heroTitle')"
                 class="hero-guide-img"
+                loading="lazy"
                 @error="handleHeroFallback"
               />
             </div>
@@ -48,7 +49,7 @@
           <div class="col-12 col-lg-4 d-flex flex-column gap-3">
             <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white flex-fill d-flex flex-row align-items-center justify-content-start gap-3 text-start-dir">
               <div class="card-icon-box flex-shrink-0">
-                <img :src="getIconUrl('Frame 2147225421.png')" alt="Icon" class="icon-img" />
+                <img :src="getIconUrl('Frame 2147225421.png')" alt="Icon" class="icon-img" loading="lazy" />
               </div>
               <div class="text-start-dir">
                 <h6 class="fw-bold text-dark mb-1 fs-6">{{ $t('guide.donateCompatTitle') }}</h6>
@@ -58,7 +59,7 @@
 
             <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white flex-fill d-flex flex-row align-items-center justify-content-start gap-3 text-start-dir">
               <div class="card-icon-box flex-shrink-0">
-                <img :src="getIconUrl('streamline-sharp_blood-bag-donation-remix.png')" alt="Icon" class="icon-img" />
+                <img :src="getIconUrl('streamline-sharp_blood-bag-donation-remix.png')" alt="Icon" class="icon-img" loading="lazy" />
               </div>
               <div class="text-start-dir">
                 <h6 class="fw-bold text-dark mb-1 fs-6">{{ $t('guide.receiveCompatTitle') }}</h6>
@@ -153,7 +154,7 @@
                 </div>
               </div>
 
-              <!-- نتائج البحث -->
+              <!-- نتائج البحث القريبة -->
               <div v-if="isLoadingFacilities" class="text-center py-4 text-muted fs-8">
                 <div class="spinner-border spinner-border-sm text-danger me-2" role="status"></div>
                 {{ $t('guide.searching') }}
@@ -163,17 +164,34 @@
                 <div v-for="(center, idx) in localizedFacilities" :key="idx" class="col-12 col-md-4">
                   <div class="p-3 rounded-3 bg-light-gray border border-light-subtle text-start-dir h-100 d-flex flex-column justify-content-between">
                     <div>
-                      <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="badge bg-danger-subtle text-danger rounded-pill fs-8 px-2 py-1">{{ center.facility_type }}</span>
-                        <small class="text-muted fs-8"><i class="bi bi-clock me-1"></i>{{ center.eta_minutes }} {{ $t('guide.etaUnit') }}</small>
+                      <!-- رأس البطاقة -->
+                      <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-1">
+                        <span class="badge bg-danger-subtle text-danger rounded-pill fs-8 px-2 py-1 flex-shrink-0">
+                          {{ center.facility_type }}
+                        </span>
+                        <small class="text-muted fs-8 flex-shrink-0 ms-auto">
+                          <i class="bi bi-clock me-1"></i>{{ center.eta_minutes }} {{ $t('guide.etaUnit') || 'min' }}
+                        </small>
                       </div>
-                      <h6 class="fw-bold text-dark mb-1 fs-7">{{ center.facility_name }}</h6>
-                      <p class="text-muted fs-8 mb-2">{{ center.recommendation_message }}</p>
+
+                      <!-- اسم المستشفى ووصف التوصية -->
+                      <h6 class="fw-bold text-dark mb-1 fs-7 text-truncate" :title="center.facility_name">
+                        {{ center.facility_name }}
+                      </h6>
+                      <p class="text-muted fs-8 mb-2 lh-sm">
+                        {{ center.recommendation_message }}
+                      </p>
                     </div>
 
+                    <!-- أسفل البطاقة -->
                     <div class="pt-2 border-top border-light-subtle d-flex justify-content-between align-items-center">
-                      <small class="text-secondary fs-8"><i class="bi bi-droplet-fill text-danger me-1"></i>{{ $t('guide.available') }}: <strong>{{ center.available_units }} {{ $t('guide.unitsUnit') }}</strong></small>
-                      <small class="text-danger fw-bold fs-8"><i class="bi bi-cursor-fill me-1"></i>{{ center.distance_km }} {{ $t('guide.kmUnit') }}</small>
+                      <small class="text-secondary fs-8">
+                        <i class="bi bi-droplet-fill text-danger me-1"></i>
+                        {{ $t('guide.available') || 'Available' }}: <strong>{{ center.available_units }} {{ $t('guide.unitsUnit') || 'units' }}</strong>
+                      </small>
+                      <small class="text-danger fw-bold fs-8">
+                        <i class="bi bi-cursor-fill me-1"></i>{{ center.distance_km }} {{ $t('guide.kmUnit') || 'km' }}
+                      </small>
                     </div>
                   </div>
                 </div>
@@ -199,7 +217,7 @@
           <div class="col-12 col-md-4">
             <div class="p-4 bg-light-gray rounded-4 h-100 tip-card shadow-sm">
               <div class="tip-icon-box mb-3 mx-auto">
-                <img :src="getIconUrl('mdi_user.png')" alt="Icon" class="tip-icon-img" />
+                <img :src="getIconUrl('mdi_user.png')" alt="Icon" class="tip-icon-img" loading="lazy" />
               </div>
               <h5 class="fw-bold text-dark mb-2 fs-6">{{ $t('guide.tips.age.title') }}</h5>
               <p class="text-muted fs-7 mb-0 lh-lg">{{ $t('guide.tips.age.desc') }}</p>
@@ -209,7 +227,7 @@
           <div class="col-12 col-md-4">
             <div class="p-4 bg-light-gray rounded-4 h-100 tip-card shadow-sm">
               <div class="tip-icon-box mb-3 mx-auto">
-                <img :src="getIconUrl('game-icons_weight-scale.png')" alt="Icon" class="tip-icon-img" />
+                <img :src="getIconUrl('game-icons_weight-scale.png')" alt="Icon" class="tip-icon-img" loading="lazy" />
               </div>
               <h5 class="fw-bold text-dark mb-2 fs-6">{{ $t('guide.tips.weight.title') }}</h5>
               <p class="text-muted fs-7 mb-0 lh-lg">{{ $t('guide.tips.weight.desc') }}</p>
@@ -219,7 +237,7 @@
           <div class="col-12 col-md-4">
             <div class="p-4 bg-light-gray rounded-4 h-100 tip-card shadow-sm">
               <div class="tip-icon-box mb-3 mx-auto">
-                <img :src="getIconUrl('material-symbols_credit-card-clock-outline-rounded.png')" alt="Icon" class="tip-icon-img" />
+                <img :src="getIconUrl('material-symbols_credit-card-clock-outline-rounded.png')" alt="Icon" class="tip-icon-img" loading="lazy" />
               </div>
               <h5 class="fw-bold text-dark mb-2 fs-6">{{ $t('guide.tips.frequency.title') }}</h5>
               <p class="text-muted fs-7 mb-0 lh-lg">{{ $t('guide.tips.frequency.desc') }}</p>
@@ -283,7 +301,7 @@
           <div class="col-12 col-lg-6">
             <div class="bg-white p-3 p-md-4 rounded-4 shadow-sm h-100">
               <div class="d-flex align-items-center gap-3 mb-4 text-start-dir">
-                <img :src="getIconUrl('stash_headset-solid.png')" alt="Icon" class="support-icon-img" />
+                <img :src="getIconUrl('stash_headset-solid.png')" alt="Icon" class="support-icon-img" loading="lazy" />
                 <div>
                   <h6 class="fw-bold text-dark mb-1">{{ $t('guide.contactHeading') }}</h6>
                   <small class="text-muted fs-8">{{ $t('guide.contactSubheading') }}</small>
@@ -291,6 +309,11 @@
               </div>
 
               <form @submit.prevent="handleSubmit">
+                <!-- Honeypot Field -->
+                <div style="display:none;">
+                  <input type="text" v-model="contactForm.website_hp" />
+                </div>
+
                 <div class="mb-3">
                   <input
                     type="text"
@@ -356,11 +379,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUpdated } from 'vue'
+import { ref, computed, onMounted, onUpdated, defineAsyncComponent } from 'vue'
 import { useI18n } from 'vue-i18n'
 import apiClient from '@/api/axios'
 import Navbar from '@/components/common/Navbar.vue'
-import Footer from '@/components/common/Footer.vue'
+
+const Footer = defineAsyncComponent(() => import('@/components/common/Footer.vue'))
 
 const { locale, te, t } = useI18n()
 const currentLanguage = computed(() => locale.value || 'ar')
@@ -422,7 +446,6 @@ const defaultFacilitiesKeys = [
   {
     facility_type_key: 'guide.facilities.f1.type',
     facility_name_key: 'guide.facilities.f1.name',
-    rec_key: 'guide.facilities.f1.rec',
     default_type: 'مستشفى حكومي',
     default_name: 'مجمع الشفاء الطبي',
     eta_minutes: 5,
@@ -432,7 +455,6 @@ const defaultFacilitiesKeys = [
   {
     facility_type_key: 'guide.facilities.f2.type',
     facility_name_key: 'guide.facilities.f2.name',
-    rec_key: 'guide.facilities.f2.rec',
     default_type: 'بنك دم مركزي',
     default_name: 'جمعية بنك الدم المركزي',
     eta_minutes: 9,
@@ -442,7 +464,6 @@ const defaultFacilitiesKeys = [
   {
     facility_type_key: 'guide.facilities.f3.type',
     facility_name_key: 'guide.facilities.f3.name',
-    rec_key: 'guide.facilities.f3.rec',
     default_type: 'مستشفى أهلي',
     default_name: 'بنك الدم المركزي - وزارة الصحة',
     eta_minutes: 12,
@@ -453,20 +474,22 @@ const defaultFacilitiesKeys = [
 
 const localizedFacilities = computed(() => {
   const isEn = currentLanguage.value === 'en'
+  let list = []
 
-  if (nearbyFacilities.value.length === 0) {
-    return defaultFacilitiesKeys.map(item => {
+  // ضمان تحويل القيمة لمصفوفة سليمة لمنع أخطاء .map()
+  const safeFacilities = Array.isArray(nearbyFacilities.value) ? nearbyFacilities.value : []
+
+  if (safeFacilities.length === 0) {
+    list = defaultFacilitiesKeys.map(item => {
       let type = te(item.facility_type_key) ? t(item.facility_type_key) : item.default_type
       let name = te(item.facility_name_key) ? t(item.facility_name_key) : item.default_name
-      let rec = te(item.rec_key) ? t(item.rec_key, { bloodType: selectedBloodType.value, count: item.available_units, eta: item.eta_minutes }) : ''
+      let rec = ''
 
       if (isEn) {
         type = facilityTranslationMap[type] || type
         name = facilityTranslationMap[name] || name
-        if (!rec || !te(item.rec_key)) {
-          rec = `Recommended: Highest compatibility for ${selectedBloodType.value} (${item.available_units} units available).`
-        }
-      } else if (!rec) {
+        rec = `Recommended: Highest compatibility for ${selectedBloodType.value} (${item.available_units} units available).`
+      } else {
         rec = `يوصى به: الأعلى ملاءمة لفصيلة ${selectedBloodType.value} (متوفر ${item.available_units} وحدة).`
       }
 
@@ -479,30 +502,37 @@ const localizedFacilities = computed(() => {
         distance_km: item.distance_km
       }
     })
+  } else {
+    list = safeFacilities.map(item => {
+      let type = item.facility_type || item.type || ''
+      let name = item.facility_name || item.name || ''
+      let rec = item.recommendation_message || ''
+
+      if (isEn) {
+        type = item.facility_type_en || facilityTranslationMap[type] || type
+        name = item.facility_name_en || facilityTranslationMap[name] || name
+        if (item.recommendation_message_en) {
+          rec = item.recommendation_message_en
+        } else if (!rec || /[\u0600-\u06FF]/.test(rec)) {
+          rec = `Recommended: Highest compatibility for ${selectedBloodType.value} (${item.available_units || 0} units available).`
+        }
+      } else {
+        if (!rec || !/[\u0600-\u06FF]/.test(rec)) {
+          rec = `يوصى به: الأعلى ملاءمة لفصيلة ${selectedBloodType.value} (متوفر ${item.available_units || 0} وحدة).`
+        }
+      }
+
+      return {
+        ...item,
+        facility_type: type,
+        facility_name: name,
+        recommendation_message: rec
+      }
+    })
   }
 
-  return nearbyFacilities.value.map(item => {
-    let type = item.facility_type || item.type || ''
-    let name = item.facility_name || item.name || ''
-    let rec = item.recommendation_message || ''
-
-    if (isEn) {
-      type = item.facility_type_en || facilityTranslationMap[type] || type
-      name = item.facility_name_en || facilityTranslationMap[name] || name
-      if (item.recommendation_message_en) {
-        rec = item.recommendation_message_en
-      } else if (rec.includes('يوصى به')) {
-        rec = `Recommended: Highest compatibility for ${selectedBloodType.value} (${item.available_units || 0} units available).`
-      }
-    }
-
-    return {
-      ...item,
-      facility_type: type,
-      facility_name: name,
-      recommendation_message: rec
-    }
-  })
+  // تحديد الحد الأقصى للعرض بـ 3 بطاقات فقط
+  return list.slice(0, 3)
 })
 
 const searchNearbyFacilities = async () => {
@@ -532,13 +562,40 @@ const searchNearbyFacilities = async () => {
 }
 
 const fetchFacilitiesApi = async (lat, lng) => {
+  const cacheKey = `facilities_cache_${selectedBloodType.value}_${currentLanguage.value}`
   try {
     const res = await apiClient.get('/public/nearby-facilities', {
       params: { lat, lng, blood_type: selectedBloodType.value }
     })
-    const data = Array.isArray(res) ? res : (res?.data || [])
+
+    // استخراج مصفوفة المراكز بدقة متوافقة مع جميع أشكال الاستجابات
+    let data = []
+    if (Array.isArray(res)) {
+      data = res
+    } else if (res && res.data) {
+      if (Array.isArray(res.data)) {
+        data = res.data
+      } else if (res.data.data && Array.isArray(res.data.data)) {
+        data = res.data.data
+      }
+    }
+
     nearbyFacilities.value = data
+    if (data.length > 0) {
+      localStorage.setItem(cacheKey, JSON.stringify(data))
+    }
   } catch (err) {
+    const cachedData = localStorage.getItem(cacheKey)
+    if (cachedData) {
+      try {
+        const parsed = JSON.parse(cachedData)
+        nearbyFacilities.value = Array.isArray(parsed) ? parsed : []
+      } catch (e) {
+        nearbyFacilities.value = []
+      }
+    } else {
+      nearbyFacilities.value = []
+    }
   } finally {
     isLoadingFacilities.value = false
   }
@@ -568,14 +625,24 @@ const contactForm = ref({
   name: '',
   email: '',
   subject: '',
-  message: ''
+  message: '',
+  website_hp: ''
 })
 
 const isSubmitting = ref(false)
+const lastSubmitTime = ref(0)
 const successMessage = ref('')
 const errorMessage = ref('')
 
 const handleSubmit = async () => {
+  if (contactForm.value.website_hp) return;
+
+  const now = Date.now()
+  if (now - lastSubmitTime.value < 10000) {
+    errorMessage.value = t('guide.contactForm.rateLimitMsg') || 'الرجاء الانتظار قليلاً قبل إعادة الإرسال.'
+    return
+  }
+
   isSubmitting.value = true
   successMessage.value = ''
   errorMessage.value = ''
@@ -583,7 +650,8 @@ const handleSubmit = async () => {
   try {
     const res = await apiClient.post('/public/contact', contactForm.value)
     successMessage.value = res?.message || t('guide.contactForm.successMsg')
-    contactForm.value = { name: '', email: '', subject: '', message: '' }
+    contactForm.value = { name: '', email: '', subject: '', message: '', website_hp: '' }
+    lastSubmitTime.value = Date.now()
   } catch (error) {
     errorMessage.value = error?.message || error?.response?.data?.message || t('guide.contactForm.errorMsg')
   } finally {

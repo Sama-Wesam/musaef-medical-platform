@@ -9,19 +9,19 @@ trait ApiResponseTrait
     /**
      * إرجاع استجابة نجاح (Success Response)
      */
-    public function successResponse($data = null, string $message = 'تمت العملية بنجاح', int $statusCode = 200): JsonResponse
+    public function successResponse(mixed $data = null, string $message = 'تمت العملية بنجاح', int $statusCode = 200): JsonResponse
     {
         return response()->json([
             'success' => true,
             'message' => $message,
-            'data'    => $data
+            'data'    => $data,
         ], $statusCode, [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 
     /**
      * إرجاع استجابة خطأ (Error Response)
      */
-    public function errorResponse(string $message = 'حدث خطأ ما', int $statusCode = 400, $errors = []): JsonResponse
+    public function errorResponse(string $message = 'حدث خطأ ما', int $statusCode = 400, mixed $errors = []): JsonResponse
     {
         $response = [
             'success' => false,

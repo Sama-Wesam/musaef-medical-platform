@@ -5,7 +5,7 @@
       <!-- الهيدر الخاص بالصفحة -->
       <div class="d-flex justify-content-between align-items-center mb-3 mb-md-4 flex-wrap gap-2">
         <div :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
-          <h5 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2 fs-6 fs-md-5" :class="currentLanguage === 'ar' ? 'justify-content-start' : 'justify-content-start'">
+          <h5 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2 fs-6 fs-md-5">
             <img src="@/assets/icons/solar_bell-outline.png" alt="bell" width="24" height="24" class="header-icon" />
             <span>{{ t('pageTitle') }}</span>
           </h5>
@@ -13,6 +13,9 @@
             {{ t('pageSubtitle') }}
           </p>
         </div>
+        <button class="btn btn-sm btn-light border rounded-pill px-3" @click="fetchNotifications(false)">
+          🔄 {{ currentLanguage === 'en' ? 'Refresh' : 'تحديث' }}
+        </button>
       </div>
 
       <!-- مكون أزرار الفلترة -->
@@ -22,7 +25,7 @@
       />
 
       <!-- مؤشر التحميل -->
-      <div v-if="loading" class="text-center py-5">
+      <div v-if="loading && notificationsList.length === 0" class="text-center py-5">
         <div class="spinner-border text-danger" role="status">
           <span class="visually-hidden">{{ t('loading') }}</span>
         </div>
@@ -33,6 +36,9 @@
         v-else
         :items="filteredNotifications"
         :emptyText="emptyMessageText"
+        @markRead="handleMarkSingleAsRead"
+        @delete="handleDeleteNotification"
+        @itemClick="handleNotificationClick"
       />
 
     </div>
@@ -40,143 +46,148 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
 import HospitalLayout from '@/layouts/HospitalLayout.vue';
 import NotificationFilters from '@/components/hospital/notifications/NotificationFilters.vue';
 import NotificationList from '@/components/hospital/notifications/NotificationList.vue';
 import apiClient from '@/api/axios';
 
+const router = useRouter();
 const loading = ref(false);
 const selectedFilter = ref('all');
-const currentLanguage = computed(() => localStorage.getItem('musaef_lang') || 'ar');
+const notificationsList = ref([]);
+const currentLanguage = ref(localStorage.getItem('musaef_lang') || 'ar');
+let notificationsPolling = null;
+
+const updateLocale = () => {
+  currentLanguage.value = localStorage.getItem('musaef_lang') || 'ar';
+};
 
 const translations = {
   ar: {
     pageTitle: 'مركز الإشعارات والتنبيهات والذكاء الاصطناعي',
     pageSubtitle: 'متابعة نداءات الاستجابة الفورية، رصد الأنشطة المشبوهة (Fraud Detection AI)، وتحديثات مخزون الدم',
-    loading: 'جاري التحميل...',
+    loading: 'جاري تحميل الإشعارات...',
     emptyAlertsText: 'لا توجد تنبيهات عاجلة أو أمنية لعرضها حالياً',
+    emptyUnreadText: 'لا توجد إشعارات غير مقروءة حالياً',
     emptyAllText: 'لا توجد إشعارات لعرضها حالياً'
   },
   en: {
     pageTitle: 'Notifications, Alerts & AI Center',
     pageSubtitle: 'Track real-time responses, Fraud Detection AI alerts, and blood inventory updates',
-    loading: 'Loading...',
+    loading: 'Loading notifications...',
     emptyAlertsText: 'No urgent or security alerts to display currently',
+    emptyUnreadText: 'No unread notifications currently',
     emptyAllText: 'No notifications to display currently'
   }
 };
 
-const t = (key) => {
-  const lang = currentLanguage.value === 'en' ? 'en' : 'ar';
-  return translations[lang][key] || key;
-};
-
-const rawNotificationsList = ref([
-  {
-    id: 1,
-    type: 'success',
-    titleKey: 'notif1Title',
-    descKey: 'notif1Desc',
-    timeKey: 'time2Mins',
-    read: false
-  },
-  {
-    id: 2,
-    type: 'emergency',
-    titleKey: 'notif2Title',
-    descKey: 'notif2Desc',
-    timeKey: 'time15Mins',
-    read: false
-  },
-  {
-    id: 3,
-    type: 'alert',
-    titleKey: 'notif3Title',
-    descKey: 'notif3Desc',
-    timeKey: 'time1Hour',
-    read: true
-  }
-]);
-
-const notifDict = {
-  ar: {
-    notif1Title: 'استجابة متبرع (Response Prediction AI)',
-    notif1Desc: 'قام المتبرع أحمد خالد بالاستجابة لنداء الطوارئ لفصيلة O- وهو في طريقه للمستشفى (وصول مقدر خلال 4 دقائق).',
-    notif2Title: 'تحذير أمني ونشاط مشبوه (Fraud Detection AI)',
-    notif2Desc: 'تم رصد محاولة متكررة لإرسال طلبات دم مكثفة من قبل جهة غير مألوفة، قام النظام بحظر الطلب مؤقتاً للمراجعة.',
-    notif3Title: 'تنبيه انخفاض مخزون الدم',
-    notif3Desc: 'وصل مخزون فصيلة الدم -O إلى حد حرج (وحدتان متوفرتان فقط)، يرجى اتخاذ الإجراء اللازم.',
-    time2Mins: 'منذ دقيقتين',
-    time15Mins: 'منذ 15 دقيقة',
-    time1Hour: 'منذ ساعة'
-  },
-  en: {
-    notif1Title: 'Donor Response (Response Prediction AI)',
-    notif1Desc: 'Donor Ahmed Khaled responded to O- emergency call and is on his way to the hospital (Estimated arrival in 4 mins).',
-    notif2Title: 'Security Warning & Suspicious Activity (Fraud Detection AI)',
-    notif2Desc: 'Repeated attempt to send intensive blood requests from an unfamiliar source detected; request temporarily blocked.',
-    notif3Title: 'Low Blood Inventory Alert',
-    notif3Desc: 'Blood type O- stock reached a critical limit (2 units only available), please take necessary action.',
-    time2Mins: '2 mins ago',
-    time15Mins: '15 mins ago',
-    time1Hour: '1 hour ago'
-  }
-};
-
-const localizedNotifications = computed(() => {
-  const lang = currentLanguage.value === 'en' ? 'en' : 'ar';
-  return rawNotificationsList.value.map(n => ({
-    ...n,
-    title: notifDict[lang][n.titleKey] || n.titleKey,
-    desc: notifDict[lang][n.descKey] || n.descKey,
-    time: notifDict[lang][n.timeKey] || n.timeKey
-  }));
-});
+const t = (key) => translations[currentLanguage.value === 'en' ? 'en' : 'ar'][key] || key;
 
 const filteredNotifications = computed(() => {
-  if (selectedFilter.value === 'unread') {
-    return localizedNotifications.value.filter(n => !n.read);
-  }
-  if (selectedFilter.value === 'alerts') {
-    return localizedNotifications.value.filter(n => n.type === 'emergency' || n.type === 'alert');
-  }
-  return localizedNotifications.value;
+  return notificationsList.value.filter(item => {
+    const isUnread = item.is_read === false || item.read === false;
+    const isAlert = ['emergency', 'danger', 'alert', 'warning', 'fraud', 'critical', 'fraud_alert', 'response_prediction'].includes(String(item.type).toLowerCase());
+
+    if (selectedFilter.value === 'unread') {
+      return isUnread;
+    }
+    if (selectedFilter.value === 'alerts') {
+      return isAlert;
+    }
+    return true;
+  });
 });
 
 const emptyMessageText = computed(() => {
-  if (selectedFilter.value === 'alerts') {
-    return t('emptyAlertsText');
-  }
+  if (selectedFilter.value === 'alerts') return t('emptyAlertsText');
+  if (selectedFilter.value === 'unread') return t('emptyUnreadText');
   return t('emptyAllText');
 });
 
-const handleMarkAllAsRead = async () => {
-  rawNotificationsList.value.forEach(n => n.read = true);
-  try {
-    await apiClient.patch('/hospital/notifications/read-all');
-  } catch (err) {
-    console.warn('تم التحديث محلياً');
-  }
-};
-
-const fetchNotifications = async () => {
-  loading.value = true;
+const fetchNotifications = async (showLoading = true) => {
+  if (showLoading) loading.value = true;
   try {
     const res = await apiClient.get('/hospital/notifications');
-    const data = res?.data?.data || res?.data || [];
-    if (Array.isArray(data) && data.length > 0) {
-      rawNotificationsList.value = data;
+    let data = res?.data?.data || res?.data || [];
+
+    if (Array.isArray(data)) {
+      notificationsList.value = data.map(item => ({
+        id: item.id,
+        type: item.type || 'info',
+        title: item.title || item.title_ar || item.title_en || '',
+        title_ar: item.title_ar || item.title,
+        title_en: item.title_en || item.title,
+        desc: item.description || item.desc || item.body || item.message || '',
+        description_ar: item.description_ar || item.desc || item.body || item.message,
+        description_en: item.description_en || item.desc || item.body || item.message,
+        is_read: item.is_read !== undefined ? Boolean(item.is_read) : (item.read !== undefined ? Boolean(item.read) : false),
+        created_at: item.created_at || new Date().toISOString(),
+        action_url: item.action_url || item.url || null
+      }));
     }
   } catch (err) {
-    console.warn('استخدام إشعارات الذكاء الاصطناعي الافتراضية');
+    console.error('خطأ أثناء جلب الإشعارات:', err);
   } finally {
     loading.value = false;
   }
 };
 
+const handleMarkSingleAsRead = async (id) => {
+  const target = notificationsList.value.find(n => n.id === id);
+  if (target) {
+    target.is_read = true;
+    target.read = true;
+  }
+  try {
+    await apiClient.patch(`/hospital/notifications/${id}/read`);
+  } catch (err) {
+    console.warn(`تعذر المزامنة مع السيرفر للإشعار ${id}`);
+  }
+};
+
+const handleMarkAllAsRead = async () => {
+  notificationsList.value.forEach(n => {
+    n.is_read = true;
+    n.read = true;
+  });
+  try {
+    await apiClient.patch('/hospital/notifications/read-all');
+  } catch (err) {
+    console.warn('تعذر المزامنة الكاملة مع السيرفر');
+  }
+};
+
+const handleDeleteNotification = async (id) => {
+  notificationsList.value = notificationsList.value.filter(n => n.id !== id);
+  try {
+    await apiClient.delete(`/hospital/notifications/${id}`);
+  } catch (err) {
+    console.warn(`تعذر حذف الإشعار ${id} من السيرفر`);
+  }
+};
+
+const handleNotificationClick = (item) => {
+  if (item.action_url) {
+    router.push(item.action_url);
+  }
+};
+
 onMounted(() => {
-  fetchNotifications();
+  window.addEventListener('storage', updateLocale);
+  window.addEventListener('language-changed', updateLocale);
+  fetchNotifications(true);
+
+  notificationsPolling = setInterval(() => {
+    fetchNotifications(false);
+  }, 5000);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('storage', updateLocale);
+  window.removeEventListener('language-changed', updateLocale);
+  if (notificationsPolling) clearInterval(notificationsPolling);
 });
 </script>
 

@@ -3,13 +3,11 @@
 namespace App\Repositories;
 
 use App\Models\MatchingResult;
+use App\Repositories\Contracts\AIRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 
-class AIRepository
+class AIRepository implements AIRepositoryInterface
 {
-    /**
-     * حفظ نتائج المطابقة في قاعدة البيانات باستخدام Bulk Insert
-     */
     public function saveMatchingResults(array $results): bool
     {
         if (empty($results)) {
@@ -19,9 +17,6 @@ class AIRepository
         return MatchingResult::insert($results);
     }
 
-    /**
-     * جلب أعلى نتائج المطابقة لطلب محدد
-     */
     public function getTopMatchesForRequest(int $requestId, int $limit = 10): Collection
     {
         return MatchingResult::with(['donor.user', 'donor.bloodType'])
@@ -31,9 +26,6 @@ class AIRepository
             ->get();
     }
 
-    /**
-     * تحديث حالة النتيجة إلى تم الإشعار
-     */
     public function markMatchAsNotified(int $matchId): bool
     {
         $match = MatchingResult::find($matchId);
@@ -43,9 +35,6 @@ class AIRepository
         return false;
     }
 
-    /**
-     * مسح النتائج القديمة لنفس الطلب في حال تم إعادة تشغيل الخوارزمية
-     */
     public function clearOldResults(int $requestId): bool
     {
         MatchingResult::where('blood_request_id', $requestId)->delete();

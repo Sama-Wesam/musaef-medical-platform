@@ -1,9 +1,9 @@
 import apiClient from './axios';
 
 export default {
-  // جلب جميع الحالات الطارئة النشطة مع دعم الفلترة
-  getActiveEmergencies(params = {}) {
-    return apiClient.get('/hospital/requests', { params });
+  // جلب جميع الحالات الطارئة النشطة مع دعم الفلترة والـ Polling
+  getActiveEmergencies(params = {}, config = {}) {
+    return apiClient.get('/hospital/requests', { params, ...config });
   },
 
   // إنشاء نداء طارئ جديد من قبل المستشفى

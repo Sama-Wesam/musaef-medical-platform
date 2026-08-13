@@ -30,4 +30,23 @@ class HospitalController extends Controller
 
         return $this->successResponse($inventory, 'تم جلب مخزون بنك الدم بنجاح');
     }
+
+    /**
+     * ⚡ دالة Polling سريعة لتحديث مخزون المستشفى في الوقت الحقيقي
+     */
+    public function liveInventoryStats(Request $request)
+    {
+        $hospital = $request->user()->hospital ?? null;
+
+        if (!$hospital) {
+            return $this->unauthorizedResponse('غير مصرح للوصول لبيانات المخزون');
+        }
+
+        $inventory = $this->hospitalService->getInventory($hospital->id);
+
+        return $this->successResponse([
+            'inventory' => $inventory,
+            'updated_at' => now()->toDateTimeString()
+        ], 'تم تحديث المخزون الحقيقي بنجاح');
+    }
 }

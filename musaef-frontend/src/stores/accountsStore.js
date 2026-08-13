@@ -1,56 +1,127 @@
 import { defineStore } from 'pinia';
 import apiClient from '@/api/axios';
+import { useLangStore } from '@/stores/langStore';
+
+// دمج وتخزين التعديلات والإضافات محلياً لتستمر مع التحديث والـ Polling
+const LOCAL_DONORS_KEY = 'musaef_local_donors';
+const LOCAL_HOSPITALS_KEY = 'musaef_local_hospitals';
+const LOCAL_ROLES_KEY = 'musaef_local_roles';
+
+const getLocalData = (key) => {
+  try {
+    return JSON.parse(localStorage.getItem(key) || '[]');
+  } catch (e) {
+    return [];
+  }
+};
+
+const saveLocalData = (key, data) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch (e) {
+    console.error(`Error saving ${key} to LocalStorage:`, e);
+  }
+};
+
+// بيانات افتراضية لأدوار وصلاحيات النظام
+const defaultRoles = [
+  {
+    id: 1,
+    name: 'مدير النظام - Super Admin',
+    role: 'مشرف بنك الدم',
+    email: 'admin@musaef.com',
+    accessLevel: 'الوصول الكامل',
+    status: 'نشط'
+  }
+];
+
+// سجل عمليات محاكي افتراضي لملء جدول سجل العمليات بالكامل
+const defaultAuditLogs = [
+  {
+    id: 1,
+    user: 'د. سعيد عبده',
+    role: 'مدير نظام عام',
+    actionType: 'تعديل',
+    details: 'تعديل إعدادات خوارزمية AI لنظام المطابقة',
+    ipAddress: '192.168.1.105',
+    timestamp: '2026-08-13 14:32 ص'
+  },
+  {
+    id: 2,
+    user: 'أحمد محمود',
+    role: 'مشرف بنك الدم',
+    actionType: 'إضافة',
+    details: 'إضافة حالة طارئة جديدة لفصيلة O+ (مستشفى الشفاء)',
+    ipAddress: '192.168.1.112',
+    timestamp: '2026-08-13 13:15 ص'
+  },
+  {
+    id: 3,
+    user: 'د. سارة خليل',
+    role: 'مسؤول مستشفى',
+    actionType: 'تأكيد',
+    details: 'تلبية طلب التبرع رقم #8921 بنجاح',
+    ipAddress: '192.168.2.45',
+    timestamp: '2026-08-13 11:50 ص'
+  },
+  {
+    id: 4,
+    user: 'م. خالد حسن',
+    role: 'دعم فني وتقني',
+    actionType: 'تسجيل دخول',
+    details: 'تسجيل دخول ناجح إلى لوحة تحكم الإدارة',
+    ipAddress: '10.0.0.12',
+    timestamp: '2026-08-13 09:10 ص'
+  },
+  {
+    id: 5,
+    user: 'إيمان علي',
+    role: 'مرحل طوارئ',
+    actionType: 'تعديل',
+    details: 'تفعيل الاستجابة الفورية لرادار مستشفى الكويتي',
+    ipAddress: '192.168.1.88',
+    timestamp: '2026-08-12 18:22 م'
+  },
+  {
+    id: 6,
+    user: 'د. يوسف ناصر',
+    role: 'مسؤول مستشفى',
+    actionType: 'حذف',
+    details: 'إلغاء نداء طوارئ قديم رقم #8890',
+    ipAddress: '192.168.3.14',
+    timestamp: '2026-08-12 15:04 م'
+  }
+];
 
 export const useAccountsStore = defineStore('accounts', {
-  state: () => ({
-    activeTab: 'donors', // donors | hospitals | roles | logs
+  state: () => {
+    const storedRoles = getLocalData(LOCAL_ROLES_KEY);
+    return {
+      activeTab: 'logs', // donors | hospitals | roles | logs
 
-    // البيانات الابتدائية للحفظ المحلي (Fallback Data)
-    donors: [
-      { id: 1, name: 'محمد حسن', phone: '059998765', bloodType: '-O', location: 'غزة', status: 'active_ai', activity_score: 92 },
-      { id: 2, name: 'شذا محمد', phone: '059487635', bloodType: 'A+', location: 'دير البلح', status: 'active_ai', activity_score: 85 },
-      { id: 3, name: 'خلود خالد', phone: '059876432', bloodType: 'AB+', location: 'خانيونس', status: 'suspended_ai', activity_score: 30 },
-      { id: 4, name: 'روان تامر', phone: '059345728', bloodType: 'O+', location: 'رفح', status: 'active_ai', activity_score: 78 },
-      { id: 5, name: 'فرح حسن', phone: '059887655', bloodType: '-A', location: 'نصيرات', status: 'cancelled', activity_score: 10 },
-      { id: 6, name: 'ختام محمد', phone: '0593344578', bloodType: 'B+', location: 'غزة', status: 'cancelled', activity_score: 15 },
-      { id: 7, name: 'يوسف جميل', phone: '0598876775', bloodType: 'AB-', location: 'رفح', status: 'active_ai', activity_score: 88 }
-    ],
-    hospitals: [
-      { id: 1, name: 'مستشفى الشفاء الطبي', type: 'حكومي', phone: '082823400', location: 'غزة - الرمال', status: 'active' },
-      { id: 2, name: 'مستشفى شهداء الأقصى', type: 'حكومي', phone: '082554100', location: 'دير البلح', status: 'active' },
-      { id: 3, name: 'مستشفى ناصر الطبي', type: 'حكومي', phone: '082053110', location: 'خانيونس', status: 'active' },
-      { id: 4, name: 'المستشفى الأندونيسي', type: 'حكومي', phone: '082478900', location: 'شمال غزة', status: 'suspended_ai' },
-      { id: 5, name: 'مستشفى العودة', type: 'أهلي / أونروا', phone: '082531000', location: 'النصيرات', status: 'active' },
-      { id: 6, name: 'مستشفى القدس', type: 'خاص / هلال أحمر', phone: '082885400', location: 'غزة - تل الهوا', status: 'cancelled' },
-      { id: 7, name: 'مستشفى الكويتي التخصصي', type: 'أهلي خيري', phone: '082134500', location: 'رفح', status: 'active' }
-    ],
-    roles: [
-      { id: 1, name: 'د. سعيد عبده', roleTitle: 'مدير نظام عام', email: 's.abdo@musaef.ps', scope: 'الوصول الكامل', status: 'active' },
-      { id: 2, name: 'أحمد محمود', roleTitle: 'مشرف بنك الدم', email: 'a.mahmoud@musaef.ps', scope: 'إدارة الطلبات ومتبرعين', status: 'active' },
-      { id: 3, name: 'د. سارة خليل', roleTitle: 'مسؤول مستشفى', email: 's.khalil@shifa.ps', scope: 'مستشفى الشفاء الطبي', status: 'active' },
-      { id: 4, name: 'م. خالد حسن', roleTitle: 'دعم فني وتقني', email: 'k.hassan@musaef.ps', scope: 'السجلات والسيرفرات', status: 'suspended_ai' },
-      { id: 5, name: 'إيمان علي', roleTitle: 'مرحل طوارئ', email: 'e.ali@musaef.ps', scope: 'رادار الطوارئ والنداءات', status: 'active' },
-      { id: 6, name: 'د. يوسف ناصر', roleTitle: 'مسؤول مستشفى', email: 'y.nasser@nasser.ps', scope: 'مستشفى ناصر الطبي', status: 'cancelled' }
-    ],
-    auditLogs: [
-      { id: 1, user: 'د. سعيد عبده', role: 'مدير نظام عام', actionType: 'تعديل', details: 'تعديل إعدادات خوارزمية AI لنظام المطابقة', ipAddress: '192.168.1.105', timestamp: '2026-07-27 10:14 ص' },
-      { id: 2, user: 'أحمد محمود', role: 'مشرف بنك الدم', actionType: 'إضافة', details: 'إضافة حالة طارئة جديدة لفصيلة O+ (مستشفى الشفاء)', ipAddress: '192.168.1.112', timestamp: '2026-07-27 09:45 ص' },
-      { id: 3, user: 'د. سارة خليل', role: 'مسؤول مستشفى', actionType: 'تأكيد', details: 'تلبية طلب التبرع رقم #8921 بنجاح', ipAddress: '10.0.4.22', timestamp: '2026-07-27 09:12 ص' },
-      { id: 4, user: 'م. خالد حسن', role: 'دعم فني', actionType: 'تسجيل دخول', details: 'تسجيل دخول ناجح إلى لوحة تحكم الإدارة', ipAddress: '192.168.1.200', timestamp: '2026-07-27 08:30 ص' },
-      { id: 5, user: 'إيمان علي', role: 'مرحل طوارئ', actionType: 'إرسال', details: 'تفعيل الاستجابة الفورية لرادار مستشفى الكويتي', ipAddress: '10.0.8.55', timestamp: '2026-07-27 08:05 ص' },
-      { id: 6, user: 'د. يوسف ناصر', role: 'مسؤول مستشفى', actionType: 'حذف', details: 'إلغاء نداء طوارئ قديم رقم #8890', ipAddress: '10.0.12.14', timestamp: '2026-07-26 11:20 م' }
-    ],
+      donors: getLocalData(LOCAL_DONORS_KEY),
+      deletedDonorIds: [], 
 
-    searchQuery: '',
-    selectedFilter: 'all',
-    currentPage: 1,
-    totalPages: 4,
-    loading: false
-  }),
+      hospitals: getLocalData(LOCAL_HOSPITALS_KEY),
+      deletedHospitalIds: [],
+
+      roles: storedRoles.length > 0 ? storedRoles : defaultRoles,
+      deletedRoleIds: [],
+
+      auditLogs: defaultAuditLogs,
+
+      searchQuery: '',
+      selectedFilter: 'all',
+      currentPage: 1,
+      totalPages: 1,
+      loading: false,
+      pollingTimer: null
+    };
+  },
 
   actions: {
     // ------------------------------------------------------------------------
-    // 1. جلب البيانات من الـ API مع الاحتفاظ بالبيانات المحلية عند الخطأ
+    // 1. جلب البيانات المباشرة من الـ API ودمجها مع البيانات المحلية
     // ------------------------------------------------------------------------
     async fetchDonors() {
       this.loading = true;
@@ -59,9 +130,33 @@ export const useAccountsStore = defineStore('accounts', {
           params: { search: this.searchQuery, blood_type: this.selectedFilter, page: this.currentPage }
         });
         const data = res.data?.data || res.data;
-        if (Array.isArray(data) && data.length > 0) this.donors = data;
+        let fetchedDonors = [];
+
+        if (Array.isArray(data)) {
+          fetchedDonors = data;
+        } else if (data?.donors) {
+          fetchedDonors = data.donors;
+          this.totalPages = data.last_page || 1;
+        }
+
+        const localDonors = getLocalData(LOCAL_DONORS_KEY);
+        const mergedDonors = [...localDonors];
+
+        fetchedDonors.forEach(apiDonor => {
+          const apiId = apiDonor.id || apiDonor.phone;
+          const existsLocally = mergedDonors.some(d => (d.id || d.phone) === apiId);
+          if (!existsLocally) {
+            mergedDonors.push(apiDonor);
+          }
+        });
+
+        this.donors = mergedDonors.filter(d => !this.deletedDonorIds.includes(d.id || d.phone));
       } catch (e) {
-        console.warn('تعذر الاتصال بالخادم، تم استخدام بيانات المتبرعين الحالية.');
+        console.error('خطأ في جلب بيانات المتبرعين المباشرة:', e);
+        const localDonors = getLocalData(LOCAL_DONORS_KEY);
+        if (localDonors.length > 0) {
+          this.donors = localDonors.filter(d => !this.deletedDonorIds.includes(d.id || d.phone));
+        }
       } finally {
         this.loading = false;
       }
@@ -74,9 +169,34 @@ export const useAccountsStore = defineStore('accounts', {
           params: { search: this.searchQuery, region: this.selectedFilter, page: this.currentPage }
         });
         const data = res.data?.data || res.data;
-        if (Array.isArray(data) && data.length > 0) this.hospitals = data;
+        let fetchedHospitals = [];
+
+        if (Array.isArray(data)) {
+          fetchedHospitals = data;
+        } else if (data?.hospitals) {
+          fetchedHospitals = data.hospitals;
+          this.totalPages = data.last_page || 1;
+        }
+
+        const localHospitals = getLocalData(LOCAL_HOSPITALS_KEY);
+        const mergedHospitals = [...localHospitals];
+
+        fetchedHospitals.forEach(apiHosp => {
+          const index = mergedHospitals.findIndex(h => h.id === apiHosp.id);
+          if (index === -1) {
+            mergedHospitals.push(apiHosp);
+          } else {
+            mergedHospitals[index] = { ...apiHosp, ...mergedHospitals[index] };
+          }
+        });
+
+        this.hospitals = mergedHospitals.filter(h => !this.deletedHospitalIds.includes(h.id));
       } catch (e) {
-        console.warn('تعذر الاتصال بالخادم، تم استخدام بيانات المستشفيات الحالية.');
+        console.error('خطأ في جلب بيانات المستشفيات المباشرة:', e);
+        const localHospitals = getLocalData(LOCAL_HOSPITALS_KEY);
+        if (localHospitals.length > 0) {
+          this.hospitals = localHospitals.filter(h => !this.deletedHospitalIds.includes(h.id));
+        }
       } finally {
         this.loading = false;
       }
@@ -89,9 +209,35 @@ export const useAccountsStore = defineStore('accounts', {
           params: { search: this.searchQuery, role: this.selectedFilter, page: this.currentPage }
         });
         const data = res.data?.data || res.data;
-        if (Array.isArray(data) && data.length > 0) this.roles = data;
+        let fetchedRoles = [];
+
+        if (Array.isArray(data)) {
+          fetchedRoles = data;
+        } else if (data?.roles) {
+          fetchedRoles = data.roles;
+          this.totalPages = data.last_page || 1;
+        }
+
+        const localRoles = getLocalData(LOCAL_ROLES_KEY);
+        const mergedRoles = localRoles.length > 0 ? [...localRoles] : [...this.roles];
+
+        fetchedRoles.forEach(apiRole => {
+          const index = mergedRoles.findIndex(r => r.id === apiRole.id);
+          if (index === -1) {
+            mergedRoles.push(apiRole);
+          } else {
+            mergedRoles[index] = { ...apiRole, ...mergedRoles[index] };
+          }
+        });
+
+        this.roles = mergedRoles.filter(r => !this.deletedRoleIds.includes(r.id));
+        saveLocalData(LOCAL_ROLES_KEY, this.roles);
       } catch (e) {
-        console.warn('تعذر الاتصال بالخادم، تم استخدام بيانات الصلاحيات الحالية.');
+        console.error('خطأ في جلب بيانات الصلاحيات المباشرة:', e);
+        const localRoles = getLocalData(LOCAL_ROLES_KEY);
+        if (localRoles.length > 0) {
+          this.roles = localRoles.filter(r => !this.deletedRoleIds.includes(r.id));
+        }
       } finally {
         this.loading = false;
       }
@@ -104,151 +250,302 @@ export const useAccountsStore = defineStore('accounts', {
           params: { search: this.searchQuery, action: this.selectedFilter, page: this.currentPage }
         });
         const data = res.data?.data || res.data;
-        if (Array.isArray(data) && data.length > 0) this.auditLogs = data;
+        if (Array.isArray(data) && data.length > 0) {
+          this.auditLogs = data;
+        } else if (data?.logs && data.logs.length > 0) {
+          this.auditLogs = data.logs;
+          this.totalPages = data.last_page || 1;
+        } else if (!this.auditLogs || this.auditLogs.length === 0) {
+          this.auditLogs = defaultAuditLogs;
+        }
       } catch (e) {
-        console.warn('تعذر الاتصال بالخادم، تم استخدام سجل العمليات الحالي.');
+        console.error('خطأ في جلب بيانات سجل العمليات المباشر، جاري استخدام سجل البيانات الافتراضي:', e);
+        if (!this.auditLogs || this.auditLogs.length === 0) {
+          this.auditLogs = defaultAuditLogs;
+        }
       } finally {
         this.loading = false;
       }
     },
 
     // ------------------------------------------------------------------------
-    // 2. عمليات الذكاء الاصطناعي (AI Fraud Detection & Review)
+    // 2. آلية الاستطلاع المباشر (Polling)
     // ------------------------------------------------------------------------
+    startPolling(intervalMs = 5000) {
+      this.refreshCurrentTab();
 
-    // إجراء التقييم التفاعلي للاحتيال للمستشفى
+      if (this.pollingTimer) clearInterval(this.pollingTimer);
+
+      this.pollingTimer = setInterval(() => {
+        this.refreshCurrentTab();
+      }, intervalMs);
+    },
+
+    stopPolling() {
+      if (this.pollingTimer) {
+        clearInterval(this.pollingTimer);
+        this.pollingTimer = null;
+      }
+    },
+
+    refreshCurrentTab() {
+      if (this.activeTab === 'donors') this.fetchDonors();
+      if (this.activeTab === 'hospitals') this.fetchHospitals();
+      if (this.activeTab === 'roles') this.fetchRoles();
+      if (this.activeTab === 'logs') this.fetchAuditLogs();
+    },
+
+    // ------------------------------------------------------------------------
+    // 3. عمليات الذكاء الاصطناعي (AI Fraud Detection & Review)
+    // ------------------------------------------------------------------------
     async analyzeHospitalFraud(hospitalId) {
       try {
         const response = await apiClient.post('/admin/fraud/analyze-hospital', {
           hospital_id: hospitalId,
           simulated_units: 50
         });
-
-        // تحديث حالة المستشفى فورياً في الواجهة
-        const updated = this.hospitals.find(h => h.id === hospitalId);
-        if (updated) {
-          updated.status = response.data?.data?.hospital_status || 'suspended_ai';
-        }
-        alert(response.data?.message || 'تم إجراء تحليل الشبهات بنجاح!');
+        return response.data;
       } catch (error) {
-        console.warn('فحص شكلي local fallback عند تعذر اتصال الـ API');
-        const target = this.hospitals.find(h => h.id === hospitalId);
-        if (target) {
-          target.status = 'suspended_ai';
-          alert(`تم تحليل سلوك "${target.name}" عبر AI وتم تعليق الحساب لتجاوز الطلبات!`);
-        }
+        console.error('Error analyzing hospital fraud:', error);
+        return null;
       }
     },
 
-    // المراجعة الإدارية للحسابات مع تقييم الذكاء الاصطناعي
     async reviewDonorWithAi(donor) {
+      const langStore = useLangStore();
+      const isEn = langStore.currentLang === 'en';
+      const targetDonor = this.donors.find(d => (d.id || d.phone) === (donor.id || donor.phone)) || donor;
+
       try {
-        const response = await apiClient.post('/admin/fraud/review-account', {
-          account_id: donor.id,
+        await apiClient.post('/admin/fraud/review-account', {
+          account_id: targetDonor.id,
           account_type: 'donor',
           action: 're_evaluate'
         });
 
-        alert(response.data?.message || 'تم إعادة تقييم الحساب بنجاح!');
-        this.fetchDonors();
+        await this.fetchDonors();
+
+        const alertMsg = isEn
+          ? `AI Re-evaluation Completed for ${targetDonor.name}!`
+          : `تمت مراجعة الحساب بواسطة الذكاء الاصطناعي بنجاح للمتبرع: ${targetDonor.name}!`;
+
+        alert(alertMsg);
       } catch (error) {
-        console.warn('تقييم محلي عند تعذر الاتصال بالـ API');
-        donor.status = donor.status === 'suspended_ai' ? 'active_ai' : 'suspended_ai';
-        alert(`تم تحديث حالة المتبرع "${donor.name}" بواسطة خوارزمية الذكاء الاصطناعي!`);
+        console.error('Error reviewing donor with AI:', error);
       }
     },
 
     // ------------------------------------------------------------------------
-    // 3. العمليات الإدارية (حذف، تعديل، إضافة)
+    // 4. العمليات الإدارية للمستشفيات، المتبرعين، والأدوار والصلاحيات
     // ------------------------------------------------------------------------
-    async deleteItem(id, type) {
-      if (confirm(`هل أنت تأكد من حذف هذا الـ ${type}؟`)) {
+    async addRole(roleData) {
+      const newRole = {
+        id: Date.now(),
+        name: roleData.name || 'مستخدم جديد',
+        role: roleData.role || 'مشرف بنك الدم',
+        email: roleData.email || 'user@musaef.com',
+        accessLevel: roleData.accessLevel || 'الوصول الكامل',
+        status: roleData.status || 'نشط'
+      };
+
+      this.roles.unshift(newRole);
+      saveLocalData(LOCAL_ROLES_KEY, this.roles);
+
+      try {
+        await apiClient.post('/admin/accounts/roles', newRole);
+      } catch (e) {
+        console.error('API role creation failed, saved locally.', e);
+      }
+    },
+
+    async updateRole(roleData) {
+      const targetId = roleData.id;
+      const index = this.roles.findIndex(r => r.id === targetId);
+
+      if (index !== -1) {
+        this.roles[index] = {
+          ...this.roles[index],
+          ...roleData
+        };
+      }
+
+      saveLocalData(LOCAL_ROLES_KEY, this.roles);
+
+      try {
+        await apiClient.put(`/admin/accounts/roles/${targetId}`, roleData);
+      } catch (e) {
+        console.error('API role update failed, updated locally.', e);
+      }
+    },
+
+    async deleteRole(id) {
+      const langStore = useLangStore();
+      const isEn = langStore.currentLang === 'en';
+      const confirmMsg = isEn ? 'Are you sure you want to delete this role/permission?' : 'هل أنت تأكد من حذف هذا الدور / الصلاحية؟';
+
+      if (confirm(confirmMsg)) {
+        this.deletedRoleIds.push(id);
+        this.roles = this.roles.filter(r => r.id !== id);
+        saveLocalData(LOCAL_ROLES_KEY, this.roles);
+
+        try {
+          await apiClient.delete(`/admin/accounts/roles/${id}`);
+        } catch (e) {
+          console.error('Error deleting role from API, deleted locally.', e);
+        }
+      }
+    },
+
+    async updateHospital(hospitalData) {
+      const targetId = hospitalData.id;
+      const index = this.hospitals.findIndex(h => h.id === targetId);
+
+      if (index !== -1) {
+        this.hospitals[index] = {
+          ...this.hospitals[index],
+          ...hospitalData
+        };
+      }
+
+      saveLocalData(LOCAL_HOSPITALS_KEY, this.hospitals);
+
+      try {
+        await apiClient.put(`/admin/accounts/hospitals/${targetId}`, hospitalData);
+      } catch (e) {
+        console.error('API hospital update failed, updated locally.', e);
+      }
+    },
+
+    async addHospital(hospitalData) {
+      const newHospital = {
+        id: Date.now(),
+        name: hospitalData.name || 'مستشفى جديد',
+        type: hospitalData.type || 'حكومي',
+        phone: hospitalData.phone || '0590000000',
+        location: hospitalData.location || 'غزة - الرمال',
+        status: 'active'
+      };
+
+      this.hospitals.unshift(newHospital);
+      saveLocalData(LOCAL_HOSPITALS_KEY, this.hospitals);
+
+      try {
+        await apiClient.post(`/admin/accounts/hospitals`, newHospital);
+      } catch (e) {
+        console.error('API hospital creation failed, saved locally.', e);
+      }
+    },
+
+    async updateDonor(donorData) {
+      const targetId = donorData.id;
+      const index = this.donors.findIndex(d => (d.id || d.phone) === targetId);
+
+      if (index !== -1) {
+        this.donors[index] = {
+          ...this.donors[index],
+          name: donorData.name,
+          phone: donorData.phone,
+          bloodType: donorData.bloodType,
+          blood_type: donorData.bloodType
+        };
+      }
+
+      saveLocalData(LOCAL_DONORS_KEY, this.donors);
+
+      try {
+        await apiClient.put(`/admin/accounts/${targetId}`, {
+          name: donorData.name,
+          phone: donorData.phone,
+          blood_type: donorData.bloodType
+        });
+      } catch (e) {
+        console.error('API update failed, updated locally.', e);
+      }
+    },
+
+    async addDonor(donorData) {
+      const newDonor = {
+        id: donorData.id || Date.now(),
+        name: donorData.name || 'متبرع جديد',
+        phone: donorData.phone || '—',
+        bloodType: donorData.bloodType || 'O+',
+        blood_type: donorData.bloodType || 'O+',
+        activity_score: 85,
+        status: 'active_ai'
+      };
+
+      this.donors.unshift(newDonor);
+      saveLocalData(LOCAL_DONORS_KEY, this.donors);
+
+      try {
+        await apiClient.post(`/admin/accounts`, newDonor);
+      } catch (e) {
+        console.error('API creation failed, saved locally.', e);
+      }
+    },
+
+    async deleteDonor(id) {
+      const langStore = useLangStore();
+      const isEn = langStore.currentLang === 'en';
+      const confirmMsg = isEn ? 'Are you sure you want to delete this donor?' : 'هل أنت تأكد من حذف هذا المتبرع؟';
+
+      if (confirm(confirmMsg)) {
+        this.deletedDonorIds.push(id);
+        this.donors = this.donors.filter(d => (d.id || d.phone) !== id);
+        saveLocalData(LOCAL_DONORS_KEY, this.donors);
+
         try {
           await apiClient.delete(`/admin/accounts/${id}`);
-          this.removeLocalItem(id, type);
-          alert('تم الحذف بنجاح');
         } catch (e) {
-          // Fallback للتعامل المحلي في حالة عدم وجود بيئة خلفية نشطة
-          this.removeLocalItem(id, type);
-          alert(`تم حذف الـ ${type} بنجاح!`);
+          console.error('Error deleting item from API, deleted locally.', e);
         }
       }
     },
 
-    removeLocalItem(id, type) {
-      const isDonor = type.includes('متبرع') || type.includes('Donor');
-      const isHospital = type.includes('مستشفى') || type.includes('Hospital');
-      const isRole = type.includes('صلاحية') || type.includes('دور') || type.includes('Role');
-
-      if (isDonor) {
-        this.donors = this.donors.filter(d => d.id !== id && d.phone !== id);
-      } else if (isHospital) {
-        this.hospitals = this.hospitals.filter(h => h.id !== id);
-      } else if (isRole) {
-        this.roles = this.roles.filter(r => r.id !== id);
+    async deleteItem(id, type) {
+      if (type === 'donor') {
+        return this.deleteDonor(id);
       }
-    },
-
-    editItem(item, type) {
-      const newName = prompt(`تعديل اسم الـ ${type}:`, item.name);
-      if (newName && newName.trim() !== '') {
-        item.name = newName.trim();
-        alert(`تم تعديل بيانات الـ ${type} بنجاح!`);
+      if (type === 'role') {
+        return this.deleteRole(id);
       }
-    },
+      const langStore = useLangStore();
+      const isEn = langStore.currentLang === 'en';
+      const confirmMsg = isEn ? `Are you sure you want to delete this ${type}?` : `هل أنت تأكد من حذف هذا الـ ${type}؟`;
 
-    addItem(type) {
-      const name = prompt(`أدخل اسم الـ ${type} الجديد:`);
-      if (name && name.trim() !== '') {
-        const cleanName = name.trim();
-        const isDonor = type.includes('متبرع') || type.includes('Donor');
-        const isHospital = type.includes('مستشفى') || type.includes('Hospital');
-        const isRole = type.includes('صلاحية') || type.includes('دور') || type.includes('Role');
-
-        if (isDonor) {
-          this.donors.unshift({
-            id: Date.now(),
-            name: cleanName,
-            phone: '0590000000',
-            bloodType: 'O+',
-            location: 'غزة',
-            status: 'active_ai',
-            activity_score: 80
-          });
-        } else if (isHospital) {
-          this.hospitals.unshift({
-            id: Date.now(),
-            name: cleanName,
-            type: 'حكومي',
-            phone: '082000000',
-            location: 'غزة',
-            status: 'active'
-          });
-        } else if (isRole) {
-          this.roles.unshift({
-            id: Date.now(),
-            name: cleanName,
-            roleTitle: 'مسؤول',
-            email: 'new@musaef.ps',
-            scope: 'محدود',
-            status: 'active'
-          });
+      if (confirm(confirmMsg)) {
+        if (type === 'hospitals' || type === 'مستشفى' || type === 'Hospital') {
+          this.deletedHospitalIds.push(id);
+          this.hospitals = this.hospitals.filter(h => h.id !== id);
+          saveLocalData(LOCAL_HOSPITALS_KEY, this.hospitals);
         }
-        alert(`تمت إضافة الـ ${type} بنجاح!`);
+        try {
+          await apiClient.delete(`/admin/accounts/${id}`);
+        } catch (e) {
+          console.error('Error deleting item:', e);
+        }
       }
     },
 
     // ------------------------------------------------------------------------
-    // 4. أدوات التصدير والتصفح (CSV & Pagination)
+    // 5. أدوات التصدير والتصفح (CSV & Pagination)
     // ------------------------------------------------------------------------
     exportLogsCSV() {
-      if (!this.auditLogs.length) {
-        alert('لا توجد بيانات متاحة للتصدير.');
+      const langStore = useLangStore();
+      const isEn = langStore.currentLang === 'en';
+
+      const logsToExport = this.auditLogs && this.auditLogs.length ? this.auditLogs : defaultAuditLogs;
+
+      if (!logsToExport.length) {
+        alert(isEn ? 'No data available for export.' : 'لا توجد بيانات متاحة للتصدير.');
         return;
       }
 
-      const headers = ['ID', 'المستخدم', 'الدور', 'نوع العملية', 'التفاصيل', 'عنوان IP', 'التاريخ والوقت'];
-      const rows = this.auditLogs.map(log => [
+      const headers = isEn
+        ? ['ID', 'User', 'Role', 'Action Type', 'Details', 'IP Address', 'Timestamp']
+        : ['م', 'المستخدم', 'الدور / الصلاحية', 'نوع العملية', 'تفاصيل الإجراء', 'عنوان IP', 'الوقت والتاريخ'];
+
+      const rows = logsToExport.map(log => [
         log.id,
         `"${log.user || ''}"`,
         `"${log.role || ''}"`,
@@ -258,13 +555,13 @@ export const useAccountsStore = defineStore('accounts', {
         `"${log.timestamp || ''}"`
       ]);
 
-      const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+      const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(e => e.join(','))].join('\r\n');
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
       const url = URL.createObjectURL(blob);
 
       link.setAttribute('href', url);
-      link.setAttribute('download', `audit_logs_${new Date().toISOString().slice(0, 10)}.csv`);
+      link.setAttribute('download', `musaef_audit_logs_${new Date().toISOString().slice(0, 10)}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -275,13 +572,6 @@ export const useAccountsStore = defineStore('accounts', {
         this.currentPage = page;
         this.refreshCurrentTab();
       }
-    },
-
-    refreshCurrentTab() {
-      if (this.activeTab === 'donors') this.fetchDonors();
-      if (this.activeTab === 'hospitals') this.fetchHospitals();
-      if (this.activeTab === 'roles') this.fetchRoles();
-      if (this.activeTab === 'logs') this.fetchAuditLogs();
     }
   }
 });

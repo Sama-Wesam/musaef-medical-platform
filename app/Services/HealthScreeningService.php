@@ -3,69 +3,69 @@
 namespace App\Services;
 
 use App\Models\Donor;
-use App\Models\HealthInfo;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class HealthScreeningService
 {
-    /**
-     * تحليل إجابات الاستبيان الصحي وتحديد أهلية المتبرع
-     *
-     * @param Donor $donor
-     * @param array $answers
-     * @return array
-     */
-    public function evaluateHealthScreening(Donor $donor, array $answers)
+    public function evaluateHealthScreening(Donor $donor, array $answers): array
     {
-        $isEligible = true;
-        $deferralDate = null;
-        $message = 'أنت مؤهل فوراً للتبرع! لقد أضفنا شارة المؤهل للتبرع إلى لوحة تحكمك.';
-        $status = 'eligible'; // الحالات الممكنة: eligible, suspended, deferred
+        return DB::transaction(function () use ($donor, $answers) {
+            $isEligible = true;
+            $deferralDate = null;
+            $message = 'أنت مؤهل فوراً للتبرع! تم تحديث أهليتك في لوحة التحكم ونظام المطابقة المباشر.';
+            $status = 'eligible';
 
-        // 1. فلترة الأعراض المرضية (تعليق مؤقت بدون تاريخ محدد)
-        if (isset($answers['has_symptoms']) && $answers['has_symptoms'] == true) {
-            $isEligible = false;
-            $status = 'suspended';
-            $message = 'سلامتك تهمنا! نرجو منك التبرع حين تتحسن حالتك الصحية.';
-        }
-        // 2. فلترة العمليات الجراحية أو الحمل (منع لمدة 6 أشهر)
-        elseif (
-            (isset($answers['had_surgery']) && $answers['had_surgery'] == true) ||
-            (isset($answers['is_pregnant']) && $answers['is_pregnant'] == true)
-        ) {
-            $isEligible = false;
-            $status = 'deferred';
-            $deferralDate = Carbon::now()->addMonths(6);
-            $message = 'عذراً، أنت غير مؤهل حالياً للتبرع. ننتظر انضمامك بعد 6 أشهر لضمان سلامتك.';
-        }
-        // 3. الأدوية (لا تمنع الأهلية فوراً ولكن قد تتطلب مراجعة)
-        elseif (isset($answers['takes_medication']) && $answers['takes_medication'] == true) {
-            $status = 'eligible_with_review';
-        }
+            $hasSymptoms = $answers['has_symptoms'] ?? false;
+            $hadSurgery = $answers['had_surgery'] ?? false;
+            $takesMedication = $answers['takes_medication'] ?? false;
+            $isPregnant = $answers['is_pregnant'] ?? false;
 
-        // تحديث بيانات المتبرع أو السجل الصحي في قاعدة البيانات
-        $donor->update([
-            'is_eligible' => $isEligible,
-            'eligibility_status' => $status,
-            'deferral_date' => $deferralDate,
-        ]);
+            if (isset($answers['answers']) && is_array($answers['answers'])) {
+                $affirmativeCount = collect($answers['answers'])->filter(function ($q) {
+                    return is_array($q) ? ($q['answer'] ?? false) : (bool) $q;
+                })->count();
 
-        // حفظ تفاصيل الاستبيان الصحي
-        HealthInfo::updateOrCreate(
-            ['donor_id' => $donor->id],
-            [
-                'has_symptoms' => $answers['has_symptoms'] ?? false,
-                'had_surgery' => $answers['had_surgery'] ?? false,
-                'takes_medication' => $answers['takes_medication'] ?? false,
-                'is_pregnant' => $answers['is_pregnant'] ?? false,
-            ]
-        );
+                if ($affirmativeCount >= 3) {
+                    $hasSymptoms = true;
+                }
+            }
 
-        return [
-            'is_eligible' => $isEligible,
-            'status' => $status,
-            'message' => $message,
-            'deferral_date' => $deferralDate ? $deferralDate->format('Y-m-d') : null,
-        ];
+            if ((bool) $hasSymptoms === true) {
+                $isEligible = false;
+                $status = 'suspended';
+                $message = 'سلامتك تهمنا! نرجو منك التبرع حين تتحسن حالتك الصحية.';
+            } elseif ((bool) $hadSurgery === true || (bool) $isPregnant === true) {
+                $isEligible = false;
+                $status = 'deferred';
+                $deferralDate = Carbon::now()->addMonths(6);
+                $message = 'عذراً، أنت غير مؤهل حالياً للتبرع. ننتظر انضمامك بعد 6 أشهر لضمان سلامتك.';
+            } elseif ((bool) $takesMedication === true) {
+                $status = 'eligible_with_review';
+            }
+
+            $donor->update([
+                'is_eligible'        => $isEligible,
+                'eligibility_status' => $status,
+                'deferral_date'      => $deferralDate,
+            ]);
+
+            // التصحيح: استخدام اسم الجدول الصحيح health_infos لتجنب أخطاء قاعدة البيانات
+            DB::table('health_infos')->updateOrInsert(
+                ['donor_id' => $donor->id],
+                [
+                    'has_chronic_diseases' => $hasSymptoms, // مطابقة لعمود الجدول أو حفظ الحقول المتوفرة
+                    'is_eligible'          => $isEligible,
+                    'updated_at'           => now(),
+                ]
+            );
+
+            return [
+                'is_eligible'   => $isEligible,
+                'status'        => $status,
+                'message'       => $message,
+                'deferral_date' => $deferralDate ? $deferralDate->format('Y-m-d') : null,
+            ];
+        });
     }
 }

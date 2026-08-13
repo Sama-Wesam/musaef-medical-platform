@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
+use App\Enums\DonationStatus;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Donation extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'donor_id',
         'hospital_id',
@@ -17,22 +21,22 @@ class Donation extends Model
     ];
 
     protected $casts = [
+        'units_donated' => 'integer',
+        'points_earned' => 'integer',
         'donation_date' => 'date',
+        'status'        => DonationStatus::class,
     ];
 
-    // المتبرع
     public function donor()
     {
         return $this->belongsTo(Donor::class);
     }
 
-    // المستشفى
     public function hospital()
     {
         return $this->belongsTo(Hospital::class);
     }
 
-    // الطلب الذي تم التبرع بناءً عليه (إن وجد)
     public function bloodRequest()
     {
         return $this->belongsTo(BloodRequest::class);

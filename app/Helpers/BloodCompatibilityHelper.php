@@ -5,9 +5,9 @@ namespace App\Helpers;
 class BloodCompatibilityHelper
 {
     /**
-     * خريطة من يمكنه التبرع لمن
+     * خريطة التوافق الحيوي الكاملة لفصائل الدم (من يمكنه التبرع لمن)
      */
-    private static $compatibilityChart = [
+    private static array $compatibilityChart = [
         'O-'  => ['O-', 'O+', 'A-', 'A+', 'B-', 'B+', 'AB-', 'AB+'], // معطي عام
         'O+'  => ['O+', 'A+', 'B+', 'AB+'],
         'A-'  => ['A-', 'A+', 'AB-', 'AB+'],
@@ -23,20 +23,35 @@ class BloodCompatibilityHelper
      */
     public static function canDonateTo(string $donorBloodType, string $receiverBloodType): bool
     {
-        return in_array($receiverBloodType, self::$compatibilityChart[$donorBloodType] ?? []);
+        $donor = strtoupper(trim($donorBloodType));
+        $receiver = strtoupper(trim($receiverBloodType));
+
+        return in_array($receiver, self::$compatibilityChart[$donor] ?? [], true);
     }
 
     /**
-     * إرجاع قائمة بفصائل الدم التي يمكنها التبرع لفصيلة معينة
+     * إرجاع قائمة بالفصائل التي يمكنها التبرع لفصيلة المستقبل
      */
     public static function getCompatibleDonorsFor(string $receiverBloodType): array
     {
+        $receiver = strtoupper(trim($receiverBloodType));
         $compatibleDonors = [];
+
         foreach (self::$compatibilityChart as $donor => $receivers) {
-            if (in_array($receiverBloodType, $receivers)) {
+            if (in_array($receiver, $receivers, true)) {
                 $compatibleDonors[] = $donor;
             }
         }
+
         return $compatibleDonors;
+    }
+
+    /**
+     * إرجاع قائمة بالفصائل التي يمكن لفصيلة المتبرع إعطاؤها
+     */
+    public static function getCompatibleReceiversFor(string $donorBloodType): array
+    {
+        $donor = strtoupper(trim($donorBloodType));
+        return self::$compatibilityChart[$donor] ?? [];
     }
 }

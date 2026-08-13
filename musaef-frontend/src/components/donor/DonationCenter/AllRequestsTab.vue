@@ -87,7 +87,10 @@
     <!-- 3. شبكة عرض كروت التبرع -->
     <div v-else class="row g-3 g-md-4 mb-4">
       <div v-for="item in filteredRequests" :key="item.id" class="col-12 col-md-6 col-lg-4">
-        <div class="card border-0 rounded-4 p-3 bg-white shadow-2xs h-100 d-flex flex-column justify-content-between">
+        <div
+          class="card border-0 rounded-4 p-3 bg-white shadow-2xs h-100 d-flex flex-column justify-content-between interactive-card cursor-pointer"
+          @click="$emit('select-request', item)"
+        >
           <div>
             <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
               <div class="d-flex align-items-center gap-2 min-w-0" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
@@ -118,7 +121,7 @@
             </div>
           </div>
 
-          <button @click="$emit('select-request', item)" class="btn btn-outline-danger w-100 py-2 fw-bold fs-8 border-danger-subtle figma-btn-radius">
+          <button class="btn btn-outline-danger w-100 py-2 fw-bold fs-8 border-danger-subtle figma-btn-radius">
             {{ t('viewDetails') }}
           </button>
         </div>
@@ -163,7 +166,7 @@ const translations = {
     requestCountUnit: 'طلب',
     updatedNow: 'تم تحديث البيانات الآن',
     loadingRequests: 'جاري تحميل طلبات التبرع...',
-    noRequestsFound: 'لا توجد طلبات تبرع مطابقة للفلتر أو من السيرفر حالياً.',
+    noRequestsFound: 'لا توجد طلبات تبرع مطابقة للفلتر حالياً.',
     distance: 'المسافة',
     km: 'كم',
     units: 'الوحدات',
@@ -187,7 +190,7 @@ const translations = {
     requestCountUnit: 'requests',
     updatedNow: 'Data updated just now',
     loadingRequests: 'Loading donation requests...',
-    noRequestsFound: 'No donation requests matching filter or from server currently.',
+    noRequestsFound: 'No donation requests matching filter currently.',
     distance: 'Distance',
     km: 'km',
     units: 'Units',
@@ -257,7 +260,7 @@ const handleHospitalFallback = (e) => {
 };
 
 const filteredRequests = computed(() => {
-  return props.requests.filter(item => {
+  let list = props.requests.filter(item => {
     const translatedName = translateHospital(item.hospital);
     const matchesSearch = !searchQuery.value ||
       item.hospital.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
@@ -268,6 +271,11 @@ const filteredRequests = computed(() => {
     const matchesDistance = !selectedDistance.value || item.distance <= parseFloat(selectedDistance.value);
     return matchesSearch && matchesBlood && matchesUrgency && matchesDistance;
   });
+
+  if (sortBy.value === 'closest') {
+    list.sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance));
+  }
+  return list;
 });
 
 const resetFilters = () => {
@@ -293,6 +301,15 @@ const getUrgencyBadgeClass = (urgency) => {
 .hospital-box-img { width: 55px; height: 50px; object-fit: cover; }
 @media (min-width: 768px) { .hospital-box-img { width: 65px; height: 55px; } }
 
+.interactive-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.interactive-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08) !important;
+}
+
+.cursor-pointer { cursor: pointer; }
 .border-danger-subtle { border-color: #fca5a5 !important; }
 .figma-btn-radius { border-radius: 6px !important; }
 .fs-6 { font-size: 1.05rem; }

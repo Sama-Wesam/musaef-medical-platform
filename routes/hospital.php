@@ -10,15 +10,24 @@ use App\Http\Controllers\Hospital\MapController;
 use App\Http\Controllers\Hospital\ReportsController;
 use App\Http\Controllers\Hospital\EmergencyModeController;
 use App\Http\Controllers\Hospital\HospitalSettingsController;
-use App\Http\Controllers\API\NotificationController;
+use App\Http\Controllers\Hospital\NotificationController;
 
 Route::middleware(['auth:sanctum', 'hospital'])->prefix('hospital')->group(function () {
 
+    // ⚡ مسار الـ Polling لتحديث استجابات المتبرعين والمخزون وحالة الطوارئ مع تخفيف الضغط
+    Route::get('/polling/live-updates', [DashboardController::class, 'livePollingUpdates']);
+
+    // مسار لوحة تحكم المستشفى وبنك الدم الرئيسي
     Route::get('/dashboard', [DashboardController::class, 'index']);
+
+    // مسارات تقارير الذكاء الاصطناعي
+    Route::get('/ai-forecast-report', [DashboardController::class, 'index']);
+    Route::post('/ai-forecast-report', [DashboardController::class, 'index']);
 
     // مسارات الإشعارات والتنبيهات للمستشفى
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::patch('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
 
     // إدارة المخزون
     Route::get('/inventory', [BloodInventoryController::class, 'index']);
@@ -28,6 +37,12 @@ Route::middleware(['auth:sanctum', 'hospital'])->prefix('hospital')->group(funct
     Route::get('/requests', [EmergencyRequestController::class, 'index']);
     Route::post('/requests', [EmergencyRequestController::class, 'store']);
     Route::get('/requests/{id}', [EmergencyRequestController::class, 'show']);
+
+    // 🛠️ إضافة مسارات تحديث حالة الطلب وتأكيد التبرع لمنع خطأ 404
+    Route::put('/requests/{id}/status', [EmergencyRequestController::class, 'updateStatus']);
+    Route::post('/requests/{id}/status', [EmergencyRequestController::class, 'updateStatus']);
+    Route::put('/emergency-requests/{id}/status', [EmergencyRequestController::class, 'updateStatus']);
+    Route::post('/emergency-requests/{id}/status', [EmergencyRequestController::class, 'updateStatus']);
 
     // قبول ورفض طلبات الطوارئ
     Route::post('/requests/{id}/accept', [EmergencyRequestController::class, 'accept']);

@@ -1,25 +1,39 @@
 <template>
-  <div class="card border-0 rounded-4 p-3 p-md-4 bg-white shadow-sm font-arial" :class="currentLanguage === 'ar' ? 'dir-rtl' : 'dir-ltr'">
-    <h5 class="fw-bold text-dark mb-3 mb-md-4 text-center position-relative d-inline-block mx-auto section-title-line fs-6 fs-md-5">
-      {{ t('achievementBadges') }}
-    </h5>
-
-    <!-- حالة وجود شارات مستحقة -->
-    <div v-if="badges && badges.length > 0" class="row g-3 g-md-4 text-center">
-      <div v-for="badge in translatedBadges" :key="badge.id" class="col-12 col-sm-6 col-xl-3">
-        <div class="p-3 border rounded-4 bg-white h-100 shadow-2xs d-flex flex-column align-items-center justify-content-center">
-          <img :src="getIconUrl(badge.image)" :alt="badge.title" class="badge-card-img mb-2 mb-md-3" />
-          <h6 class="fw-bold text-dark mb-1 fs-7">{{ badge.title }}</h6>
-          <small class="text-muted fs-9 d-block mb-1 text-truncate w-100">{{ badge.desc }}</small>
-          <small class="text-secondary fw-bold fs-9">{{ translateDate(badge.date) }}</small>
-        </div>
-      </div>
+  <div class="card border-0 rounded-4 p-3 p-md-4 bg-white shadow-sm">
+    <div class="d-flex align-items-center justify-content-between mb-3 mb-md-4">
+      <h5 class="fw-bold text-dark mb-0 fs-6 fs-md-5">
+        {{ currentLanguage === 'en' ? 'Achievement Badges' : 'شارات الإنجاز' }}
+      </h5>
+      <span class="badge bg-danger-subtle text-danger rounded-pill px-3 py-1 fs-9 fw-bold">
+        {{ computedBadges.length }} {{ currentLanguage === 'en' ? 'Badges' : 'شارات' }}
+      </span>
     </div>
 
-    <!-- حالة عدم حصول المتبرع على شارات بعد -->
-    <div v-else class="text-center py-4 text-muted">
-      <i class="bi bi-award fs-1 text-secondary opacity-50 d-block mb-2"></i>
-      <p class="mb-0 fs-8 fw-medium">{{ t('noBadgesYet') }}</p>
+    <div class="row g-2 g-md-3">
+      <div
+        v-for="badge in computedBadges"
+        :key="badge.id"
+        class="col-6 col-sm-3 text-center"
+      >
+        <div class="p-3 border rounded-4 bg-light-subtle h-100 d-flex flex-column align-items-center justify-content-between shadow-2xs hover-badge-card">
+          <div class="badge-icon-wrapper mb-2">
+            <img
+              :src="getBadgeImageUrl(badge.icon_filename || badge.image)"
+              :alt="badge.title"
+              class="badge-img img-fluid"
+              @error="handleBadgeFallback"
+            />
+          </div>
+          <div>
+            <strong class="d-block text-dark fs-8 fw-bold mb-1">{{ badge.title }}</strong>
+            <small class="text-muted fs-10 d-block">{{ badge.date }}</small>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="!computedBadges.length" class="col-12 text-center py-4 text-muted fs-8">
+        {{ currentLanguage === 'en' ? 'No badges earned yet.' : 'لا توجد شارات محققة حتى الآن.' }}
+      </div>
     </div>
   </div>
 </template>
@@ -27,91 +41,153 @@
 <script setup>
 import { computed } from 'vue';
 
+import badge1 from '@/assets/icons/badge-1.png';
+import badge5 from '@/assets/icons/badge-5.png';
+import badge10 from '@/assets/icons/badge-10.png';
+import badgeHero from '@/assets/icons/badge-hero.png';
+
 const props = defineProps({
   badges: {
     type: Array,
     default: () => []
+  },
+  donationsCount: {
+    type: Number,
+    default: 0
   }
 });
 
 const currentLanguage = computed(() => localStorage.getItem('musaef_lang') || 'ar');
 
-const translations = {
-  ar: {
-    achievementBadges: 'شارات الإنجاز',
-    noBadgesYet: 'لم تحرز أي شارات بعد، تبرعك القادم يفتح أول شارة إنجاز!'
-  },
-  en: {
-    achievementBadges: 'Achievement Badges',
-    noBadgesYet: 'No badges unlocked yet. Your next donation will unlock your first badge!'
+// خريطة لربط أسماء الملفات بالصور المستوردة لضمان عمل Vite بدقة
+const badgeMap = {
+  'badge-1.png': badge1,
+  'badge-5.png': badge5,
+  'badge-10.png': badge10,
+  'badge-hero.png': badgeHero
+};
+
+const getBadgeImageUrl = (fileName) => {
+  if (!fileName) return badge1;
+  if (fileName.startsWith('http') || fileName.startsWith('data:')) return fileName;
+
+  // استخراج اسم الملف وإزالة أي مسارات محليّة من Windows أو Linux
+  const cleanName = fileName.split(/[\\/]/).pop();
+
+  if (badgeMap[cleanName]) {
+    return badgeMap[cleanName];
   }
-};
 
-const badgeDict = {
-  'منقذ حياة': { title: 'Life Saver', desc: 'Saved more than 10 cases' },
-  '10 تبرعات': { title: '10 Donations', desc: 'Completed 10 donations' },
-  '5 تبرعات': { title: '5 Donations', desc: 'Completed 5 donations' },
-  'أول تبرع': { title: 'First Donation', desc: 'Completed first donation' }
-};
-
-const dateDict = {
-  '1 يونيو 2024': '1 June 2024',
-  '20 مايو 2025': '20 May 2025',
-  '10 أبريل 2024': '10 April 2024',
-  '15 مارس 2024': '15 March 2024'
-};
-
-const t = (key) => currentLanguage.value === 'en' ? translations.en[key] : translations.ar[key];
-
-const translateDate = (date) => {
-  if (!date) return '';
-  if (currentLanguage.value === 'en') {
-    return dateDict[date] || date;
-  }
-  return date;
-};
-
-const translatedBadges = computed(() => {
-  if (!props.badges) return [];
-  return props.badges.map(b => {
-    if (currentLanguage.value === 'en' && badgeDict[b.title]) {
-      return {
-        ...b,
-        title: badgeDict[b.title].title,
-        desc: badgeDict[b.title].desc
-      };
-    }
-    return b;
-  });
-});
-
-const getIconUrl = (fileName) => {
-  if (!fileName) return '';
-  if (fileName.startsWith('http') || fileName.startsWith('data:')) {
-    return fileName;
-  }
   try {
-    return new URL(`../../../assets/icons/${fileName}`, import.meta.url).href;
+    return new URL(`../../../assets/icons/${cleanName}`, import.meta.url).href;
   } catch (e) {
-    return '';
+    return badge1;
   }
 };
+
+const handleBadgeFallback = (e) => {
+  if (e?.target) {
+    e.target.src = badge1;
+  }
+};
+
+const computedBadges = computed(() => {
+  if (props.badges && props.badges.length > 0) {
+    return props.badges.map((b, idx) => {
+      let rawPath = b.image || b.icon_filename || b.icon || '';
+      let cleanName = rawPath.split(/[\\/]/).pop();
+
+      // التحقق من اسم الملف أولاً، أو تحليله بناءً على العنوان إذا كان الاسم مجهولاً
+      if (!cleanName || !badgeMap[cleanName]) {
+        const title = b.title || '';
+        if (title.includes('أول') || title.toLowerCase().includes('first') || title.includes('1')) {
+          cleanName = 'badge-1.png';
+        } else if (title.includes('5')) {
+          cleanName = 'badge-5.png';
+        } else if (title.includes('10')) {
+          cleanName = 'badge-10.png';
+        } else if (title.includes('منقذ') || title.toLowerCase().includes('saver') || title.toLowerCase().includes('hero')) {
+          cleanName = 'badge-hero.png';
+        } else {
+          cleanName = 'badge-1.png';
+        }
+      }
+
+      return {
+        id: b.id || `badge-${idx}`,
+        title: b.title || (currentLanguage.value === 'en' ? 'Badge' : 'وسام إنجاز'),
+        date: b.date || b.created_at || (currentLanguage.value === 'en' ? 'Achieved' : 'مُحقق'),
+        icon_filename: cleanName
+      };
+    });
+  }
+
+  // إنشاء الشارات ديناميكياً حسب عدد التبرعات إذا لم تكن ممررة من API
+  const list = [];
+  const count = props.donationsCount || 0;
+
+  if (count >= 1) {
+    list.push({
+      id: 'b1',
+      title: currentLanguage.value === 'en' ? 'First Donation' : 'أول تبرع',
+      date: currentLanguage.value === 'en' ? 'Bronze Badge' : 'الوسام البرونزي',
+      icon_filename: 'badge-1.png'
+    });
+  }
+  if (count >= 5) {
+    list.push({
+      id: 'b5',
+      title: currentLanguage.value === 'en' ? '5 Donations' : '5 عمليات تبرع',
+      date: currentLanguage.value === 'en' ? 'Silver Badge' : 'الوسام الفضي',
+      icon_filename: 'badge-5.png'
+    });
+  }
+  if (count >= 10) {
+    list.push({
+      id: 'b10',
+      title: currentLanguage.value === 'en' ? '10 Donations' : '10 عمليات تبرع',
+      date: currentLanguage.value === 'en' ? 'Gold Badge' : 'الوسام الذهبي',
+      icon_filename: 'badge-10.png'
+    });
+  }
+  if (count > 10) {
+    list.push({
+      id: 'bhero',
+      title: currentLanguage.value === 'en' ? 'Life Saver' : 'منقذ حياة',
+      date: currentLanguage.value === 'en' ? 'Hero Badge' : 'الوسام الأزرق',
+      icon_filename: 'badge-hero.png'
+    });
+  }
+
+  return list;
+});
 </script>
 
 <style scoped>
-.font-arial {
-  font-family: Arial, Helvetica, sans-serif !important;
+.badge-img {
+  width: 55px;
+  height: 55px;
+  object-fit: contain;
+  transition: transform 0.2s ease;
 }
 
-.dir-rtl { direction: rtl; }
-.dir-ltr { direction: ltr; }
-.badge-card-img { width: 64px; height: 64px; object-fit: contain; }
-@media (min-width: 768px) { .badge-card-img { width: 80px; height: 80px; } }
+.hover-badge-card:hover .badge-img {
+  transform: scale(1.1);
+}
 
-.section-title-line { border-bottom: 2px solid #dc2626; padding-bottom: 4px; }
-.fs-6 { font-size: 1.05rem; }
-.fs-7 { font-size: 0.92rem; }
+.hover-badge-card {
+  transition: all 0.2s ease;
+}
+
+.hover-badge-card:hover {
+  background-color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+}
+
 .fs-8 { font-size: 0.82rem; }
 .fs-9 { font-size: 0.72rem; }
+.fs-10 { font-size: 0.65rem; }
 .shadow-2xs { box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); }
+.bg-danger-subtle { background-color: #fee2e2 !important; }
+.bg-light-subtle { background-color: #f8fafc; }
 </style>

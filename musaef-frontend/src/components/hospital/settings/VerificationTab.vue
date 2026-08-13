@@ -4,7 +4,9 @@
     <!-- حالة الاعتماد العلوية -->
     <div class="text-center py-3 mb-4 border-bottom">
       <small class="text-muted fs-8 d-block mb-2">{{ t('systemNotif') }}</small>
-      <h5 class="fw-bold text-dark mb-3 fs-6 fs-md-5">{{ t('accreditationStatusTitle') }}</h5>
+      <h5 class="fw-bold text-dark mb-3 fs-6 fs-md-5">
+        {{ t('accreditationStatusTitle') }} - {{ translateHospitalName(hospitalDisplayName) }}
+      </h5>
 
       <div class="d-inline-flex align-items-center justify-content-center bg-success text-white rounded-circle p-3 mb-3 shadow-sm" style="width: 70px; height: 70px;">
         <i class="bi bi-shield-check fs-2"></i>
@@ -57,13 +59,31 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import { useAuthStore } from '@/stores/authStore';
 
+const authStore = useAuthStore();
 const currentLanguage = computed(() => localStorage.getItem('musaef_lang') || 'ar');
+
+const hospitalDisplayName = computed(() => {
+  if (authStore.user?.facility_name) return authStore.user.facility_name;
+  if (authStore.user?.name) return authStore.user.name;
+
+  const savedSettings = localStorage.getItem('musaef_hospital_settings');
+  if (savedSettings) {
+    try {
+      const parsed = JSON.parse(savedSettings);
+      if (parsed.name) return parsed.name;
+    } catch (e) {
+      console.error(e);
+    }
+  }
+  return "الجهة الطبية";
+});
 
 const dictionary = {
   ar: {
     systemNotif: 'إشعارات النظام العامة',
-    accreditationStatusTitle: 'حالة اعتماد المستشفى',
+    accreditationStatusTitle: 'حالة اعتماد المنشأة الطبية',
     officiallyAccredited: 'معتمد رسمياً',
     accreditedBy: 'الجهة المعتمدة: وزارة الصحة / بنك الدم المركزي',
     lastReviewDate: 'تاريخ آخر مراجعة:',
@@ -74,7 +94,7 @@ const dictionary = {
   },
   en: {
     systemNotif: 'General System Notifications',
-    accreditationStatusTitle: 'Hospital Accreditation Status',
+    accreditationStatusTitle: 'Facility Accreditation Status',
     officiallyAccredited: 'Officially Accredited',
     accreditedBy: 'Accrediting Body: Ministry of Health / Central Blood Bank',
     lastReviewDate: 'Last Review Date:',
@@ -83,6 +103,44 @@ const dictionary = {
     updateDocsBtn: 'Update Official Documents',
     viewAuditLogBtn: 'View Audit Log'
   }
+};
+
+const facilityNameDict = {
+  'المستشفى الإندونيسي': 'Indonesian Hospital',
+  'مستشفى الإندونيسي': 'Indonesian Hospital',
+  'المستشفى الإندونيسي – بيت لاهيا': 'Indonesian Hospital – Beit Lahia',
+  'مستشفى كمال عدوان': 'Kamal Adwan Hospital',
+  'مستشفى كمال عدوان – بيت لاهيا': 'Kamal Adwan Hospital – Beit Lahia',
+  'مستشفى العودة - جباليا': 'Al-Awda Hospital - Jabalia',
+  'مستشفى العودة – شمال غزة / جباليا': 'Al-Awda Hospital – Jabalia',
+  'مستشفى العودة': 'Al-Awda Hospital',
+  'مجمع الشفاء الطبي': 'Al-Shifa Medical Complex',
+  'مجمع الشفاء الطبي – مدينة غزة': 'Al-Shifa Medical Complex – Gaza City',
+  'مستشفى الشفاء الطبي': 'Al-Shifa Medical Complex',
+  'المستشفى الأهلي العربي (المعمداني)': 'Ahli Arab Hospital (Al-Mamdani)',
+  'المستشفى الأهلي العربي (المعمداني) – مدينة غزة': 'Ahli Arab Hospital (Al-Mamdani) – Gaza City',
+  'مستشفى القدس': 'Al-Quds Medical Hospital',
+  'مستشفى القدس – مدينة غزة': 'Al-Quds Medical Hospital – Gaza City',
+  'مستشفى القدس الطبي': 'Al-Quds Medical Hospital',
+  'مستشفى أصدقاء المريض الخيري': 'Patient Friends Charitable Hospital',
+  'مستشفى أصدقاء المريض الخيري – مدينة غزة': 'Patient Friends Charitable Hospital – Gaza City',
+  'مستشفى أصدقاء المريض': 'Patient Friends Hospital',
+  'مستشفى شهداء الأقصى': 'Al-Aqsa Martyrs Hospital',
+  'مستشفى شهداء الأقصى – دير البلح': 'Al-Aqsa Martyrs Hospital – Deir Al-Balah',
+  'مستشفى العودة - النصيرات': 'Al-Awda Hospital - Nuseirat',
+  'مستشفى العودة – النصيرات': 'Al-Awda Hospital – Nuseirat',
+  'مجمع ناصر الطبي': 'Nasser Medical Complex',
+  'مجمع ناصر الطبي – خان يونس': 'Nasser Medical Complex – Khan Younis',
+  'المستشفى الأوروبي': 'European Gaza Hospital',
+  'المستشفى الأوروبي – خان يونس': 'European Gaza Hospital – Khan Younis',
+  'مستشفى الهلال الأحمر الفلسطيني': 'Palestine Red Crescent Hospital',
+  'مستشفى الهلال الأحمر الفلسطيني – خان يونس': 'Palestine Red Crescent Hospital – Khan Younis',
+  'مستشفى أبو يوسف النجار': 'Abu Yousuf Al-Najjar Hospital',
+  'مستشفى أبو يوسف النجار – رفح': 'Abu Yousuf Al-Najjar Hospital – Rafah',
+  'مستشفى الكويت التخصصي': 'Kuwaiti Specialty Hospital',
+  'مستشفى الكويت التخصصي – رفح': 'Kuwaiti Specialty Hospital – Rafah',
+  'جمعية بنك الدم المركزي': 'Central Blood Bank Society',
+  'الجهة الطبية': 'Medical Facility'
 };
 
 const docTitleDict = {
@@ -94,6 +152,14 @@ const docTitleDict = {
 
 const t = (key) => dictionary[currentLanguage.value === 'en' ? 'en' : 'ar'][key] || key;
 const translateDocTitle = (key) => currentLanguage.value === 'en' ? (docTitleDict[key] || key) : key;
+
+const translateHospitalName = (name) => {
+  if (!name) return currentLanguage.value === 'en' ? 'Medical Facility' : 'الجهة الطبية';
+  if (currentLanguage.value !== 'en') return name;
+  const trimmed = name.trim();
+  if (facilityNameDict[trimmed]) return facilityNameDict[trimmed];
+  return trimmed;
+};
 
 const documentsList = ref([
   { titleKey: 'اعتماد بنك الدم المركزي', size: '1.5MB' },

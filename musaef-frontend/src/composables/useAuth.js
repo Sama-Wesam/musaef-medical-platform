@@ -139,12 +139,14 @@ export function useAuth() {
         payload.append('facility_name', formData.facilityName);
         payload.append('facility_type', formData.facilityType);
         payload.append('license_number', formData.licenseNumber);
+        payload.append('manager_name', formData.managerName);
 
         if (formData.licenseFile) {
           payload.append('license_file', formData.licenseFile);
         }
 
         await authStore.registerHospital(payload);
+        redirectUserByRole(authStore.userRole);
       }
 
       return { success: true };

@@ -11,13 +11,14 @@ class NotifyNearbyDonors implements ShouldQueue
 {
     use InteractsWithQueue;
 
+    public int $tries = 3;
+
     /**
      * تنفيذ الحدث
      */
     public function handle(EmergencyCreated $event): void
     {
-        // بمجرد إنشاء الطوارئ، نقوم بتحويل الطلب إلى الـ Job الخاص بالذكاء الاصطناعي
-        // ليقوم بحساب المسافات، اختيار أفضل المتبرعين، وإرسال الإشعارات والـ SMS لهم
+        // بمجرد إنشاء الطوارئ، نقوم بتحويل الطلب إلى الـ Job الخاص بالذكاء الاصطناعي في الخلفية
         ProcessEmergencyMatchingJob::dispatch($event->bloodRequest);
     }
 }

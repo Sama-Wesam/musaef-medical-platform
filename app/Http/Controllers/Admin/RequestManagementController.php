@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Repositories\EmergencyRepository;
+use App\Models\BloodRequest;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -18,9 +19,6 @@ class RequestManagementController extends Controller
         $this->emergencyRepo = $emergencyRepo;
     }
 
-    /**
-     * جلب جميع طلبات الطوارئ النشطة
-     */
     public function index()
     {
         $requests = $this->emergencyRepo->getActiveEmergencies();
@@ -28,8 +26,22 @@ class RequestManagementController extends Controller
     }
 
     /**
-     * عرض تفاصيل طلب طوارئ
+     * ⚡ دالة Polling خفيفة لمراقبة وتحديث جميع الطلبات على مستعرض المسؤول
      */
+    public function livePollRequests()
+    {
+        $requests = BloodRequest::select('id', 'hospital_id', 'blood_type_id', 'units_required', 'status', 'urgency_level', 'created_at')
+            ->whereIn('status', ['pending', 'searching', 'active', 'open'])
+            ->latest()
+            ->get();
+
+        return $this->successResponse([
+            'count'     => $requests->count(),
+            'requests'  => $requests,
+            'timestamp' => now()->toDateTimeString()
+        ], 'تم تحديث قائمة طلبات الطوارئ الشاملة');
+    }
+
     public function show($id)
     {
         $request = $this->emergencyRepo->findById($id);
@@ -38,13 +50,10 @@ class RequestManagementController extends Controller
         return $this->successResponse($request);
     }
 
-    /**
-     * الإلغاء الإداري لطلب طوارئ (في حال كان الطلب وهمياً أو بالخطأ)
-     */
     public function cancelRequest($id)
     {
         $updated = $this->emergencyRepo->updateStatus($id, 'cancelled');
-        
+
         if ($updated) {
             return $this->successResponse(null, 'تم إلغاء الطلب إدارياً');
         }

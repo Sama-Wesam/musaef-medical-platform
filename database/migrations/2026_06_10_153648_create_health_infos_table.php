@@ -13,8 +13,10 @@ return new class extends Migration
             $table->foreignId('donor_id')->constrained('donors')->cascadeOnDelete();
             $table->decimal('weight', 5, 2)->nullable();
             $table->decimal('height', 5, 2)->nullable();
+            $table->date('last_donation_date')->nullable();
             $table->boolean('has_chronic_diseases')->default(false);
             $table->text('diseases_description')->nullable();
+            $table->json('questionnaire_answers')->nullable(); // تمت إضافته ليتطابق مع نموذج HealthInfo وتخزين إجابات الاستبيان
             $table->boolean('is_eligible')->default(true); // مؤهل طبياً للتبرع
             $table->text('rejection_reason')->nullable(); // سبب الرفض إن وجد
             $table->timestamps();

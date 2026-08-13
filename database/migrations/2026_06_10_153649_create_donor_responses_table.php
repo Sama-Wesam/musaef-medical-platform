@@ -12,8 +12,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('blood_request_id')->constrained()->cascadeOnDelete();
             $table->foreignId('donor_id')->constrained()->cascadeOnDelete();
-            $table->enum('status', ['pending', 'accepted', 'rejected', 'completed'])->default('pending');
-            $table->integer('eta_minutes')->nullable(); // الوقت المتوقع للوصول (ETA)
+            $table->enum('status', ['pending', 'accepted', 'rejected', 'completed'])->default('pending')->index(); // فهرس لتسريع تتبع الحالات النشطة
+            $table->integer('eta_minutes')->nullable();
             $table->timestamps();
         });
     }

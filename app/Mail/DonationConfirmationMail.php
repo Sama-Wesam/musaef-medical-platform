@@ -9,6 +9,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Carbon;
 
 class DonationConfirmationMail extends Mailable implements ShouldQueue
 {
@@ -21,6 +22,8 @@ class DonationConfirmationMail extends Mailable implements ShouldQueue
      */
     public function __construct(Donation $donation)
     {
+        // التحميل المسبق للعلاقات لتفادي مشكلة N+1 والأخطاء في الطوابير
+        $donation->loadMissing(['donor.user', 'hospital.user']);
         $this->donation = $donation;
     }
 
@@ -30,7 +33,7 @@ class DonationConfirmationMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'تأكيد التبرع بالدم - شكراً لبطولتك!',
+            subject: 'تأكيد التبرع بالدم - شكراً لبطولتك في منصة مسعف!',
         );
     }
 
@@ -39,14 +42,22 @@ class DonationConfirmationMail extends Mailable implements ShouldQueue
      */
     public function content(): Content
     {
+        $hospitalUser = $this->donation->hospital->facility_name
+            ?? $this->donation->hospital->user->name
+            ?? 'المستشفى';
+
+        $donationDate = $this->donation->donation_date
+            ? Carbon::parse($this->donation->donation_date)->format('Y-m-d')
+            : now()->format('Y-m-d');
+
         return new Content(
-            view: 'emails.donation_confirmation', // يجب إنشاء resources/views/emails/donation_confirmation.blade.php
+            view: 'emails.donation_confirmation',
             with: [
-                'donorName' => $this->donation->donor->user->name ?? 'بطلنا',
-                'hospitalName' => $this->donation->hospital->user->name ?? 'المستشفى',
-                'units' => $this->donation->units_donated,
-                'date' => $this->donation->donation_date->format('Y-m-d'),
-                'pointsEarned' => $this->donation->points_earned,
+                'donorName'    => $this->donation->donor->user->name ?? 'بطلنا',
+                'hospitalName' => $hospitalUser,
+                'units'        => $this->donation->units_donated ?? 1,
+                'date'         => $donationDate,
+                'pointsEarned' => $this->donation->points_earned ?? 50,
             ],
         );
     }
@@ -56,7 +67,6 @@ class DonationConfirmationMail extends Mailable implements ShouldQueue
      */
     public function attachments(): array
     {
-        // يمكنك لاحقاً إرفاق شهادة تقدير PDF هنا إذا أردت إضافة ميزة قوية
         return [];
     }
 }

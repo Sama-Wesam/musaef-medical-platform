@@ -29,7 +29,7 @@ class QRCardController extends Controller
         $qrData = [
             'card_id' => 'DONOR-' . str_pad($donor->id, 6, '0', STR_PAD_LEFT),
             'donor_name' => $user->name,
-            'blood_type' => $donor->bloodType->type ?? 'غير محدد',
+            'blood_type' => $donor->bloodType->name ?? 'غير محدد',
             'phone' => $donor->phone ?? $user->phone,
             'qr_code_data' => [
                 'donor_id' => $donor->id,

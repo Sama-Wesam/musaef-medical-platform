@@ -1,16 +1,22 @@
 <template>
-  <div class="sidebar-backdrop d-lg-none" @click="closeMobileSidebar"></div>
+  <div
+    class="sidebar-backdrop d-lg-none"
+    :class="{ 'show': isMobileOpen }"
+    @click="closeMobileSidebar"
+  ></div>
 
-  <aside class="hospital-sidebar d-flex flex-column justify-content-between" :dir="currentLocale === 'ar' ? 'rtl' : 'ltr'">
-
+  <aside
+    class="hospital-sidebar d-flex flex-column justify-content-between"
+    :class="{ 'show-mobile': isMobileOpen }"
+    :dir="currentLocale === 'ar' ? 'rtl' : 'ltr'"
+  >
     <div>
       <div class="d-flex justify-content-between align-items-center mb-3 d-lg-none pb-2 border-bottom">
         <h6 class="fw-bold mb-0 text-dark">{{ t('mainMenu') }}</h6>
-        <button class="btn-close text-reset shadow-none" @click="closeMobileSidebar"></button>
+        <button type="button" class="btn-close text-reset shadow-none" @click="closeMobileSidebar" aria-label="Close"></button>
       </div>
 
       <nav class="sidebar-menu">
-
         <RouterLink
           to="/hospital/dashboard"
           class="sidebar-item"
@@ -70,7 +76,6 @@
             <span class="sidebar-text">{{ t('settings') }}</span>
           </div>
         </RouterLink>
-
       </nav>
 
       <div class="support-card">
@@ -78,18 +83,16 @@
         <p class="support-text">{{ t('quickHelpText') }}</p>
         <button @click="contactSupport" class="support-btn">{{ t('contactSupport') }}</button>
       </div>
-
     </div>
 
     <div class="logout-wrapper">
       <button class="logout-btn" @click="handleLogout">{{ t('logout') }}</button>
     </div>
-
   </aside>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -102,6 +105,7 @@ import settingsIcon from '@/assets/icons/material-symbols_settings-outline.png';
 const router = useRouter();
 const authStore = useAuthStore();
 const currentLocale = computed(() => localStorage.getItem('musaef_lang') || 'ar');
+const isMobileOpen = ref(false);
 
 const dictionary = {
   ar: {
@@ -137,6 +141,7 @@ const contactSupport = () => {
 };
 
 const closeMobileSidebar = () => {
+  isMobileOpen.value = false;
   const sidebar = document.querySelector('.hospital-sidebar');
   const backdrop = document.querySelector('.sidebar-backdrop');
   if (sidebar) sidebar.classList.remove('show-mobile');
@@ -174,6 +179,22 @@ const handleLogout = async () => {
     .hospital-sidebar {
         position: fixed; top: 0; height: 100vh; z-index: 1050;
         box-shadow: 0 0 20px rgba(0,0,0,0.1); overflow-y: auto;
+    }
+
+    .hospital-sidebar[dir="rtl"] {
+        right: -300px;
+        left: auto;
+    }
+    .hospital-sidebar[dir="rtl"].show-mobile {
+        right: 0 !important;
+    }
+
+    .hospital-sidebar[dir="ltr"] {
+        left: -300px;
+        right: auto;
+    }
+    .hospital-sidebar[dir="ltr"].show-mobile {
+        left: 0 !important;
     }
 }
 

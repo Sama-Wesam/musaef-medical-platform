@@ -13,23 +13,19 @@ class UpdateProfileRequest extends FormRequest
 
     public function rules(): array
     {
-        // استخراج ID المستخدم الحالي لمنع خطأ البريد الإلكتروني المتكرر لنفس المستخدم
         $userId = $this->user()?->id;
 
         return [
             'name'         => 'nullable|string|max:255',
-            'email'        => 'nullable|email|unique:users,email,' . $userId,
+            'email'        => 'nullable|email|max:255|unique:users,email,' . $userId,
             'phone'        => 'nullable|string|max:20',
             'address'      => 'nullable|string|max:500',
-            'latitude'     => 'nullable|numeric',
-            'longitude'    => 'nullable|numeric',
+            'latitude'     => 'nullable|numeric|between:-90,90',
+            'longitude'    => 'nullable|numeric|between:-180,180',
             'is_available' => 'nullable|boolean',
         ];
     }
 
-    /**
-     * رسائل الخطأ المخصصة لتحديث الملف الشخصي.
-     */
     public function messages(): array
     {
         return [
@@ -40,7 +36,9 @@ class UpdateProfileRequest extends FormRequest
             'phone.max'         => 'رقم الهاتف يجب ألا يتجاوز 20 رقماً.',
             'address.max'       => 'العنوان طويل جداً.',
             'latitude.numeric'  => 'قيمة خط العرض يجب أن تكون رقمية.',
+            'latitude.between'  => 'قيمة خط العرض غير صالحة.',
             'longitude.numeric' => 'قيمة خط الطول يجب أن تكون رقمية.',
+            'longitude.between' => 'قيمة خط الطول غير صالحة.',
         ];
     }
 }

@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Musaef'),
+    'name' => env('APP_NAME', 'Musaef Medical Platform'),
 
     /*
     |--------------------------------------------------------------------------

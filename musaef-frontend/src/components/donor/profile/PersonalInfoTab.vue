@@ -1,70 +1,143 @@
 <template>
-  <div class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white h-100" :class="currentLanguage === 'ar' ? 'dir-rtl text-end' : 'dir-ltr text-start'">
-    <div class="d-flex align-items-center justify-content-between mb-3 mb-md-4 border-bottom pb-3">
+  <div
+    class="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white h-100 font-arial"
+    :class="currentLanguage === 'ar' ? 'dir-rtl text-end' : 'dir-ltr text-start'"
+  >
+    <!-- الهيدر الرئيسي لزر التعديل والعنوان -->
+    <div
+      class="d-flex align-items-center justify-content-between mb-3 mb-md-4 border-bottom pb-3"
+    >
       <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2 fs-6 fs-md-5">
-        <i class="bi bi-person-vcard text-danger fs-5" :class="currentLanguage === 'ar' ? 'ms-2' : 'me-2'"></i>
-        <span>{{ t('personalDataTitle') }}</span>
+        <i
+          class="bi bi-person-vcard text-danger fs-5"
+          :class="currentLanguage === 'ar' ? 'ms-2' : 'me-2'"
+        ></i>
+        <span>{{ t("personalDataTitle") }}</span>
       </h5>
       <button
         v-if="!isEditing"
         class="btn btn-outline-danger btn-sm rounded-pill px-3 py-1 fw-bold fs-8 d-flex align-items-center gap-1"
-        @click="isEditing = true"
+        @click="startEditing"
       >
         <i class="bi bi-pencil-square"></i>
-        <span>{{ t('editData') }}</span>
+        <span>{{ t("editData") }}</span>
       </button>
     </div>
 
-    <form @submit.prevent="saveData">
-      <div class="d-flex align-items-center gap-3 gap-md-4 mb-4 p-3 bg-light-subtle rounded-4 border flex-wrap flex-sm-nowrap">
-        <div class="position-relative mx-auto mx-sm-0">
+    <!-- بطاقة البروفايل العلوية (الصورة والاسم) -->
+    <div
+      class="p-3 bg-light rounded-4 border mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3"
+    >
+      <div class="d-flex align-items-center gap-3">
+        <div class="position-relative">
           <img
-            :src="avatarPreview || defaultAvatarImg"
+            :src="avatarPreview"
             alt="صورة المتبرع"
-            class="rounded-circle avatar-edit-img border border-3 border-danger shadow-sm"
-            style="width: 70px; height: 70px; object-fit: cover;"
-            @error="handleAvatarError"
+            class="rounded-circle donor-profile-avatar border shadow-sm"
+            @error="handleAvatarFallback"
           />
-
-          <label v-if="isEditing" class="position-absolute bottom-0 bg-danger text-white rounded-circle p-1 cursor-pointer shadow-sm" :class="currentLanguage === 'ar' ? 'start-0' : 'end-0'" style="width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;" :title="t('changeAvatar')">
-            <i class="bi bi-camera fs-9"></i>
-            <input type="file" class="d-none" accept="image/*" @change="handleImageUpload" />
-          </label>
+          <button
+            v-if="isEditing"
+            type="button"
+            class="btn btn-danger btn-sm rounded-circle position-absolute bottom-0 start-0 p-1 d-flex align-items-center justify-content-center avatar-upload-btn"
+            @click="triggerFileInput"
+            title="تغيير الصورة"
+          >
+            <i class="bi bi-camera-fill fs-8"></i>
+          </button>
+          <input
+            ref="fileInput"
+            type="file"
+            class="d-none"
+            accept="image/jpeg,image/png,image/jpg,image/webp"
+            @change="handleFileChange"
+          />
         </div>
-        <div class="text-center text-sm-start min-w-0 flex-grow-1" :class="currentLanguage === 'ar' ? 'text-sm-end' : 'text-sm-start'">
-          <h6 class="fw-bold text-dark mb-1 fs-7 text-truncate">{{ form.name || t('donor') }}</h6>
-          <p class="text-muted fs-8 mb-0">{{ t('certifiedDonor') }}</p>
+        <div>
+          <h6 class="fw-bold text-dark mb-1 fs-6">{{ form.name || "Sama Wesam" }}</h6>
+          <small class="text-muted fs-8 d-block">{{ t("certifiedDonor") }}</small>
         </div>
       </div>
+    </div>
 
-      <div class="row g-3" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
+    <!-- نموذج البيانات الشخصية -->
+    <form @submit.prevent="saveProfileData">
+      <div class="row g-3">
+        <!-- اسم المتبرع -->
         <div class="col-12 col-md-6">
-          <label class="form-label fs-8 text-dark fw-bold mb-1">{{ t('donorName') }}</label>
-          <input v-model="form.name" type="text" class="form-control fs-8" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'" :disabled="!isEditing" required />
+          <label class="form-label fs-8 fw-bold text-dark mb-1">{{
+            t("donorName")
+          }}</label>
+          <input
+            v-model="form.name"
+            type="text"
+            class="form-control fs-8 fw-medium"
+            :disabled="!isEditing"
+            required
+          />
         </div>
+
+        <!-- رقم الهاتف -->
         <div class="col-12 col-md-6">
-          <label class="form-label fs-8 text-dark fw-bold mb-1">{{ t('phoneNumber') }}</label>
-          <input v-model="form.phone" type="tel" class="form-control fs-8" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'" :disabled="!isEditing" />
+          <label class="form-label fs-8 fw-bold text-dark mb-1">{{ t("phone") }}</label>
+          <input
+            v-model="form.phone"
+            type="text"
+            class="form-control fs-8 fw-medium"
+            :disabled="!isEditing"
+            placeholder="0590000000"
+          />
         </div>
+
+        <!-- البريد الإلكتروني -->
         <div class="col-12 col-md-6">
-          <label class="form-label fs-8 text-dark fw-bold mb-1">{{ t('email') }}</label>
-          <input v-model="form.email" type="email" class="form-control fs-8" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'" :disabled="!isEditing" required />
+          <label class="form-label fs-8 fw-bold text-dark mb-1">{{ t("email") }}</label>
+          <input
+            v-model="form.email"
+            type="email"
+            class="form-control fs-8 fw-medium"
+            :disabled="!isEditing"
+            required
+          />
         </div>
+
+        <!-- فصيلة الدم -->
         <div class="col-12 col-md-6">
-          <label class="form-label fs-8 text-dark fw-bold mb-1">{{ t('bloodTypeLabel') }}</label>
-          <select v-model="form.blood_type_id" class="form-select fs-8" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'" :disabled="!isEditing">
-            <option v-for="type in [{id: 1, name: '+A'}, {id: 2, name: '-A'}, {id: 3, name: '+B'}, {id: 4, name: '-B'},{id: 5, name: '+AB'},{id: 6, name: '-AB'},{id: 7, name: '+O'},{id: 8, name: '-O'}]" :key="type.id" :value="type.id">
+          <label class="form-label fs-8 fw-bold text-dark mb-1">{{
+            t("bloodType")
+          }}</label>
+          <select
+            v-model="form.blood_type_id"
+            class="form-select fs-8 fw-medium"
+            :disabled="!isEditing"
+          >
+            <option v-for="type in bloodTypes" :key="type.id" :value="type.id">
               {{ type.name }}
             </option>
           </select>
         </div>
       </div>
 
-      <div v-if="isEditing" class="d-flex align-items-center justify-content-end gap-2 mt-4 pt-3 border-top flex-wrap" :class="currentLanguage === 'ar' ? 'flex-row' : 'flex-row'">
-        <button type="button" class="btn btn-light border px-3 px-md-4 py-2 rounded-3 fw-bold fs-8 flex-fill flex-sm-grow-0" @click="cancelEdit" :disabled="isLoading">{{ t('cancel') }}</button>
-        <button type="submit" class="btn btn-danger px-4 py-2 rounded-3 fw-bold fs-8 shadow-sm flex-fill flex-sm-grow-0" :disabled="isLoading">
-          <span v-if="isLoading">{{ t('saving') }}</span>
-          <span v-else>{{ t('saveUpdates') }}</span>
+      <!-- أزرار الإلغاء والحفظ -->
+      <div
+        v-if="isEditing"
+        class="d-flex align-items-center justify-content-end gap-2 mt-4 pt-3 border-top"
+      >
+        <button
+          type="button"
+          class="btn btn-light border px-4 py-1.5 rounded-3 fw-bold fs-8"
+          @click="cancelEditing"
+          :disabled="isSaving"
+        >
+          {{ t("cancel") }}
+        </button>
+        <button
+          type="submit"
+          class="btn btn-danger px-4 py-1.5 rounded-3 fw-bold fs-8 shadow-sm d-flex align-items-center gap-2"
+          :disabled="isSaving"
+        >
+          <i class="bi" :class="isSaving ? 'bi-hourglass-split' : 'bi-check-lg'"></i>
+          <span>{{ isSaving ? t("saving") : t("saveChanges") }}</span>
         </button>
       </div>
     </form>
@@ -72,185 +145,292 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, computed } from 'vue';
-import apiClient from '@/api/axios';
-import { useAuthStore } from '@/stores/authStore';
-import defaultAvatarImg from '@/assets/images/pngtree-whatsapp-default-profile-photo-vector-png-image_17034397.webp';
+import { ref, computed, watch } from "vue";
+import apiClient from "@/api/axios";
+import { useAuthStore } from "@/stores/authStore";
+
+import defaultAvatarImg from "@/assets/images/pngtree-whatsapp-default-profile-photo-vector-png-image_17034397.webp";
 
 const props = defineProps({
   profile: {
     type: Object,
-    default: () => ({})
-  }
+    default: () => ({}),
+  },
 });
 
-const emit = defineEmits(['update-profile']);
+const emit = defineEmits(["update-profile"]);
 const authStore = useAuthStore();
-const currentLanguage = computed(() => localStorage.getItem('musaef_lang') || 'ar');
+const currentLanguage = computed(() => localStorage.getItem("musaef_lang") || "ar");
+
+const fileInput = ref(null);
+const isEditing = ref(false);
+const isSaving = ref(false);
+const selectedFile = ref(null);
+const previewUrl = ref(null);
+const savedAvatarUrl = ref("");
+
+const bloodTypes = [
+  { id: 1, name: "A+" },
+  { id: 2, name: "A-" },
+  { id: 3, name: "B+" },
+  { id: 4, name: "B-" },
+  { id: 5, name: "AB+" },
+  { id: 6, name: "AB-" },
+  { id: 7, name: "O+" },
+  { id: 8, name: "O-" },
+];
 
 const translations = {
   ar: {
-    personalDataTitle: 'البيانات الشخصية',
-    editData: 'تعديل البيانات',
-    donor: 'متبرع',
-    certifiedDonor: 'متبرع معتمد في المنصة',
-    donorName: 'اسم المتبرع',
-    phoneNumber: 'رقم الهاتف',
-    email: 'البريد الإلكتروني',
-    bloodTypeLabel: 'فصيلة الدم',
-    cancel: 'إلغاء',
-    saving: 'جاري الحفظ...',
-    saveUpdates: 'حفظ التحديثات',
-    changeAvatar: 'تغيير الصورة الشخصية',
-    successUpdate: 'تم تحديث البيانات الشخصية بنجاح!',
-    errorUpdate: 'حدث خطأ أثناء التحديث.'
+    personalDataTitle: "البيانات الشخصية",
+    editData: "تعديل البيانات",
+    certifiedDonor: "متبرع معتمد في المنصة",
+    donorName: "اسم المتبرع",
+    phone: "رقم الهاتف",
+    email: "البريد الإلكتروني",
+    bloodType: "فصيلة الدم",
+    cancel: "إلغاء",
+    saving: "جاري الحفظ...",
+    saveChanges: "حفظ التحديثات",
+    successUpdate: "تم تحديث البيانات الشخصية بنجاح!",
+    errorUpdate: "حدث خطأ أثناء تحديث البيانات.",
   },
   en: {
-    personalDataTitle: 'Personal Data',
-    editData: 'Edit Data',
-    donor: 'Donor',
-    certifiedDonor: 'Certified Donor on Platform',
-    donorName: 'Donor Name',
-    phoneNumber: 'Phone Number',
-    email: 'Email',
-    bloodTypeLabel: 'Blood Type',
-    cancel: 'Cancel',
-    saving: 'Saving...',
-    saveUpdates: 'Save Updates',
-    changeAvatar: 'Change Avatar',
-    successUpdate: 'Personal data updated successfully!',
-    errorUpdate: 'An error occurred during update.'
-  }
+    personalDataTitle: "Personal Information",
+    editData: "Edit Information",
+    certifiedDonor: "Certified Donor on Platform",
+    donorName: "Donor Name",
+    phone: "Phone Number",
+    email: "Email Address",
+    bloodType: "Blood Type",
+    cancel: "Cancel",
+    saving: "Saving...",
+    saveChanges: "Save Changes",
+    successUpdate: "Personal information updated successfully!",
+    errorUpdate: "An error occurred while updating profile data.",
+  },
 };
 
 const t = (key) => {
-  const lang = currentLanguage.value === 'en' ? 'en' : 'ar';
+  const lang = currentLanguage.value === "en" ? "en" : "ar";
   return translations[lang][key] || key;
 };
 
-const isEditing = ref(false);
-const isLoading = ref(false);
-const selectedFile = ref(null);
-
-const getInitialFormData = () => {
-  const userObj = props.profile?.user || authStore.user || {};
-  return {
-    name: userObj.name || authStore.user?.name || '',
-    email: userObj.email || authStore.user?.email || '',
-    phone: props.profile?.phone || authStore.user?.phone || '',
-    blood_type_id: props.profile?.blood_type_id || authStore.user?.blood_type_id || 1,
-  };
-};
-
-const form = ref(getInitialFormData());
-
-const getAvatarUrl = () => {
-  const avatar = props.profile?.user?.avatar || authStore.user?.avatar;
-  if (!avatar) return defaultAvatarImg;
-  if (avatar.startsWith('http') || avatar.startsWith('blob:')) {
-    return avatar;
-  }
-  return `http://localhost:8000/storage/${avatar}`;
-};
-
-const avatarPreview = ref(getAvatarUrl());
-
-watch(() => props.profile, (newVal) => {
-  if (newVal && Object.keys(newVal).length > 0) {
-    form.value = {
-      name: newVal.user?.name || authStore.user?.name || form.value.name,
-      email: newVal.user?.email || authStore.user?.email || form.value.email,
-      phone: newVal.phone || form.value.phone,
-      blood_type_id: newVal.blood_type_id || form.value.blood_type_id,
-    };
-    avatarPreview.value = getAvatarUrl();
-  }
-}, { deep: true, immediate: true });
-
-onMounted(() => {
-  if (!form.value.name && authStore.user) {
-    form.value = getInitialFormData();
-    avatarPreview.value = getAvatarUrl();
-  }
+const form = ref({
+  name: "",
+  phone: "",
+  email: "",
+  blood_type_id: 7,
 });
 
-const handleImageUpload = (e) => {
+const avatarPreview = computed(() => {
+  if (previewUrl.value) return previewUrl.value;
+  if (savedAvatarUrl.value) return savedAvatarUrl.value;
+
+  const rawAvatar =
+    authStore.user?.avatar_url ||
+    authStore.userAvatar ||
+    props.profile?.avatar_url ||
+    props.profile?.user?.avatar_url ||
+    props.profile?.user?.avatar;
+
+  if (!rawAvatar || typeof rawAvatar !== "string") return defaultAvatarImg;
+
+  let clean = rawAvatar.trim().replace(/\\/g, "/");
+  if (!clean) return defaultAvatarImg;
+
+  if (
+    clean.startsWith("http://") ||
+    clean.startsWith("https://") ||
+    clean.startsWith("blob:") ||
+    clean.startsWith("data:")
+  ) {
+    return clean;
+  }
+
+  clean = clean.replace(/^\/?storage\//, "").replace(/^\//, "");
+  return `http://localhost:8000/storage/${clean}`;
+});
+
+watch(
+  () => props.profile,
+  (newVal) => {
+    if (newVal && Object.keys(newVal).length > 0) {
+      const userObj = newVal.user || {};
+      form.value = {
+        name: userObj.name || newVal.name || authStore.user?.name || "",
+        phone: newVal.phone || userObj.phone || authStore.user?.phone || "",
+        email: userObj.email || newVal.email || authStore.user?.email || "",
+        blood_type_id: Number(
+          newVal.blood_type_id ||
+            userObj.blood_type_id ||
+            authStore.user?.blood_type_id ||
+            7
+        ),
+      };
+
+      const initialAvatar =
+        newVal.avatar_url || userObj.avatar_url || newVal.avatar || userObj.avatar;
+      if (initialAvatar) {
+        if (
+          initialAvatar.startsWith("http") ||
+          initialAvatar.startsWith("blob:") ||
+          initialAvatar.startsWith("data:")
+        ) {
+          savedAvatarUrl.value = initialAvatar;
+        } else {
+          const clean = initialAvatar.replace(/^\/?storage\//, "").replace(/^\//, "");
+          savedAvatarUrl.value = `http://localhost:8000/storage/${clean}`;
+        }
+      }
+    }
+  },
+  { immediate: true, deep: true }
+);
+
+const startEditing = () => {
+  isEditing.value = true;
+};
+
+const cancelEditing = () => {
+  isEditing.value = false;
+  selectedFile.value = null;
+  previewUrl.value = null;
+};
+
+const triggerFileInput = () => {
+  if (fileInput.value) fileInput.value.click();
+};
+
+const handleFileChange = (e) => {
   const file = e.target.files[0];
   if (file) {
     selectedFile.value = file;
-    avatarPreview.value = URL.createObjectURL(file);
+    previewUrl.value = URL.createObjectURL(file);
   }
 };
 
-const handleAvatarError = (e) => {
-  e.target.src = defaultAvatarImg;
-};
-
-const cancelEdit = () => {
-  isEditing.value = false;
-  selectedFile.value = null;
-  form.value = getInitialFormData();
-  avatarPreview.value = getAvatarUrl();
-};
-
-const saveData = async () => {
-  isLoading.value = true;
+const saveProfileData = async () => {
+  isSaving.value = true;
   try {
     const formData = new FormData();
-    formData.append('name', form.value.name);
-    formData.append('email', form.value.email);
-    formData.append('phone', form.value.phone || '');
-    formData.append('blood_type_id', form.value.blood_type_id || '');
+    formData.append("name", form.value.name);
+    formData.append("email", form.value.email);
+    if (form.value.phone) formData.append("phone", form.value.phone);
+    if (form.value.blood_type_id)
+      formData.append("blood_type_id", form.value.blood_type_id);
+
     if (selectedFile.value) {
-      formData.append('avatar', selectedFile.value);
+      formData.append("avatar", selectedFile.value);
     }
 
-    const response = await apiClient.post('/donor/profile/update', formData);
-    const responseBody = response.data || response;
-    const updatedData = responseBody.data || responseBody;
-    const userData = updatedData.user || updatedData;
+    const res = await apiClient.post("/donor/profile/update", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
 
-    const bloodTypesMap = { 1: '+A', 2: '-A', 3: '+B', 4: '-B', 5: '+AB', 6: '-AB', 7: '+O', 8: '-O' };
-    const selectedBloodTypeName = bloodTypesMap[form.value.blood_type_id] || '+O';
+    const responseData = res?.data?.data || res?.data;
 
-    const newAvatarUrl = userData.avatar
-      ? (userData.avatar.startsWith('http') ? userData.avatar : `http://localhost:8000/storage/${userData.avatar}`)
-      : avatarPreview.value;
+    const userObj = responseData?.user || {};
+    let updatedAvatarUrl =
+      responseData?.avatar_url ||
+      responseData?.avatar ||
+      userObj.avatar_url ||
+      userObj.avatar;
 
-    if (authStore.updateUserData) {
-      authStore.updateUserData({
-        name: form.value.name,
-        email: form.value.email,
-        phone: form.value.phone,
-        blood_type_id: form.value.blood_type_id,
-        blood_type_name: selectedBloodTypeName,
-        avatar: newAvatarUrl
-      });
+    if (updatedAvatarUrl && typeof updatedAvatarUrl === "string") {
+      if (
+        !updatedAvatarUrl.startsWith("http") &&
+        !updatedAvatarUrl.startsWith("blob:") &&
+        !updatedAvatarUrl.startsWith("data:")
+      ) {
+        const clean = updatedAvatarUrl.replace(/^\/?storage\//, "").replace(/^\//, "");
+        updatedAvatarUrl = `http://localhost:8000/storage/${clean}`;
+      }
+      savedAvatarUrl.value = `${updatedAvatarUrl}?t=${new Date().getTime()}`;
+    }
+
+    const updatedUser = {
+      ...(authStore.user || {}),
+      ...userObj,
+      name: form.value.name,
+      email: form.value.email,
+      avatar_url: savedAvatarUrl.value || authStore.user?.avatar_url,
+      avatar: savedAvatarUrl.value || authStore.user?.avatar,
+    };
+
+    if (authStore.setUser) {
+      authStore.setUser(updatedUser);
+    } else if (authStore.updateUserData) {
+      authStore.updateUserData(updatedUser);
     } else if (authStore.user) {
-      authStore.user.name = form.value.name;
-      authStore.user.email = form.value.email;
-      authStore.user.avatar = newAvatarUrl;
+      Object.assign(authStore.user, updatedUser);
     }
 
-    selectedFile.value = null;
+    if (authStore.userAvatar !== undefined) {
+      authStore.userAvatar = savedAvatarUrl.value;
+    }
+
+    const existingStorageUser = JSON.parse(
+      localStorage.getItem("musaef_user") || localStorage.getItem("user") || "{}"
+    );
+    const mergedUser = { ...existingStorageUser, ...updatedUser };
+    localStorage.setItem("musaef_user", JSON.stringify(mergedUser));
+    localStorage.setItem("user", JSON.stringify(mergedUser));
+
+    window.dispatchEvent(
+      new CustomEvent("musaef_profile_updated", { detail: updatedUser })
+    );
+
     isEditing.value = false;
-    emit('update-profile', updatedData);
-    alert(t('successUpdate'));
+    selectedFile.value = null;
+    previewUrl.value = null;
+
+    emit("update-profile", responseData);
+    alert(t("successUpdate"));
   } catch (error) {
-    console.error('خطأ عند الحفظ:', error);
-    alert(t('errorUpdate'));
+    console.error("خطأ أثناء حفظ التحديثات الشخصية:", error);
+    alert(t("errorUpdate"));
   } finally {
-    isLoading.value = false;
+    isSaving.value = false;
+  }
+};
+
+const handleAvatarFallback = (e) => {
+  if (e.target.src !== defaultAvatarImg) {
+    e.target.src = defaultAvatarImg;
   }
 };
 </script>
 
 <style scoped>
-.dir-rtl { direction: rtl; }
-.dir-ltr { direction: ltr; }
-.fs-7 { font-size: 0.92rem; }
-.fs-8 { font-size: 0.82rem; }
-.fs-9 { font-size: 0.72rem; }
-.cursor-pointer { cursor: pointer; }
-.bg-light-subtle { background-color: #f8fafc; }
+.font-arial {
+  font-family: Arial, Helvetica, sans-serif !important;
+}
+
+.dir-rtl {
+  direction: rtl;
+}
+.dir-ltr {
+  direction: ltr;
+}
+
+.donor-profile-avatar {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+}
+
+.avatar-upload-btn {
+  width: 28px;
+  height: 28px;
+}
+
+.fs-6 {
+  font-size: 1.05rem;
+}
+.fs-8 {
+  font-size: 0.82rem;
+}
 </style>

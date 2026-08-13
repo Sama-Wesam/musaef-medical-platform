@@ -125,9 +125,17 @@ const currentLanguage = computed(() => locale.value || 'ar');
   align-items: center;
   justify-content: center;
   transition: .3s;
+  color: #fff;
 }
 
-.social-icons a:hover { background: #E53935; border-color: #E53935; }
+/* التعديل هنا: تحديد لون الأيقونة بالأبيض وتغيير لون الخلفية عند التمرير بشكل واضح */
+.social-icons a:hover {
+  background: #E53935;
+  border-color: #E53935;
+  color: #fff !important; /* ضمان بقاء لون أيقونة الموقع أبيض وواضح فوق الخلفية الحمراء */
+  transform: translateY(-2px); /* إضافة حركة بسيطة لإبراز الزر عند الهوفر */
+}
+
 .social-icons i { font-size: 16px; }
 
 .copyright {

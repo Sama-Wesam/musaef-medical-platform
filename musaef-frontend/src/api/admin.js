@@ -2,9 +2,10 @@ import apiClient from './axios';
 
 export default {
   // جلب بيانات الحالات الحية لرادار الطوارئ
-  getEmergencyRadarData(urgencyFilter = 'all') {
+  getEmergencyRadarData(urgencyFilter = 'all', config = {}) {
     return apiClient.get('/admin/emergency-radar', {
-      params: { urgency: urgencyFilter }
+      params: { urgency: urgencyFilter },
+      ...config
     });
   },
 

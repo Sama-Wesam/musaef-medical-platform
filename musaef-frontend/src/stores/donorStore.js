@@ -1,9 +1,12 @@
-// src/stores/donorStore.js
 import { defineStore } from 'pinia';
+import apiClient from '@/api/axios';
 
 export const useDonorStore = defineStore('donor', {
   state: () => ({
-    // استرجاع حالة الأهلية المحفوظة مسبقاً أو تعيين القيمة الافتراضية
+    donors: [],
+    myCard: null,
+    donationsHistory: [],
+    loading: false,
     healthEligibility: JSON.parse(localStorage.getItem('donor_health_eligibility')) || {
       isEligible: true,
       statusTitle: 'مؤهل للتبرع',
@@ -32,8 +35,18 @@ export const useDonorStore = defineStore('donor', {
           messageType: 'success'
         };
       }
-      // حفظ الحالة في التخزين المحلي لضمان المزامنة بين اللوحة والملف الشخصي
       localStorage.setItem('donor_health_eligibility', JSON.stringify(this.healthEligibility));
+    },
+
+    async syncEligibilityWithServer() {
+      try {
+        const response = await apiClient.get('/donor/health-status');
+        if (response?.data?.is_eligible !== undefined) {
+          this.setEligibility(response.data.is_eligible);
+        }
+      } catch (e) {
+        console.warn('استخدام حالة الأهلية المخزنة محلياً عند تعذر الاتصال بالخادم');
+      }
     }
   }
 });

@@ -3,9 +3,10 @@
 namespace App\Repositories;
 
 use App\Models\Donation;
+use App\Repositories\Contracts\DonationRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 
-class DonationRepository
+class DonationRepository implements DonationRepositoryInterface
 {
     public function getDonationsByDonor(int $donorId): Collection
     {
@@ -30,7 +31,7 @@ class DonationRepository
 
     public function getTotalPointsForDonor(int $donorId): int
     {
-        return Donation::where('donor_id', $donorId)
+        return (int) Donation::where('donor_id', $donorId)
             ->where('status', 'successful')
             ->sum('points_earned');
     }

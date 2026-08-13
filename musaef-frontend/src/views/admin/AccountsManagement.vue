@@ -1,51 +1,71 @@
 <template>
   <AdminLayout>
-    <div class="accounts-management-view container-fluid px-2 px-md-3" :dir="langStore.dir">
-
+    <div
+      class="accounts-management-view container-fluid px-2 px-md-3"
+      :dir="langStore.dir"
+    >
       <!-- 1. التبويبات العلوية الرئيسية -->
-      <div class="main-tabs-header border-bottom mb-4 overflow-x-auto tabs-scroll-container">
-        <div class="d-flex align-items-center justify-content-start gap-3 gap-md-5 ps-3 min-tabs-width">
-
-          <!-- 1. المتبرعون -->
+      <div
+        class="main-tabs-header border-bottom mb-4 overflow-x-auto tabs-scroll-container"
+      >
+        <div
+          class="d-flex align-items-center justify-content-start gap-3 gap-md-5 ps-3 min-tabs-width"
+        >
           <button
             class="tab-item btn border-0 py-3 text-muted fs-8 fw-semibold d-flex align-items-center gap-2 text-nowrap"
             :class="{ 'active-tab': accountsStore.activeTab === 'donors' }"
             @click="switchTab('donors')"
           >
-            <img :src="getIconUrl('Vector (2).png')" alt="donors icon" width="18" height="18" />
-            <span>{{ t('donorsTab') }}</span>
+            <img
+              :src="getIconUrl('Vector (2).png')"
+              alt="donors icon"
+              width="18"
+              height="18"
+            />
+            <span>{{ t("donorsTab") }}</span>
           </button>
 
-          <!-- 2. المستشفيات -->
           <button
             class="tab-item btn border-0 py-3 text-muted fs-8 fw-semibold d-flex align-items-center gap-2 text-nowrap"
             :class="{ 'active-tab': accountsStore.activeTab === 'hospitals' }"
             @click="switchTab('hospitals')"
           >
-            <img :src="getIconUrl('solar_hospital-linear (2).png')" alt="hospitals icon" width="18" height="18" />
-            <span>{{ t('hospitalsTab') }}</span>
+            <img
+              :src="getIconUrl('solar_hospital-linear (2).png')"
+              alt="hospitals icon"
+              width="18"
+              height="18"
+            />
+            <span>{{ t("hospitalsTab") }}</span>
           </button>
 
-          <!-- 3. الصلاحيات -->
           <button
             class="tab-item btn border-0 py-3 text-muted fs-8 fw-semibold d-flex align-items-center gap-2 text-nowrap"
             :class="{ 'active-tab': accountsStore.activeTab === 'roles' }"
             @click="switchTab('roles')"
           >
-            <img :src="getIconUrl('Vector (1).png')" alt="roles icon" width="18" height="18" />
-            <span>{{ t('rolesTab') }}</span>
+            <img
+              :src="getIconUrl('Vector (1).png')"
+              alt="roles icon"
+              width="18"
+              height="18"
+            />
+            <span>{{ t("rolesTab") }}</span>
           </button>
 
-          <!-- 4. سجل العمليات -->
           <button
             class="tab-item btn border-0 py-3 text-muted fs-8 fw-semibold d-flex align-items-center gap-2 text-nowrap"
             :class="{ 'active-tab': accountsStore.activeTab === 'logs' }"
             @click="switchTab('logs')"
           >
-            <img :src="getIconUrl('el_list-alt (2).png')" alt="logs icon" width="18" height="18" />
-            <span>{{ t('logsTab') }}</span>
+            <img
+              :src="getIconUrl('el_list-alt (2).png')"
+              alt="logs icon"
+              width="18"
+              height="18"
+            />
+            <span>{{ t("logsTab") }}</span>
           </button>
-
         </div>
       </div>
 
@@ -78,24 +98,23 @@
         :logsList="filteredLogs"
       />
 
-      <!-- 3. أرقام التنقل والصفحات (Pagination) -->
+      <!-- 3. التنقل والصفحات -->
       <AccountsPagination />
-
     </div>
   </AdminLayout>
 </template>
 
 <script setup>
-import { onMounted, computed, watch } from 'vue';
-import AdminLayout from '@/layouts/AdminLayout.vue';
-import { useAccountsStore } from '@/stores/accountsStore';
-import { useLangStore } from '@/stores/langStore';
+import { onMounted, onUnmounted, computed, watch } from "vue";
+import AdminLayout from "@/layouts/AdminLayout.vue";
+import { useAccountsStore } from "@/stores/accountsStore";
+import { useLangStore } from "@/stores/langStore";
 
-import DonorsTab from '@/components/admin/accountsmanagement/DonorsTab.vue';
-import HospitalsTab from '@/components/admin/accountsmanagement/HospitalsTab.vue';
-import RolesTab from '@/components/admin/accountsmanagement/RolesTab.vue';
-import LogsTab from '@/components/admin/accountsmanagement/LogsTab.vue';
-import AccountsPagination from '@/components/admin/accountsmanagement/AccountsPagination.vue';
+import DonorsTab from "@/components/admin/accountsmanagement/DonorsTab.vue";
+import HospitalsTab from "@/components/admin/accountsmanagement/HospitalsTab.vue";
+import RolesTab from "@/components/admin/accountsmanagement/RolesTab.vue";
+import LogsTab from "@/components/admin/accountsmanagement/LogsTab.vue";
+import AccountsPagination from "@/components/admin/accountsmanagement/AccountsPagination.vue";
 
 const accountsStore = useAccountsStore();
 const langStore = useLangStore();
@@ -103,67 +122,41 @@ const currentLanguage = computed(() => langStore.currentLang);
 
 const dictionary = {
   ar: {
-    donorsTab: 'المتبرعون',
-    hospitalsTab: 'المستشفيات',
-    rolesTab: 'الصلاحيات والأدوار',
-    logsTab: 'سجل العمليات'
+    donorsTab: "المتبرعون",
+    hospitalsTab: "المستشفيات",
+    rolesTab: "الصلاحيات والأدوار",
+    logsTab: "سجل العمليات",
   },
   en: {
-    donorsTab: 'Donors',
-    hospitalsTab: 'Hospitals',
-    rolesTab: 'Roles & Permissions',
-    logsTab: 'Audit Logs'
-  }
+    donorsTab: "Donors",
+    hospitalsTab: "Hospitals",
+    rolesTab: "Roles & Permissions",
+    logsTab: "Audit Logs",
+  },
 };
 
-const t = (key) => dictionary[currentLanguage.value === 'en' ? 'en' : 'ar'][key] || key;
+const t = (key) => dictionary[currentLanguage.value === "en" ? "en" : "ar"][key] || key;
 
 const switchTab = (tab) => {
   accountsStore.activeTab = tab;
-  accountsStore.searchQuery = '';
-  accountsStore.selectedFilter = 'all';
+  accountsStore.searchQuery = "";
+  accountsStore.selectedFilter = "all";
+  accountsStore.currentPage = 1;
   accountsStore.refreshCurrentTab();
 };
 
-const filteredDonors = computed(() => {
-  if (!accountsStore.searchQuery) return accountsStore.donors;
-  return accountsStore.donors.filter(d =>
-    (d.name && d.name.toLowerCase().includes(accountsStore.searchQuery.toLowerCase())) ||
-    (d.phone && d.phone.includes(accountsStore.searchQuery))
-  );
-});
-
-const filteredHospitals = computed(() => {
-  if (!accountsStore.searchQuery) return accountsStore.hospitals;
-  return accountsStore.hospitals.filter(h =>
-    (h.name && h.name.toLowerCase().includes(accountsStore.searchQuery.toLowerCase())) ||
-    (h.location && h.location.toLowerCase().includes(accountsStore.searchQuery.toLowerCase()))
-  );
-});
-
-const filteredRoles = computed(() => {
-  if (!accountsStore.searchQuery) return accountsStore.roles;
-  return accountsStore.roles.filter(r =>
-    (r.name && r.name.toLowerCase().includes(accountsStore.searchQuery.toLowerCase())) ||
-    (r.roleTitle && r.roleTitle.toLowerCase().includes(accountsStore.searchQuery.toLowerCase()))
-  );
-});
-
-const filteredLogs = computed(() => {
-  if (!accountsStore.searchQuery) return accountsStore.auditLogs;
-  return accountsStore.auditLogs.filter(l =>
-    (l.user && l.user.toLowerCase().includes(accountsStore.searchQuery.toLowerCase())) ||
-    (l.details && l.details.toLowerCase().includes(accountsStore.searchQuery.toLowerCase()))
-  );
-});
+const filteredDonors = computed(() => accountsStore.donors);
+const filteredHospitals = computed(() => accountsStore.hospitals);
+const filteredRoles = computed(() => accountsStore.roles);
+const filteredLogs = computed(() => accountsStore.auditLogs);
 
 const getIconUrl = (fileName) => {
-  if (!fileName) return '';
-  if (fileName.startsWith('http') || fileName.startsWith('data:')) return fileName;
+  if (!fileName) return "";
+  if (fileName.startsWith("http") || fileName.startsWith("data:")) return fileName;
   try {
     return new URL(`../../assets/icons/${fileName}`, import.meta.url).href;
   } catch (e) {
-    return '';
+    return "";
   }
 };
 
@@ -172,17 +165,23 @@ watch([() => accountsStore.searchQuery, () => accountsStore.selectedFilter], () 
 });
 
 onMounted(() => {
-  accountsStore.fetchDonors();
+  accountsStore.startPolling(5000);
+});
+
+onUnmounted(() => {
+  accountsStore.stopPolling();
 });
 </script>
 
 <style scoped>
 .accounts-management-view {
-  font-family: 'Cairo', sans-serif;
+  font-family: "Cairo", sans-serif;
   padding-bottom: 24px;
 }
 
-.fs-8 { font-size: 0.82rem; }
+.fs-8 {
+  font-size: 0.82rem;
+}
 
 .tabs-scroll-container {
   scrollbar-width: none;
@@ -214,7 +213,7 @@ onMounted(() => {
 }
 
 .tab-item.active-tab::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -1px;
   left: 0;

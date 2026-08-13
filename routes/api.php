@@ -5,14 +5,13 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\BloodRequestController;
 use App\Http\Controllers\API\DonationController;
-use App\Http\Controllers\API\MedicalGuidelineController;
 use App\Http\Controllers\API\PublicController;
 use App\Http\Controllers\Donor\DonationCenterController;
 use App\Http\Controllers\Donor\DonationHistoryController;
 
 /*
 |--------------------------------------------------------------------------
-| API Routes - منصة مسعف
+| API Routes - منصة مسعف (محدثة لمنع التضارب وضمان حماية المسارات)
 |--------------------------------------------------------------------------
 */
 
@@ -23,6 +22,9 @@ Route::prefix('public')->group(function () {
     Route::get('/partners', [PublicController::class, 'getPartnersHospitals']);
     Route::post('/contact', [PublicController::class, 'sendContactMessage']);
     Route::get('/nearby-facilities', [PublicController::class, 'getNearbyFacilities']);
+
+    // ⚡ مسار الـ Polling السريع للزوار/الصفحة الرئيسية
+    Route::get('/polling/stats', [PublicController::class, 'getPollingStats']);
 });
 
 // 2. مسارات المصادقة العامة (Guest Auth Routes)
@@ -32,16 +34,20 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 Route::post('/register/donor', [AuthController::class, 'registerDonor']);
 Route::post('/register/hospital', [AuthController::class, 'registerHospital']);
 
-// 3. مسارات الاستعلام العام والطوارئ
-Route::get('/emergencies/active', [BloodRequestController::class, 'index']);
-Route::get('/medical-guidelines', [MedicalGuidelineController::class, 'index']);
-Route::get('/medical-guidelines/{id}', [MedicalGuidelineController::class, 'show']);
-Route::get('/history', [DonationHistoryController::class, 'index']);
-Route::get('/rewards-and-card', [DonationHistoryController::class, 'index']);
+// مسارات تسجيل الدخول الاجتماعي عبر الشبكات (Google, Facebook, Apple)
+Route::get('/auth/social/{provider}/redirect', [AuthController::class, 'redirectToProvider']);
+Route::get('/auth/social/{provider}/callback', [AuthController::class, 'handleProviderCallback']);
 
-// 4. المسارات المحمية بواسطة Sanctum Token
+// 3. المسارات المحمية بواسطة Sanctum Token
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    // استعلام الطوارئ والتبرعات داخل النطاق المحمي (حماية من الوصول غير المصرح به)
+    Route::get('/emergencies/active', [BloodRequestController::class, 'index']);
+    Route::get('/history', [DonationHistoryController::class, 'index']);
+    Route::get('/rewards-and-card', [DonationHistoryController::class, 'index']);
+
+    // توحيد مسار قبول الطلب واستكمال التبرع
     Route::post('/emergencies/{requestId}/accept', [DonationController::class, 'acceptEmergency']);
     Route::post('/donations/confirm', [DonationController::class, 'store']);
 
@@ -52,7 +58,13 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // استدعاء ملفات المسارات الفرعية للأدوار المختلفة
-    require __DIR__.'/donor.php';
-    require __DIR__.'/hospital.php';
-    require __DIR__.'/admin.php';
+    if (file_exists(__DIR__.'/donor.php')) {
+        require __DIR__.'/donor.php';
+    }
+    if (file_exists(__DIR__.'/hospital.php')) {
+        require __DIR__.'/hospital.php';
+    }
+    if (file_exists(__DIR__.'/admin.php')) {
+        require __DIR__.'/admin.php';
+    }
 });

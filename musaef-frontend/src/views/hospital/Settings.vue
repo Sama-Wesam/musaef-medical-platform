@@ -61,9 +61,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import HospitalLayout from '@/layouts/HospitalLayout.vue';
 import hospitalApi from '@/api/hospital';
+import { useAuthStore } from '@/stores/authStore';
 
 import ProfileTab from '@/components/hospital/settings/ProfileTab.vue';
 import GeneralSettingsTab from '@/components/hospital/settings/GeneralSettingsTab.vue';
@@ -71,6 +72,7 @@ import SecurityTab from '@/components/hospital/settings/SecurityTab.vue';
 import NotificationsTab from '@/components/hospital/settings/NotificationsTab.vue';
 import VerificationTab from '@/components/hospital/settings/VerificationTab.vue';
 
+const authStore = useAuthStore();
 const currentLanguage = computed(() => localStorage.getItem('musaef_lang') || 'ar');
 
 const dictionary = {
@@ -97,16 +99,21 @@ const dictionary = {
 const t = (key) => dictionary[currentLanguage.value === 'en' ? 'en' : 'ar'][key] || key;
 
 const activeTab = ref('profile');
-const hospitalData = ref({
-  name: 'مجمع الشفاء الطبي',
-  contact_email: 'alawda@musaef.com',
-  phone_number: '082824400',
-  city: 'غزة',
-  address: 'غزة - الرمال',
-  latitude: 31.514,
-  longitude: 34.448,
-  working_hours: '24 ساعة 7 أيام في الأسبوع'
-});
+
+const getDefaultHospitalData = () => {
+  return {
+    name: authStore.user?.facility_name || authStore.user?.name || 'الجهة الطبية',
+    contact_email: authStore.user?.email || 'hospital@musaef.com',
+    phone_number: authStore.user?.phone || '082451111',
+    city: 'غزة',
+    address: authStore.user?.address || 'غزة - جباليا',
+    latitude: authStore.user?.latitude || 31.532,
+    longitude: authStore.user?.longitude || 34.491,
+    working_hours: '24 ساعة 7 أيام في الأسبوع'
+  };
+};
+
+const hospitalData = ref(getDefaultHospitalData());
 
 const fetchHospitalProfile = async () => {
   try {
@@ -114,20 +121,37 @@ const fetchHospitalProfile = async () => {
     const data = res.data?.data || res.data;
     if (data) {
       hospitalData.value = {
-        name: data.user?.name || data.name || hospitalData.value.name,
+        name: data.facility_name || data.user?.name || data.name || hospitalData.value.name,
         contact_email: data.contact_email || data.user?.email || hospitalData.value.contact_email,
         phone_number: data.phone_number || data.phone || hospitalData.value.phone_number,
         city: data.city || hospitalData.value.city || 'غزة',
-        address: data.address || hospitalData.value.address,
-        latitude: parseFloat(data.latitude) || hospitalData.value.latitude || 31.514,
-        longitude: parseFloat(data.longitude) || hospitalData.value.longitude || 34.448,
-        working_hours: data.working_hours || hospitalData.value.working_hours || (currentLanguage.value === 'en' ? '24 Hours 7 Days a Week' : '24 ساعة 7 أيام في الأسبوع')
+        address: data.address || hospitalData.value.address || 'غزة',
+        latitude: parseFloat(data.latitude) || hospitalData.value.latitude,
+        longitude: parseFloat(data.longitude) || hospitalData.value.longitude,
+        working_hours: data.working_hours || hospitalData.value.working_hours
       };
+      return;
     }
   } catch (err) {
-    console.error('خطأ في جلب بيانات الإعدادات:', err);
+    console.log('اعتماد بيانات المستخدم المسجل دخوله.');
   }
+
+  const savedLocal = localStorage.getItem('musaef_hospital_settings');
+  if (savedLocal) {
+    try {
+      hospitalData.value = JSON.parse(savedLocal);
+      return;
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  hospitalData.value = getDefaultHospitalData();
 };
+
+watch(() => authStore.user, () => {
+  fetchHospitalProfile();
+}, { deep: true });
 
 onMounted(() => {
   fetchHospitalProfile();

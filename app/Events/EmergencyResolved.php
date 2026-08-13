@@ -20,7 +20,7 @@ class EmergencyResolved implements ShouldBroadcast
      */
     public function __construct(BloodRequest $bloodRequest)
     {
-        $this->bloodRequest = $bloodRequest; 
+        $this->bloodRequest = $bloodRequest;
     }
 
     /**
@@ -28,7 +28,6 @@ class EmergencyResolved implements ShouldBroadcast
      */
     public function broadcastOn(): array
     {
-        // بث على الخريطة العامة لإخفاء النقطة الحمراء الخاصة بهذه الحالة
         return [
             new Channel('emergencies.live'),
         ];
@@ -37,5 +36,16 @@ class EmergencyResolved implements ShouldBroadcast
     public function broadcastAs(): string
     {
         return 'emergency.resolved';
+    }
+
+    public function broadcastWith(): array
+    {
+        return [
+            'id'          => $this->bloodRequest->id,
+            'status'      => is_object($this->bloodRequest->status) && method_exists($this->bloodRequest->status, 'toArray')
+                             ? $this->bloodRequest->status->toArray()
+                             : $this->bloodRequest->status,
+            'resolved_at' => now()->toIso8601String(),
+        ];
     }
 }

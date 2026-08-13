@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -11,75 +12,88 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * الحقول القابلة للتعبئة.
-     */
+    protected $table = 'users';
+
     protected $fillable = [
         'name',
         'email',
         'phone',
-        'role', // admin, donor, hospital, guest
+        'image',
+        'role',
         'is_active',
+        'fcm_token',
         'password',
     ];
 
-    /**
-     * الحقول المخفية.
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * تحويل أنواع البيانات.
-     */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'is_active' => 'boolean',
+            'password'          => 'hashed',
+            'is_active'         => 'boolean',
+            'role'              => UserRole::class,
         ];
     }
 
+    /**
+     * توجيه إشعارات FCM للتوكن الخاص بجهاز المستخدم
+     */
+    public function routeNotificationForFcm(): ?string
+    {
+        return $this->fcm_token;
+    }
+
     // -----------------------------------------------------------------
-    // Helper Methods (دوال مساعدة لفحص الصلاحيات والأدوار)
+    // Helper Methods
     // -----------------------------------------------------------------
 
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        $roleValue = is_object($this->role) && method_exists($this->role, 'value')
+            ? $this->role->value
+            : (string) $this->role;
+
+        return strtolower($roleValue) === 'admin';
     }
 
     public function isHospital(): bool
     {
-        return $this->role === 'hospital';
+        $roleValue = is_object($this->role) && method_exists($this->role, 'value')
+            ? $this->role->value
+            : (string) $this->role;
+
+        return strtolower($roleValue) === 'hospital';
     }
 
     public function isDonor(): bool
     {
-        return $this->role === 'donor';
+        $roleValue = is_object($this->role) && method_exists($this->role, 'value')
+            ? $this->role->value
+            : (string) $this->role;
+
+        return strtolower($roleValue) === 'donor';
     }
 
     // -----------------------------------------------------------------
-    // العلاقات (Relationships)
+    // Relationships
     // -----------------------------------------------------------------
 
-    // علاقة المستخدم كـ (متبرع)
     public function donor()
     {
         return $this->hasOne(Donor::class);
     }
 
-    // علاقة المستخدم كـ (مستشفى)
     public function hospital()
     {
         return $this->hasOne(Hospital::class);
     }
 
-    // الإشعارات الخاصة بالمستخدم
-    public function notifications()
+    public function customNotifications()
     {
         return $this->hasMany(Notification::class);
     }

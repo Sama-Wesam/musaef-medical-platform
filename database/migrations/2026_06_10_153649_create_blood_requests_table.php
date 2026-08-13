@@ -13,8 +13,8 @@ return new class extends Migration
             $table->foreignId('hospital_id')->constrained()->cascadeOnDelete();
             $table->foreignId('blood_type_id')->constrained()->cascadeOnDelete();
             $table->integer('units_required');
-            $table->enum('emergency_level', ['normal', 'high', 'critical'])->default('normal'); // مستوى الطوارئ
-            $table->enum('status', ['pending', 'searching', 'accepted', 'completed', 'cancelled'])->default('pending');
+            $table->enum('emergency_level', ['normal', 'high', 'critical'])->default('normal');
+            $table->enum('status', ['pending', 'searching', 'accepted', 'completed', 'cancelled'])->default('pending')->index(); // فهرس لتسريع استعلامات الطلبات المفتوحة
             $table->timestamps();
         });
     }

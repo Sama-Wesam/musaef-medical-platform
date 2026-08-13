@@ -10,13 +10,15 @@ use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\RewardsController;
 use App\Http\Controllers\Admin\RolesController;
 use App\Http\Controllers\Admin\SettingsController;
-use App\Http\Controllers\Admin\MedicalGuidelineController;
 use App\Http\Controllers\Admin\EmergencyRadarController;
 use App\Http\Controllers\Admin\AccountManagementController;
 use App\Http\Controllers\Admin\MessageController;
 use App\Http\Controllers\Admin\NotificationController;
 
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
+
+    // ⚡ مسار الـ Polling الفوري للوحة الإدارة (مع توجيه صحيح للدالة داخل DashboardController)
+    Route::get('/polling/live-feed', [DashboardController::class, 'livePollingFeed']);
 
     Route::get('/dashboard', [DashboardController::class, 'index']);
 
@@ -31,10 +33,11 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     // مركز التحليلات الذكية والتقارير
     Route::get('/analytics', [AnalyticsController::class, 'index']);
     Route::get('/analytics/heatmap', [AnalyticsController::class, 'heatMapData']);
+    Route::get('/analytics/heat-map', [AnalyticsController::class, 'heatMapData']);
     Route::get('/analytics/all-alerts', [AnalyticsController::class, 'allAlerts']);
     Route::get('/analytics/alerts', [AnalyticsController::class, 'allAlerts']);
 
-    // مسار أداء جميع المستشفيات 
+    // مسار أداء جميع المستشفيات
     Route::get('/analytics/all-hospitals-performance', [AnalyticsController::class, 'allHospitalsPerformance']);
     Route::get('/analytics/hospitals-performance', [AnalyticsController::class, 'allHospitalsPerformance']);
 
@@ -69,9 +72,10 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::apiResource('messages', MessageController::class)->only(['index', 'show', 'destroy']);
     Route::post('/messages/{id}/reply', [MessageController::class, 'reply']);
 
-    // الذكاء الاصطناعي ومركز التبرع
+    // الذكاء الاصطناعي ومراجعة الحسابات والمستشفيات (AI Fraud & Review)
     Route::post('/fraud/analyze', [FraudDetectionController::class, 'analyzeHospital']);
-    Route::apiResource('medical-guidelines', MedicalGuidelineController::class);
+    Route::post('/fraud/review-account', [AccountManagementController::class, 'reviewAccount']);
+    Route::post('/fraud/analyze-hospital', [FraudDetectionController::class, 'analyzeHospital']);
 
     // المكافآت والإعدادات
     Route::apiResource('rewards', RewardsController::class)->only(['index', 'store', 'destroy']);

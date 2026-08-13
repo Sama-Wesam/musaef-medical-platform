@@ -5,29 +5,28 @@
       <span class="badge bg-danger text-white rounded-pill px-2 py-1 fs-9">{{ t('aiBadge') }}</span>
     </div>
     <div class="d-flex flex-column gap-2 mb-3">
-      <div class="p-2 bg-light rounded-3 d-flex align-items-center justify-content-between fs-8 border-start border-4 border-danger">
-        <div class="d-flex align-items-center gap-2">
-          <span class="fw-bold text-dark" dir="ltr">-O</span>
-          <span class="badge bg-danger-subtle text-danger rounded-pill px-2 py-1 fs-9">{{ t('veryLowCritical') }}</span>
+      <template v-if="combinedAlerts && combinedAlerts.length > 0">
+        <div
+          v-for="(alertItem, index) in combinedAlerts"
+          :key="index"
+          class="p-2 bg-light rounded-3 d-flex align-items-center justify-content-between fs-8 border-start border-4"
+          :class="alertItem.status === 'critical' ? 'border-danger' : 'border-warning'"
+        >
+          <div class="d-flex align-items-center gap-2">
+            <span class="fw-bold text-dark" dir="ltr">{{ alertItem.blood_type }}</span>
+            <span :class="['badge rounded-pill px-2 py-1 fs-9', alertItem.status === 'critical' ? 'bg-danger-subtle text-danger' : 'bg-warning-subtle text-warning-emphasis']">
+              {{ alertItem.status === 'critical' ? t('veryLowCritical') : t('low') }}
+            </span>
+          </div>
+          <small class="text-muted fs-9">{{ alertItem.available_text }}</small>
         </div>
-        <small class="text-muted fs-9">{{ t('available2Units') }}</small>
-      </div>
+      </template>
 
-      <div class="p-2 bg-light rounded-3 d-flex align-items-center justify-content-between fs-8 border-start border-4 border-warning">
-        <div class="d-flex align-items-center gap-2">
-          <span class="fw-bold text-dark" dir="ltr">-B</span>
-          <span class="badge bg-warning-subtle text-warning-emphasis rounded-pill px-2 py-1 fs-9">{{ t('low') }}</span>
+      <template v-else>
+        <div class="text-center py-3 text-muted fs-8">
+          {{ currentLanguage === 'en' ? 'All blood types are within safe levels.' : 'جميع الفصائل ضمن المستويات الآمنة حالياً.' }}
         </div>
-        <small class="text-muted fs-9">{{ t('available5Units') }}</small>
-      </div>
-
-      <div class="p-2 bg-light rounded-3 d-flex align-items-center justify-content-between fs-8 border-start border-4 border-warning">
-        <div class="d-flex align-items-center gap-2">
-          <span class="fw-bold text-dark" dir="ltr">+A</span>
-          <span class="badge bg-warning-subtle text-warning-emphasis rounded-pill px-2 py-1 fs-9">{{ t('low') }}</span>
-        </div>
-        <small class="text-muted fs-9">{{ t('available3Units') }}</small>
-      </div>
+      </template>
     </div>
     <button class="btn btn-light bg-light text-secondary btn-sm w-100 rounded-pill fs-8 fw-bold" @click="handleEmergencyAction">
       {{ t('actionBtn') }}
@@ -36,9 +35,17 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+
+const props = defineProps({
+  alerts: {
+    type: Array,
+    default: () => []
+  }
+});
 
 const currentLanguage = computed(() => localStorage.getItem('musaef_lang') || 'ar');
+const emergencyAlerts = ref([]);
 
 const dictionary = {
   ar: {
@@ -46,9 +53,6 @@ const dictionary = {
     aiBadge: 'ذكاء اصطناعي',
     veryLowCritical: 'منخفض جداً (حرج)',
     low: 'منخفض',
-    available2Units: 'المتوفر: 2 وحدة فقط',
-    available5Units: 'المتوفر: 5 وحدة',
-    available3Units: 'المتوفر: 3 وحدة فقط',
     actionBtn: 'إطلاق نداء طارئ أو التواصل مع بنوك مجاورة'
   },
   en: {
@@ -56,14 +60,54 @@ const dictionary = {
     aiBadge: 'AI Powered',
     veryLowCritical: 'Very Low (Critical)',
     low: 'Low',
-    available2Units: 'Available: 2 units only',
-    available5Units: 'Available: 5 units',
-    available3Units: 'Available: 3 units only',
     actionBtn: 'Dispatch Emergency Call or Contact Nearby Banks'
   }
 };
 
 const t = (key) => dictionary[currentLanguage.value === 'en' ? 'en' : 'ar'][key] || key;
+
+const loadLocalEmergencyAlerts = () => {
+  try {
+    const saved = localStorage.getItem('musaef_emergency_requests');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) {
+        emergencyAlerts.value = parsed
+          .filter(req => req.status !== 'completed' && req.status !== 'مكتملة')
+          .map(req => ({
+            blood_type: req.bloodType || req.blood_type || 'O-',
+            status: 'critical',
+            available_text: currentLanguage.value === 'en'
+              ? `Emergency call (${req.units || 1} units needed)`
+              : `نداء طارئ نشط (مطلوب ${req.units || 1} وحدات)`
+          }));
+      }
+    }
+  } catch (e) {
+    console.error('Error loading emergency alerts:', e);
+  }
+};
+
+const combinedAlerts = computed(() => {
+  return [...emergencyAlerts.value, ...(props.alerts || [])];
+});
+
+const handleStorageChange = (e) => {
+  if (e.key === 'musaef_emergency_requests' || !e.key) {
+    loadLocalEmergencyAlerts();
+  }
+};
+
+onMounted(() => {
+  loadLocalEmergencyAlerts();
+  window.addEventListener('musaef_emergency_updated', loadLocalEmergencyAlerts);
+  window.addEventListener('storage', handleStorageChange);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('musaef_emergency_updated', loadLocalEmergencyAlerts);
+  window.removeEventListener('storage', handleStorageChange);
+});
 
 const handleEmergencyAction = () => {
   const isEn = currentLanguage.value === 'en';
@@ -71,7 +115,7 @@ const handleEmergencyAction = () => {
     ? "Would you like to dispatch an instant emergency call to donors via Smart Matching AI, or contact nearby blood banks?\n\nClick 'OK' for Emergency Call, or 'Cancel' to contact nearby banks."
     : "هل تريد إطلاق نداء طارئ فوري للمتبرعين عبر نظام Smart Matching AI، أم التواصل مع بنوك الدم المجاورة؟\n\nاضغط 'موافق' لإطلاق النداء الطارئ، أو 'إلغاء' للتواصل مع بنوك الدم المجاورة.");
   if (action) {
-    alert(isEn ? "🚨 Emergency call dispatched successfully for type (O-) and nearby donors notified!" : "🚨 تم إطلاق النداء الطارئ بنجاح لفصيلة (-O) وتم تنبيه المتبرعين القريبين!");
+    alert(isEn ? "🚨 Emergency call dispatched successfully for critical blood types!" : "🚨 تم إطلاق النداء الطارئ بنجاح للفصائل الحرجة وتم تنبيه المتبرعين القريبين!");
   } else {
     alert(isEn ? "📞 Opening communication channel with regional blood banks..." : "📞 جاري فتح نافذة الاتصال والتنسيق مع بنوك الدم الإقليمية المجاورة...");
   }

@@ -21,28 +21,38 @@ class EmergencyCreated implements ShouldBroadcast
      */
     public function __construct(BloodRequest $bloodRequest)
     {
-        $this->bloodRequest = $bloodRequest; 
+        $this->bloodRequest = $bloodRequest->loadMissing(['hospital.user', 'bloodType']);
     }
 
     /**
      * القناة التي سيتم بث الحدث عليها (لتحديث الخريطة المباشرة)
-     *
-     * @return array<int, \Illuminate\Broadcasting\Channel>
      */
     public function broadcastOn(): array
     {
-        // بث على قناة عامة لكي تظهر النقطة الحمراء على خريطة الطوارئ فوراً
         return [
             new Channel('emergencies.live'),
             new PrivateChannel('admin.dashboard')
         ];
     }
 
-    /**
-     * اسم الحدث كما سيظهر في الواجهة الأمامية (Vue.js)
-     */
     public function broadcastAs(): string
     {
-        return 'new.emergency'; //
+        return 'new.emergency';
+    }
+
+    public function broadcastWith(): array
+    {
+        return [
+            'id'               => $this->bloodRequest->id,
+            'latitude'         => (float) ($this->bloodRequest->hospital->latitude ?? $this->bloodRequest->latitude ?? 0),
+            'longitude'        => (float) ($this->bloodRequest->hospital->longitude ?? $this->bloodRequest->longitude ?? 0),
+            'hospital_name'    => $this->bloodRequest->hospital->facility_name ?? $this->bloodRequest->hospital->user->name ?? 'مستشفى غير محدد',
+            'blood_type'       => $this->bloodRequest->bloodType->name ?? $this->bloodRequest->blood_type ?? '',
+            'emergency_level'  => is_object($this->bloodRequest->emergency_level) && method_exists($this->bloodRequest->emergency_level, 'toArray')
+                                  ? $this->bloodRequest->emergency_level->toArray()
+                                  : $this->bloodRequest->emergency_level,
+            'units_required'   => $this->bloodRequest->units_required ?? 1,
+            'created_at'       => $this->bloodRequest->created_at ? $this->bloodRequest->created_at->toIso8601String() : now()->toIso8601String(),
+        ];
     }
 }

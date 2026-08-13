@@ -3,13 +3,18 @@
 namespace App\Repositories;
 
 use App\Models\User;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
-class UserRepository
+class UserRepository implements UserRepositoryInterface
 {
-    public function getAllUsers(): Collection
+    /**
+     * جلب كافة المستخدمين مع دعم التقسيم الافتراضي لرفع الأداء
+     */
+    public function getAllUsers(int $perPage = 15): LengthAwarePaginator
     {
-        return User::all();
+        return User::latest()->paginate($perPage);
     }
 
     public function getUserById(int $id): ?User
@@ -17,9 +22,12 @@ class UserRepository
         return User::find($id);
     }
 
-    public function getUsersByRole(string $role): Collection
+    /**
+     * جلب المستخدمين حسب الرتبة مع دعم التقسيم المباشر
+     */
+    public function getUsersByRole(string $role, int $perPage = 15): LengthAwarePaginator
     {
-        return User::where('role', $role)->get();
+        return User::where('role', $role)->latest()->paginate($perPage);
     }
 
     public function createUser(array $data): User

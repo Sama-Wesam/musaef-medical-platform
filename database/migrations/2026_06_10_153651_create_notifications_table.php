@@ -9,14 +9,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('notifications', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete(); // المستخدم المستهدف
-            $table->string('title');
-            $table->text('body');
-            $table->string('type')->default('info'); // emergency, info, reward, system
-            $table->unsignedBigInteger('related_id')->nullable(); // لربط الإشعار بطلب دم أو مكافأة
-            $table->string('related_type')->nullable(); // نوع العنصر المرتبط (Model)
-            $table->boolean('is_read')->default(false);
+            $table->uuid('id')->primary(); // support UUID primary key used by Laravel Database Notifications
+            $table->nullableMorphs('notifiable');
+            $table->foreignId('user_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->string('title')->nullable();
+            $table->text('body')->nullable();
+            $table->string('type')->default('info')->nullable();
+            $table->unsignedBigInteger('related_id')->nullable();
+            $table->string('related_type')->nullable();
+            $table->text('data')->nullable(); // ⚡ العمود المطلوب لإشعارات Laravel Database Notifications
+            $table->boolean('is_read')->default(false)->index(); // فهرس لتسريع استعلامات الإشعارات غير المقروءة عبر الـ Polling
             $table->timestamp('read_at')->nullable();
             $table->timestamps();
         });

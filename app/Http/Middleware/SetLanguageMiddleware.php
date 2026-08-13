@@ -17,10 +17,11 @@ class SetLanguageMiddleware
         if (str_contains($rawLang, ',')) {
             $rawLang = explode(',', $rawLang)[0];
         }
+
         $lang = strtolower(trim(substr($rawLang, 0, 2)));
 
-        // 3. اعتماد اللغة   
-        if (in_array($lang, ['ar', 'en'])) {
+        // 3. اعتماد اللغة المحددة
+        if (in_array($lang, ['ar', 'en'], true)) {
             App::setLocale($lang);
         } else {
             App::setLocale('ar');

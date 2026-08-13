@@ -54,18 +54,8 @@ const langStore = useLangStore();
 const currentLanguage = computed(() => langStore.currentLang);
 
 const dictionary = {
-  ar: {
-    all: 'الكل',
-    critical: 'حرجة',
-    medium: 'متوسط',
-    low: 'منخفض'
-  },
-  en: {
-    all: 'All',
-    critical: 'Critical',
-    medium: 'Medium',
-    low: 'Low'
-  }
+  ar: { all: 'الكل', critical: 'حرجة', medium: 'متوسط', low: 'منخفض' },
+  en: { all: 'All', critical: 'Critical', medium: 'Medium', low: 'Low' }
 };
 
 const t = (key) => dictionary[currentLanguage.value === 'en' ? 'en' : 'ar'][key] || key;
@@ -73,19 +63,7 @@ const t = (key) => dictionary[currentLanguage.value === 'en' ? 'en' : 'ar'][key]
 
 <style scoped>
 .fs-8 { font-size: 0.8rem; }
-.dot-badge {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-  flex-shrink: 0;
-}
-
-.filter-scroll-container {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-.filter-scroll-container::-webkit-scrollbar {
-  display: none;
-}
+.dot-badge { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.filter-scroll-container { scrollbar-width: none; -ms-overflow-style: none; }
+.filter-scroll-container::-webkit-scrollbar { display: none; }
 </style>

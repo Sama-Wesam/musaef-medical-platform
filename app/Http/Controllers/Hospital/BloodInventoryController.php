@@ -19,34 +19,61 @@ class BloodInventoryController extends Controller
     }
 
     /**
-     * عرض المخزون الحالي
+     * عرض المخزون الحالي والإحصائيات الحية
      */
     public function index(Request $request)
     {
-        $hospitalId = $request->user()->hospital ? $request->user()->hospital->id : $request->user()->id;
-        $inventory = $this->hospitalService->getInventory($hospitalId);
+        $hospital = $request->user()->hospital;
+        if (!$hospital) {
+            return $this->notFoundResponse('حساب المستخدم الحالي غير مرتبط بجهة طبية');
+        }
 
-        return $this->successResponse($inventory, 'تم جلب مخزون الدم الخاص بالمستشفى بنجاح');
+        $inventoryData = $this->hospitalService->getInventoryData($hospital->id);
+
+        return $this->successResponse($inventoryData, 'تم جلب بيانات مخزون بنك الدم والإحصائيات بنجاح');
     }
 
     /**
-     * التحديث اليدوي للمخزون (إضافة أو خصم وحدات)
+     * ⚡ دالة Polling سريعة جداً للمخزون
+     */
+    public function liveInventoryPoll(Request $request)
+    {
+        $hospital = $request->user()->hospital;
+        if (!$hospital) {
+            return $this->notFoundResponse('حساب المستخدم غير مرتبط بجهة طبية');
+        }
+
+        $inventoryData = $this->hospitalService->getInventoryData($hospital->id);
+
+        return $this->successResponse([
+            'inventory' => $inventoryData,
+            'timestamp' => now()->toDateTimeString()
+        ], 'تم إرجاع أحدث بيانات المخزون المباشر');
+    }
+
+    /**
+     * التحديث اليدوي للمخزون
      */
     public function update(Request $request)
     {
+        $hospital = $request->user()->hospital;
+        if (!$hospital) {
+            return $this->notFoundResponse('حساب المستخدم الحالي غير مرتبط بجهة طبية');
+        }
+
         $validated = $request->validate([
             'blood_type_id' => 'required|exists:blood_types,id',
             'units'         => 'required|integer|min:1',
-            'operation'     => 'required|in:add,sub' // add للإضافة، sub للخصم
+            'operation'     => 'required|in:add,sub',
+            'notes'         => 'nullable|string|max:255'
         ]);
 
-        $hospitalId = $request->user()->hospital ? $request->user()->hospital->id : $request->user()->id;
-
         $success = $this->hospitalService->manualInventoryUpdate(
-            $hospitalId,
+            $hospital->id,
             $validated['blood_type_id'],
             $validated['units'],
-            $validated['operation']
+            $validated['operation'],
+            $validated['notes'] ?? null
         );
 
         if ($success) {

@@ -7,7 +7,7 @@
       @click="accountsStore.setPage(accountsStore.currentPage - 1)"
     >
       <span v-if="langStore.currentLang === 'en'">&lt;</span>
-      <span v-else">&gt;</span>
+      <span v-else>&gt;</span>
     </button>
 
     <!-- أزرار أرقام الصفحات -->
@@ -28,7 +28,7 @@
       @click="accountsStore.setPage(accountsStore.currentPage + 1)"
     >
       <span v-if="langStore.currentLang === 'en'">&gt;</span>
-      <span v-else">&lt;</span>
+      <span v-else>&lt;</span>
     </button>
   </div>
 </template>

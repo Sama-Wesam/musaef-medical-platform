@@ -11,27 +11,93 @@ export const useAuthStore = defineStore('auth', {
   getters: {
     isAuthenticated: (state) => !!state.token,
     userName: (state) => state.user?.name || 'مستخدم',
-    userRole: (state) => state.user?.role || 'donor',
+    userRole: (state) => state.user?.role || null,
     isHospital: (state) => state.user?.role === 'hospital' || state.user?.role === 'blood_bank',
+
+    userAvatar: (state) => {
+      const rawAvatar = state.user?.avatar_url
+                     || state.user?.avatar
+                     || state.user?.donor?.user?.avatar_url
+                     || state.user?.donor?.user?.avatar
+                     || state.user?.donor?.avatar;
+
+      if (!rawAvatar || typeof rawAvatar !== 'string') return null;
+
+      let cleanPath = rawAvatar.trim().replace(/\\/g, '/');
+      if (!cleanPath) return null;
+
+      if (cleanPath.startsWith('http://') || cleanPath.startsWith('https://') || cleanPath.startsWith('blob:') || cleanPath.startsWith('data:')) {
+        return cleanPath;
+      }
+
+      cleanPath = cleanPath.replace(/^\/?storage\//, '').replace(/^\//, '');
+      return `http://localhost:8000/storage/${cleanPath}`;
+    }
   },
 
   actions: {
-    setAuthData(data) {
-      const responseData = data.data || data;
-      const token = responseData.token || data.token;
-      const user = responseData.user || data.user;
+    setAuthData(responsePayload) {
+      const payload = responsePayload?.data || responsePayload;
+      const innerData = payload?.data || payload;
+
+      const token = innerData?.token || payload?.token || responsePayload?.token;
+      const user = innerData?.user || payload?.user || responsePayload?.user;
 
       if (token && user) {
         this.token = token;
         this.user = user;
+
         localStorage.setItem('token', token);
         localStorage.setItem('musaef_token', token);
         localStorage.setItem('user', JSON.stringify(user));
         localStorage.setItem('musaef_user', JSON.stringify(user));
+
         if (user.role) {
           localStorage.setItem('user_role', user.role);
         }
       }
+    },
+
+    updateUserData(newUserData) {
+      if (!this.user) {
+        this.user = {};
+      }
+
+      // تنظيف البيانات والتأكد من عدم استبدال البيانات القديمة بـ undefined
+      const cleanedData = {};
+      Object.keys(newUserData || {}).forEach((key) => {
+        if (newUserData[key] !== undefined && newUserData[key] !== null) {
+          cleanedData[key] = newUserData[key];
+        }
+      });
+
+      // مزامنة حقول الصورة avatar و avatar_url معاً
+      if (cleanedData.avatar) {
+        cleanedData.avatar_url = cleanedData.avatar;
+      } else if (cleanedData.avatar_url) {
+        cleanedData.avatar = cleanedData.avatar_url;
+      }
+
+      this.user = {
+        ...this.user,
+        ...cleanedData
+      };
+
+      if (this.user.donor) {
+        this.user.donor = {
+          ...this.user.donor,
+          ...cleanedData
+        };
+        if (this.user.donor.user) {
+          this.user.donor.user = {
+            ...this.user.donor.user,
+            ...cleanedData
+          };
+        }
+      }
+
+      localStorage.setItem('user', JSON.stringify(this.user));
+      localStorage.setItem('musaef_user', JSON.stringify(this.user));
     },
 
     async login(credentials) {
@@ -79,7 +145,6 @@ export const useAuthStore = defineStore('auth', {
         this.user = null;
         this.error = null;
 
-        // تطهير مستهدف للمفاتيح الأمنية دون مسح تفضيلات اللغة أو الإعدادات العامة
         localStorage.removeItem('token');
         localStorage.removeItem('musaef_token');
         localStorage.removeItem('user');

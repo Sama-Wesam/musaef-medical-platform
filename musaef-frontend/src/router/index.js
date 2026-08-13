@@ -1,35 +1,39 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
 
-// 1. استيراد الصفحات العامة
+// 1. استيراد مباشر لصفحة الهبوط الرئيسية للتحميل السريع الأولي (Static Import)
 import Home from '@/views/public/HomeView.vue';
-import About from '@/views/public/AboutView.vue';
-import BloodGuide from '@/views/public/BloodGuide.vue';
 
-// 2. استيراد صفحات المصادقة
-import LoginRegister from '@/views/auth/LoginRegister.vue';
-import ForgotPassword from '@/views/auth/ForgotPassword.vue';
-import ResetPassword from '@/views/auth/ResetPassword.vue';
+// التحميل المتأخر لباقي الصفحات لتقسيم الكود (Lazy Loading & Code Splitting)
 
-// 3. استيراد صفحات بوابة المتبرع
-import DonorDashboard from '@/views/donor/Dashboard.vue';
-import DonationCenter from '@/views/donor/DonationCenter.vue';
-import DonorProfile from '@/views/donor/Profile.vue';
-import DonorAchievements from '@/views/donor/AchievementsView.vue';
+// الصفحات العامة الفرعية
+const About = () => import('@/views/public/AboutView.vue');
+const BloodGuide = () => import('@/views/public/BloodGuide.vue');
 
-// 4. استيراد صفحات بوابة المستشفى وبنك الدم
-import HospitalDashboard from '@/views/hospital/Dashboard.vue';
-import HospitalRequests from '@/views/hospital/EmergencyRequests.vue';
-import HospitalInventory from '@/views/hospital/BloodInventory.vue';
-import HospitalNotifications from '@/views/hospital/Notifications.vue';
-import HospitalSettings from '@/views/hospital/Settings.vue';
+// 2. صفحات المصادقة
+const LoginRegister = () => import('@/views/auth/LoginRegister.vue');
+const ForgotPassword = () => import('@/views/auth/ForgotPassword.vue');
+const ResetPassword = () => import('@/views/auth/ResetPassword.vue');
 
-// 5. استيراد صفحات لوحة تحكم الإدارة العليا
-import AdminDashboard from '@/views/admin/Dashboard.vue';
-import AdminLiveRadar from '@/views/admin/LiveRadar.vue';
-import AdminAnalytics from '@/views/admin/Analytics.vue';
-import AdminAccounts from '@/views/admin/AccountsManagement.vue';
-import AdminSettings from '@/views/admin/AdvancedSettings.vue';
+// 3. صفحات بوابة المتبرع
+const DonorDashboard = () => import('@/views/donor/Dashboard.vue');
+const DonationCenter = () => import('@/views/donor/DonationCenter.vue');
+const DonorProfile = () => import('@/views/donor/Profile.vue');
+const DonorAchievements = () => import('@/views/donor/AchievementsView.vue');
+
+// 4. صفحات بوابة المستشفى وبنك الدم
+const HospitalDashboard = () => import('@/views/hospital/Dashboard.vue');
+const HospitalRequests = () => import('@/views/hospital/EmergencyRequests.vue');
+const HospitalInventory = () => import('@/views/hospital/BloodInventory.vue');
+const HospitalNotifications = () => import('@/views/hospital/Notifications.vue');
+const HospitalSettings = () => import('@/views/hospital/Settings.vue');
+
+// 5. صفحات لوحة تحكم الإدارة العليا
+const AdminDashboard = () => import('@/views/admin/Dashboard.vue');
+const AdminLiveRadar = () => import('@/views/admin/LiveRadar.vue');
+const AdminAnalytics = () => import('@/views/admin/Analytics.vue');
+const AdminAccounts = () => import('@/views/admin/AccountsManagement.vue');
+const AdminSettings = () => import('@/views/admin/AdvancedSettings.vue');
 
 const routes = [
   // --- المسارات العامة ---
@@ -75,14 +79,29 @@ const router = createRouter({
   }
 });
 
-router.beforeEach((to, from, next) => {
+// Navigation Guard متوافق 100% مع Vue Router 4 ومعتمد على إرجاع القيم بدون next() المطرودة
+router.beforeEach((to) => {
   const token = localStorage.getItem('token') || localStorage.getItem('musaef_token');
 
+  // استخراج دور المستخدم بأمان تام من جميع المفاتيح المحتملة
   let userRole = localStorage.getItem('user_role');
+
+  if (!userRole) {
+    const rawUser = localStorage.getItem('user') || localStorage.getItem('musaef_user');
+    if (rawUser) {
+      try {
+        const parsed = JSON.parse(rawUser);
+        userRole = parsed.role || parsed.type || null;
+      } catch (e) {
+        userRole = null;
+      }
+    }
+  }
+
   if (!userRole) {
     try {
       const authStore = useAuthStore();
-      userRole = authStore.userRole;
+      userRole = authStore.userRole || authStore.user?.role;
     } catch (e) {
       userRole = null;
     }
@@ -97,26 +116,34 @@ router.beforeEach((to, from, next) => {
   // 1. إعادة توجيه المستخدمين المسجلين مسبقاً من صفحات الزوار/المصادقة إلى لوحتهم المناسبة
   if (to.meta.guestOnly && token) {
     const targetName = getTargetDashboardName(userRole);
-    if (to.name === targetName) return next();
-    return next({ name: targetName });
+    if (to.name !== targetName) {
+      return { name: targetName };
+    }
   }
 
   // 2. التحقق من مسارات الصلاحيات والـ Authentication للمسارات المحمية
   if (to.meta.requiresAuth) {
     if (!token) {
-      if (to.name === 'Login') return next();
-      return next({ name: 'Login' });
+      if (to.name !== 'Login') {
+        return { name: 'Login' };
+      }
     }
 
-    // 3. التحقق من مطابقة الصلاحية (Role-Based Access Control)
-    if (to.meta.role && userRole && to.meta.role !== userRole) {
-      const targetName = getTargetDashboardName(userRole);
-      if (to.name === targetName) return next();
-      return next({ name: targetName });
+    // 3. التحقق من مطابقة الصلاحية (Role-Based Access Control) مع دعم مرن لبنك الدم والمستشفى
+    if (to.meta.role && userRole && userRole !== 'admin') {
+      const isHospitalRole = (to.meta.role === 'hospital' && (userRole === 'hospital' || userRole === 'blood_bank'));
+      const isExactMatch = to.meta.role === userRole;
+
+      if (!isHospitalRole && !isExactMatch) {
+        const targetName = getTargetDashboardName(userRole);
+        if (to.name !== targetName) {
+          return { name: targetName };
+        }
+      }
     }
   }
 
-  next();
+  return true;
 });
 
 export default router;

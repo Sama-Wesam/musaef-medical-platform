@@ -1,72 +1,82 @@
 <template>
-  <!-- خلفية معتمة لإغلاق القائمة في الجوال -->
-  <div class="sidebar-backdrop d-lg-none" @click="closeMobileSidebar"></div>
+  <div>
+    <!-- خلفية معتمة لإغلاق القائمة في الجوال -->
+    <div
+      class="sidebar-backdrop d-lg-none"
+      :class="{ 'show': isMobileOpen }"
+      @click="closeMobileSidebar"
+    ></div>
 
-  <aside class="hospital-sidebar d-flex flex-column justify-content-between" dir="rtl">
-    <div>
-      <!-- زر إغلاق القائمة في الجوال -->
-      <div class="d-flex justify-content-between align-items-center mb-3 d-lg-none pb-2 border-bottom">
-        <h6 class="fw-bold mb-0 text-dark">{{ t('mainDashboard') }}</h6>
-        <button class="btn-close text-reset shadow-none" @click="closeMobileSidebar"></button>
+    <aside
+      class="hospital-sidebar admin-sidebar d-flex flex-column justify-content-between"
+      :class="{ 'show-mobile': isMobileOpen }"
+      :dir="currentLocale === 'en' ? 'ltr' : 'rtl'"
+    >
+      <div>
+        <!-- زر إغلاق القائمة في الجوال -->
+        <div class="d-flex justify-content-between align-items-center mb-3 d-lg-none pb-2 border-bottom">
+          <h6 class="fw-bold mb-0 text-dark">{{ t('mainDashboard') }}</h6>
+          <button type="button" class="btn-close text-reset shadow-none" @click="closeMobileSidebar" aria-label="Close"></button>
+        </div>
+
+        <!-- قائمة التنقل الجانبية -->
+        <nav class="sidebar-menu">
+          <RouterLink to="/admin/dashboard" class="sidebar-item" active-class="sidebar-active" @click="closeMobileSidebar">
+            <div class="sidebar-item-content">
+              <img :src="dashboardIcon" class="sidebar-icon" alt="Dashboard" />
+              <span class="sidebar-text">{{ t('dashboard') }}</span>
+            </div>
+          </RouterLink>
+
+          <RouterLink to="/admin/radar" class="sidebar-item" active-class="sidebar-active" @click="closeMobileSidebar">
+            <div class="sidebar-item-content">
+              <img :src="radarIcon" class="sidebar-icon" alt="Emergency Radar" />
+              <span class="sidebar-text">{{ t('emergencyRadar') }}</span>
+            </div>
+          </RouterLink>
+
+          <RouterLink to="/admin/analytics" class="sidebar-item" active-class="sidebar-active" @click="closeMobileSidebar">
+            <div class="sidebar-item-content">
+              <img :src="analyticsIcon" class="sidebar-icon" alt="Smart Analytics" />
+              <span class="sidebar-text">{{ t('smartAnalytics') }}</span>
+            </div>
+          </RouterLink>
+
+          <RouterLink to="/admin/accounts" class="sidebar-item" active-class="sidebar-active" @click="closeMobileSidebar">
+            <div class="sidebar-item-content">
+              <img :src="usersIcon" class="sidebar-icon" alt="Accounts Management" />
+              <span class="sidebar-text">{{ t('accountsManagement') }}</span>
+            </div>
+          </RouterLink>
+
+          <RouterLink to="/admin/settings" class="sidebar-item" active-class="sidebar-active" @click="closeMobileSidebar">
+            <div class="sidebar-item-content">
+              <img :src="settingsIcon" class="sidebar-icon" alt="Advanced Settings" />
+              <span class="sidebar-text">{{ t('advancedSettings') }}</span>
+            </div>
+          </RouterLink>
+        </nav>
+
+        <!-- بطاقة المساعدة السريعة -->
+        <div class="support-card">
+          <h5 class="support-title">{{ t('quickHelp') }}</h5>
+          <p class="support-text">{{ t('quickHelpDesc') }}</p>
+          <button class="support-btn" @click="contactSupport">{{ t('contactSupport') }}</button>
+        </div>
+
+        <!-- زر تسجيل الخروج -->
+        <div class="logout-wrapper">
+          <button class="logout-btn" @click="handleLogout">
+            {{ t('logout') }}
+          </button>
+        </div>
       </div>
-
-      <!-- قائمة التنقل الجانبية -->
-      <nav class="sidebar-menu">
-        <RouterLink to="/admin/dashboard" class="sidebar-item" active-class="sidebar-active" @click="closeMobileSidebar">
-          <div class="sidebar-item-content">
-            <img :src="dashboardIcon" class="sidebar-icon" alt="Dashboard" />
-            <span class="sidebar-text">{{ t('dashboard') }}</span>
-          </div>
-        </RouterLink>
-
-        <RouterLink to="/admin/radar" class="sidebar-item" active-class="sidebar-active" @click="closeMobileSidebar">
-          <div class="sidebar-item-content">
-            <img :src="radarIcon" class="sidebar-icon" alt="Emergency Radar" />
-            <span class="sidebar-text">{{ t('emergencyRadar') }}</span>
-          </div>
-        </RouterLink>
-
-        <RouterLink to="/admin/analytics" class="sidebar-item" active-class="sidebar-active" @click="closeMobileSidebar">
-          <div class="sidebar-item-content">
-            <img :src="analyticsIcon" class="sidebar-icon" alt="Smart Analytics" />
-            <span class="sidebar-text">{{ t('smartAnalytics') }}</span>
-          </div>
-        </RouterLink>
-
-        <RouterLink to="/admin/accounts" class="sidebar-item" active-class="sidebar-active" @click="closeMobileSidebar">
-          <div class="sidebar-item-content">
-            <img :src="usersIcon" class="sidebar-icon" alt="Accounts Management" />
-            <span class="sidebar-text">{{ t('accountsManagement') }}</span>
-          </div>
-        </RouterLink>
-
-        <RouterLink to="/admin/settings" class="sidebar-item" active-class="sidebar-active" @click="closeMobileSidebar">
-          <div class="sidebar-item-content">
-            <img :src="settingsIcon" class="sidebar-icon" alt="Advanced Settings" />
-            <span class="sidebar-text">{{ t('advancedSettings') }}</span>
-          </div>
-        </RouterLink>
-      </nav>
-
-      <!-- بطاقة المساعدة السريعة -->
-      <div class="support-card">
-        <h5 class="support-title">{{ t('quickHelp') }}</h5>
-        <p class="support-text">{{ t('quickHelpDesc') }}</p>
-        <button class="support-btn" @click="contactSupport">{{ t('contactSupport') }}</button>
-      </div>
-
-      <!-- زر تسجيل الخروج مباشرة تحت مربع مساعدة سريعة -->
-      <div class="logout-wrapper">
-        <button class="logout-btn" @click="handleLogout">
-          {{ t('logout') }}
-        </button>
-      </div>
-    </div>
-  </aside>
+    </aside>
+  </div>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { RouterLink, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -79,6 +89,7 @@ import settingsIcon from "@/assets/icons/solar_settings-linear.png";
 const router = useRouter();
 const authStore = useAuthStore();
 
+const isMobileOpen = ref(false);
 const currentLocale = computed(() => localStorage.getItem('musaef_lang') || 'ar');
 
 const dictionary = {
@@ -110,16 +121,38 @@ const dictionary = {
 
 const t = (key) => dictionary[currentLocale.value === 'en' ? 'en' : 'ar'][key] || key;
 
-const closeMobileSidebar = () => {
-  const sidebar = document.querySelector('.hospital-sidebar');
-  const backdrop = document.querySelector('.sidebar-backdrop');
-  if (sidebar) sidebar.classList.remove('show-mobile');
-  if (backdrop) backdrop.classList.remove('show');
+const toggleMobileSidebar = () => {
+  isMobileOpen.value = !isMobileOpen.value;
 };
+
+const openMobileSidebar = () => {
+  isMobileOpen.value = true;
+};
+
+const closeMobileSidebar = () => {
+  isMobileOpen.value = false;
+};
+
+onMounted(() => {
+  window.addEventListener('toggle-admin-sidebar', toggleMobileSidebar);
+  window.addEventListener('open-admin-sidebar', openMobileSidebar);
+  window.addEventListener('toggle-sidebar', toggleMobileSidebar);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('toggle-admin-sidebar', toggleMobileSidebar);
+  window.removeEventListener('open-admin-sidebar', openMobileSidebar);
+  window.removeEventListener('toggle-sidebar', toggleMobileSidebar);
+});
 
 const handleLogout = async () => {
   closeMobileSidebar();
-  await authStore.logout();
+  if (authStore.logout) {
+    await authStore.logout();
+  } else {
+    authStore.user = null;
+    authStore.token = null;
+  }
   router.push("/login");
 };
 
@@ -135,41 +168,59 @@ const contactSupport = () => {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.5);
   z-index: 1040;
   opacity: 0;
   visibility: hidden;
-  transition: all 0.3s ease;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .sidebar-backdrop.show {
-  opacity: 1;
-  visibility: visible;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
-/* السايدبار مثبت تحت الهيدر وفي الجهة اليمنى بدقة في RTL */
 .hospital-sidebar {
   width: 280px;
   height: 100%;
   background: #FFFFFF;
-  border-left: 1px solid #ECECEC;
+  border-inline-end: 1px solid #ECECEC;
   padding: 24px 18px;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease-in-out, right 0.3s ease-in-out, left 0.3s ease-in-out;
 }
 
+/* تنسيق القائمة للجوال والتابلت */
 @media (max-width: 991.98px) {
   .hospital-sidebar {
     position: fixed;
     top: 0;
-    right: -290px;
+    bottom: 0;
     height: 100vh;
     z-index: 1050;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.15);
     overflow-y: auto;
   }
 
-  .hospital-sidebar.show-mobile {
-    right: 0;
+  /* الوضع العربي RTL */
+  .hospital-sidebar[dir="rtl"],
+  [dir="rtl"] .hospital-sidebar {
+    right: -320px;
+    left: auto;
+  }
+  .hospital-sidebar[dir="rtl"].show-mobile,
+  [dir="rtl"] .hospital-sidebar.show-mobile {
+    right: 0 !important;
+  }
+
+  /* الوضع الإنجليزي LTR */
+  .hospital-sidebar[dir="ltr"],
+  [dir="ltr"] .hospital-sidebar {
+    left: -320px;
+    right: auto;
+  }
+  .hospital-sidebar[dir="ltr"].show-mobile,
+  [dir="ltr"] .hospital-sidebar.show-mobile {
+    left: 0 !important;
   }
 }
 
@@ -285,7 +336,6 @@ const contactSupport = () => {
 
 .support-btn:hover { background: #C71F1F; }
 
-/* زر تسجيل الخروج مباشرة تحت بطاقة الدعم */
 .logout-wrapper {
   margin-top: 14px;
   margin-bottom: 12px;

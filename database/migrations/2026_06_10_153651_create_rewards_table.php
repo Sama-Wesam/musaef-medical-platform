@@ -10,10 +10,10 @@ return new class extends Migration
     {
         Schema::create('rewards', function (Blueprint $table) {
             $table->id();
-            $table->string('name'); // اسم الشارة أو المكافأة
+            $table->string('name');
             $table->text('description')->nullable();
-            $table->integer('points_required')->default(0); // النقاط المطلوبة للحصول عليها
-            $table->string('icon_path')->nullable(); // مسار أيقونة الشارة
+            $table->integer('points_required')->default(0);
+            $table->string('icon_path')->nullable();
             $table->timestamps();
         });
     }

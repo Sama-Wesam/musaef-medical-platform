@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Models\RewardTransaction;
 use App\Models\Reward;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
+use Exception;
 
 class RewardService
 {
@@ -12,16 +15,21 @@ class RewardService
      */
     public function getDonorPoints(int $donorId): int
     {
-        $earned = RewardTransaction::where('donor_id', $donorId)->where('type', 'earned')->sum('points');
-        $redeemed = RewardTransaction::where('donor_id', $donorId)->where('type', 'redeemed')->sum('points');
+        $earned = (int) RewardTransaction::where('donor_id', $donorId)
+            ->where('type', 'earned')
+            ->sum('points');
 
-        return $earned - $redeemed;
+        $redeemed = (int) RewardTransaction::where('donor_id', $donorId)
+            ->where('type', 'redeemed')
+            ->sum('points');
+
+        return max(0, $earned - $redeemed);
     }
 
     /**
      * جلب سجل معاملة المكافآت والنقاط للمتبرع
      */
-    public function getDonorHistory(int $donorId)
+    public function getDonorHistory(int $donorId): Collection
     {
         return RewardTransaction::with('reward')
             ->where('donor_id', $donorId)
@@ -32,8 +40,34 @@ class RewardService
     /**
      * جلب قائمة المكافآت والشارات المتاحة مرتبة حسب النقاط المطلوبة
      */
-    public function getAvailableBadges()
+    public function getAvailableBadges(): Collection
     {
         return Reward::orderBy('points_required', 'asc')->get();
+    }
+
+    /**
+     * استبدال النقاط بمكافأة أو وسام مع التحقق من الرصيد وقفل المعاملة
+     */
+    public function redeemReward(int $donorId, int $rewardId): bool
+    {
+        return DB::transaction(function () use ($donorId, $rewardId) {
+            // استخدام lockForUpdate لمنع السباق التزامني عند الضغط المزدوج
+            $reward = Reward::lockForUpdate()->findOrFail($rewardId);
+            $currentPoints = $this->getDonorPoints($donorId);
+
+            if ($currentPoints < $reward->points_required) {
+                throw new Exception("رصيد النقاط غير كافٍ لاستبدال هذه المكافأة.");
+            }
+
+            RewardTransaction::create([
+                'donor_id'    => $donorId,
+                'reward_id'   => $rewardId,
+                'points'      => $reward->points_required,
+                'type'        => 'redeemed',
+                'description' => "استبدال وسام/مكافأة: {$reward->name}",
+            ]);
+
+            return true;
+        });
     }
 }

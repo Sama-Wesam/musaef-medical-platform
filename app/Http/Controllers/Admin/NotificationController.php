@@ -10,48 +10,55 @@ class NotificationController extends Controller
 {
     use ApiResponseTrait;
 
-    /**
-     * عرض إشعارات مدير النظام
-     */
     public function index(Request $request)
     {
         $user = $request->user();
+        $formattedNotifications = [];
 
-        // في حال استخدام إشعارات لارافيل المدمجة Database Notifications
-        if (method_exists($user, 'notifications')) {
+        if ($user && method_exists($user, 'notifications')) {
             $notifications = $user->notifications()->take(20)->get();
-            return $this->successResponse($notifications, 'تم جلب الإشعارات بنجاح');
+
+            $formattedNotifications = $notifications->map(function ($notif) {
+                $data = $notif->data ?? [];
+                return [
+                    'id'         => $notif->id,
+                    'titleAr'    => $data['title_ar'] ?? $data['title'] ?? 'تنبيه النظام الذكي',
+                    'titleEn'    => $data['title_en'] ?? $data['title'] ?? 'AI System Alert',
+                    'messageAr'  => $data['message_ar'] ?? $data['message'] ?? $data['desc'] ?? 'تحديث جديد في لوحة التحكم',
+                    'messageEn'  => $data['message_en'] ?? $data['message'] ?? $data['desc'] ?? 'New system update available',
+                    'created_at' => $notif->created_at ? $notif->created_at->diffForHumans() : 'الآن',
+                    'is_read'    => !is_null($notif->read_at),
+                ];
+            });
         }
 
-        // استجابة كلاسيكية تجنب ظهور الأخطاء في الفرونت إند
-        $defaultNotifications = [
-            [
-                'id' => 1,
-                'title' => 'نداء طارئ جديد',
-                'message' => 'تم تسجيل طلب دم عاجل من مستشفى الشفاء',
-                'read' => false,
-                'created_at' => now()->subMinutes(5)->toDateTimeString()
-            ],
-            [
-                'id' => 2,
-                'title' => 'تأكيد مستشفى جديد',
-                'message' => 'تم الانتهاء من مراجعة بيانات مستشفى القدس',
-                'read' => true,
-                'created_at' => now()->subHours(1)->toDateTimeString()
-            ]
-        ];
-
-        return $this->successResponse($defaultNotifications, 'تم جلب الإشعارات بنجاح');
+        return $this->successResponse($formattedNotifications, 'تم جلب الإشعارات بنجاح');
     }
 
     /**
-     * تعليم كافة الإشعارات كمقروءة
+     * ⚡ دالة Polling سريعة لعداد الإشعارات غير المقروءة لمدير النظام
      */
+    public function pollUnreadCount(Request $request)
+    {
+        $user = $request->user();
+        $count = 0;
+
+        if ($user && method_exists($user, 'unreadNotifications')) {
+            $count = $user->unreadNotifications()->count();
+        }
+
+        return response()->json([
+            'status'       => 'success',
+            'unread_count' => $count,
+            'timestamp'    => now()->toDateTimeString()
+        ]);
+    }
+
     public function markAllAsRead(Request $request)
     {
         $user = $request->user();
 
-        if (method_exists($user, 'unreadNotifications')) {
+        if ($user && method_exists($user, 'unreadNotifications')) {
             $user->unreadNotifications->markAsRead();
         }
 

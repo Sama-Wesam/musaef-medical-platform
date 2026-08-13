@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Reward extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'name',
         'description',
@@ -13,17 +16,15 @@ class Reward extends Model
         'icon_path',
     ];
 
-    // -----------------------------------------------------------------
-    // العلاقات (Relationships)
-    // -----------------------------------------------------------------
+    protected $casts = [
+        'points_required' => 'integer',
+    ];
 
-    // الحركات الخاصة بهذه المكافأة (من حصل عليها)
     public function transactions()
     {
         return $this->hasMany(RewardTransaction::class);
     }
 
-    // جميع المتبرعين الذين حصلوا على هذه المكافأة عبر جدول الحركات
     public function donors()
     {
         return $this->belongsToMany(Donor::class, 'reward_transactions');

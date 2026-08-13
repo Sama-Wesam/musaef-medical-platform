@@ -2,22 +2,25 @@
 
 namespace App\Traits;
 
+use Illuminate\Database\Eloquent\Builder;
+
 trait LocationTrait
 {
     /**
      * Scope لجلب السجلات القريبة من إحداثيات معينة في نطاق دائرة معينة (بالكيلومتر)
      */
-    public function scopeNearby($query, $latitude, $longitude, $radiusKm = 10)
+    public function scopeNearby(Builder $query, float|string $latitude, float|string $longitude, float|int $radiusKm = 10): Builder
     {
-        // استخدام معادلة Haversine لحساب المسافة داخل الاستعلام نفسه للحصول على أداء عالي
-        $haversine = "(6371 * acos(cos(radians(?))
-                        * cos(radians(latitude))
-                        * cos(radians(longitude) - radians(?))
-                        + sin(radians(?))
-                        * sin(radians(latitude))))";
+        $table = $query->getModel()->getTable();
 
-        return $query->selectRaw("*, {$haversine} AS distance", [$latitude, $longitude, $latitude])
-                     ->whereRaw("{$haversine} < ?", [$latitude, $longitude, $latitude, $radiusKm])
+        $haversine = "(6371 * acos(cos(radians(?))
+                        * cos(radians({$table}.latitude))
+                        * cos(radians({$table}.longitude) - radians(?))
+                        + sin(radians(?))
+                        * sin(radians({$table}.latitude))))";
+
+        return $query->selectRaw("{$table}.*, {$haversine} AS distance", [$latitude, $longitude, $latitude])
+                     ->havingRaw("distance < ?", [$radiusKm])
                      ->orderBy('distance');
     }
 }

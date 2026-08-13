@@ -2,28 +2,30 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class HealthInfo extends Model
 {
+    use HasFactory;
+
+    protected $table = 'health_infos';
+
     protected $fillable = [
         'donor_id',
         'weight',
-        'height',
-        'has_chronic_diseases',
-        'diseases_description',
+        'last_donation_date',
+        'questionnaire_answers',
         'is_eligible',
-        'rejection_reason',
     ];
 
     protected $casts = [
-        'has_chronic_diseases' => 'boolean',
-        'is_eligible' => 'boolean',
-        'weight' => 'decimal:2',
-        'height' => 'decimal:2',
+        'weight'                => 'float',
+        'last_donation_date'    => 'date',
+        'questionnaire_answers' => 'array',
+        'is_eligible'           => 'boolean',
     ];
 
-    // علاقة البيانات الصحية بالمتبرع
     public function donor()
     {
         return $this->belongsTo(Donor::class);

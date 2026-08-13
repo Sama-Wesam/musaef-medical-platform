@@ -48,7 +48,7 @@
         </div>
       </div>
 
-      <!-- 2. مكونات أقسام الإعدادات المتقدمة المربوطة بالمتجر -->
+      <!-- 2. مكونات أقسام الإعدادات المتقدمة -->
       <GeneralSettingsTab
         v-if="settingsStore.activeTab === 'general'"
         :generalSettings="settingsStore.generalSettings"
@@ -78,7 +78,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { useSettingsStore } from '@/stores/settingsStore';
 
@@ -89,7 +89,13 @@ import EmailSettingsTab from '@/components/admin/advancedsettings/EmailSettingsT
 
 const settingsStore = useSettingsStore();
 
-const currentLanguage = computed(() => localStorage.getItem('musaef_lang') || 'ar');
+const activeLanguage = ref(localStorage.getItem('musaef_lang') || 'ar');
+
+const syncLanguage = () => {
+  activeLanguage.value = localStorage.getItem('musaef_lang') || 'ar';
+};
+
+const currentLanguage = computed(() => activeLanguage.value);
 
 const dictionary = {
   ar: {
@@ -109,7 +115,17 @@ const dictionary = {
 const t = (key) => dictionary[currentLanguage.value === 'en' ? 'en' : 'ar'][key] || key;
 
 onMounted(() => {
-  settingsStore.fetchSettings();
+  settingsStore.activeTab = 'logs';
+  settingsStore.startPolling(5000);
+
+  window.addEventListener('storage', syncLanguage);
+  window.addEventListener('musaef_lang_changed', syncLanguage);
+});
+
+onUnmounted(() => {
+  settingsStore.stopPolling();
+  window.removeEventListener('storage', syncLanguage);
+  window.removeEventListener('musaef_lang_changed', syncLanguage);
 });
 </script>
 

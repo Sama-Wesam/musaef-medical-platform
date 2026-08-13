@@ -13,8 +13,8 @@
         <p class="text-muted fs-8 mb-0">{{ t('myAccountSubtitle') }}</p>
       </div>
 
-      <!-- مؤشر التحميل -->
-      <div v-if="loading" class="text-center py-5">
+      <!-- مؤشر التحميل الرئيسي -->
+      <div v-if="loading && !profileData.id" class="text-center py-5">
         <div class="spinner-border text-danger" role="status">
           <span class="visually-hidden">{{ t('loading') }}</span>
         </div>
@@ -59,8 +59,8 @@
         <!-- الجزء الرئيسي -->
         <div class="flex-grow-1 w-100 min-w-0">
           <PersonalInfoTab v-if="activeProfileTab === 'personal'" :profile="profileData" @update-profile="handleProfileUpdate" />
-          <HealthDataTab v-else-if="activeProfileTab === 'health'" :health-info="profileData" @update-health-info="handleHealthUpdate" />
-          <SettingsTab v-else-if="activeProfileTab === 'settings'" :settings="profileData.settings" />
+          <HealthDataTab v-else-if="activeProfileTab === 'health'" :health-info="profileData" @update-health-info="handleHealthUpdate" @update-eligibility="handleEligibilityUpdate" />
+          <SettingsTab v-else-if="activeProfileTab === 'settings'" :settings="profileData" />
         </div>
       </div>
     </main>
@@ -68,20 +68,21 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import donor from '@/api/donor';
+import { useDonorStore } from '@/stores/donorStore';
 import DonorHeader from '@/components/donor/DonorHeader.vue';
 
 import PersonalInfoTab from '@/components/donor/profile/PersonalInfoTab.vue';
 import HealthDataTab from '@/components/donor/profile/HealthDataTab.vue';
 import SettingsTab from '@/components/donor/profile/SettingsTab.vue';
-import { useAuthStore } from '@/stores/authStore';
 
-const authStore = useAuthStore();
 const activeProfileTab = ref('personal');
 const loading = ref(true);
 const profileData = ref({});
+const donorStore = useDonorStore();
 const currentLanguage = computed(() => localStorage.getItem('musaef_lang') || 'ar');
+let pollingTimer = null;
 
 const translations = {
   ar: {
@@ -107,34 +108,69 @@ const t = (key) => {
   return translations[lang][key] || key;
 };
 
-const loadProfile = async () => {
-  loading.value = true;
+const loadProfile = async (isBackground = false) => {
+  if (!isBackground) loading.value = true;
   try {
     const res = await donor.getProfile();
-    profileData.value = res.data?.data || res.data || {};
+    const dataPayload = res?.data?.data || res?.data || res || {};
+    if (dataPayload) {
+      profileData.value = dataPayload;
+      if (typeof dataPayload.is_eligible === 'boolean') {
+        donorStore.setEligibility(dataPayload.is_eligible);
+      }
+    }
   } catch (error) {
     console.error('خطأ في جلب بيانات الملف الشخصي:', error);
   } finally {
-    loading.value = false;
+    if (!isBackground) loading.value = false;
   }
 };
 
 const handleProfileUpdate = (updatedData) => {
   if (updatedData) {
-    profileData.value = { ...profileData.value, ...updatedData };
+    const userObj = updatedData.user || updatedData.donor?.user || {};
+    const avatar = updatedData.avatar_url
+                || updatedData.avatar
+                || userObj.avatar_url
+                || userObj.avatar;
+
+    profileData.value = {
+      ...profileData.value,
+      ...updatedData,
+      ...(avatar ? { avatar, avatar_url: avatar } : {})
+    };
+
+    if (profileData.value.user) {
+      profileData.value.user = {
+        ...profileData.value.user,
+        ...userObj,
+        ...(avatar ? { avatar, avatar_url: avatar } : {})
+      };
+    }
   }
-  loadProfile();
+  loadProfile(true);
 };
 
 const handleHealthUpdate = (updatedData) => {
   if (updatedData) {
     profileData.value = { ...profileData.value, ...updatedData };
   }
-  loadProfile();
+  loadProfile(true);
+};
+
+const handleEligibilityUpdate = (isEligible) => {
+  profileData.value.is_eligible = isEligible;
+  if (donorStore.setEligibility) {
+    donorStore.setEligibility(isEligible);
+  }
 };
 
 onMounted(() => {
   loadProfile();
+});
+
+onUnmounted(() => {
+  if (pollingTimer) clearInterval(pollingTimer);
 });
 </script>
 

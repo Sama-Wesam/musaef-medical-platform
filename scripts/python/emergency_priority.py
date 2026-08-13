@@ -3,19 +3,34 @@ import json
 
 def calculate_priority(request):
     base_scores = {
+        'critical': 95,
+        'high': 85,
+        'medium': 70,
+        'low': 50,
         'نزيف شديد': 95,
         'حادث': 90,
         'أطفال': 85,
         'عملية عاجلة': 80,
         'عملية عادية': 50
     }
-    condition = request.get('condition_type', 'عملية عادية')
+
+    # مطابقة الحقول القادمة من الواجهة الأمامية والباك إند بدقة
+    urgency = str(request.get('urgency', '')).lower()
+    condition = request.get('condition_type', urgency if urgency else 'عملية عادية')
+
     score = base_scores.get(condition, 50)
-    units = request.get('units_needed', 1)
-    score += min(units * 1.5, 10)
+    if urgency == 'critical':
+        score = max(score, 95)
+    elif urgency == 'high':
+        score = max(score, 85)
+
+    units = request.get('units', request.get('units_needed', 1))
+    score += min(float(units) * 1.5, 10)
+
     age = request.get('patient_age', 30)
     if age <= 12 or age >= 65:
         score += 5
+
     return min(round(score, 1), 100.0)
 
 def classify_severity(score):
@@ -37,9 +52,9 @@ def main():
         # حساب الأولوية والتصنيف لكل طلب
         for req in requests:
             req['priority_score'] = calculate_priority(req)
-            req['severity'] = classify_severity(req['priority_score']) 
+            req['severity'] = classify_severity(req['priority_score'])
 
-        # ترتيب الطلبات تنازلياً
+        # ترتيب الطلبات تنازلياً بناءً على الأولوية
         requests.sort(key=lambda x: x['priority_score'], reverse=True)
 
         print(json.dumps(requests, ensure_ascii=False))

@@ -20,13 +20,32 @@
           <span>{{ t('emergency.createRequest') }}</span>
         </button>
 
-        <button
-          @click="$emit('export')"
-          class="btn btn-outline-secondary bg-white border-secondary-subtle rounded-pill px-3 py-1.5 fs-8 fw-bold text-dark d-flex align-items-center gap-2 shadow-sm text-nowrap transition-btn"
-        >
-          <span>{{ t('emergency.exportReport') }}</span>
-          <span>📥</span>
-        </button>
+        <!-- زر تصدير التقرير مع قائمة خيارات التصدير -->
+        <div class="dropdown">
+          <button
+            class="btn btn-outline-secondary bg-white border-secondary-subtle rounded-pill px-3 py-1.5 fs-8 fw-bold text-dark d-flex align-items-center gap-2 shadow-sm text-nowrap transition-btn dropdown-toggle"
+            type="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            <span>{{ t('emergency.exportReport') }}</span>
+            <span>📥</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow-sm rounded-3 fs-8">
+            <li>
+              <button class="dropdown-menu-item dropdown-item d-flex align-items-center gap-2 py-2" @click="$emit('export', 'excel')">
+                <i class="bi bi-file-earmark-excel text-success fs-6"></i>
+                <span>{{ t('emergency.exportExcel') }}</span>
+              </button>
+            </li>
+            <li>
+              <button class="dropdown-menu-item dropdown-item d-flex align-items-center gap-2 py-2" @click="$emit('export', 'pdf')">
+                <i class="bi bi-file-earmark-pdf text-danger fs-6"></i>
+                <span>{{ t('emergency.exportPdf') }}</span>
+              </button>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
 
@@ -79,6 +98,8 @@ const dictionary = {
     "emergency.subtitle": "عرض وإدارة جميع النداءات الطارئة بشكل لحظي",
     "emergency.createRequest": "إنشاء طلب طارئ جديد",
     "emergency.exportReport": "تصدير التقرير",
+    "emergency.exportExcel": "تصدير ملف Excel",
+    "emergency.exportPdf": "تصدير ملف PDF (طباعة)",
     "emergency.filters.all": "الكل",
     "emergency.filters.covering": "قيد التغطية",
     "emergency.filters.completed": "مكتملة"
@@ -88,6 +109,8 @@ const dictionary = {
     "emergency.subtitle": "Real-time view and management of emergency calls",
     "emergency.createRequest": "Create New Emergency Request",
     "emergency.exportReport": "Export Report",
+    "emergency.exportExcel": "Export Excel File",
+    "emergency.exportPdf": "Export PDF File (Print)",
     "emergency.filters.all": "All",
     "emergency.filters.covering": "Under Coverage",
     "emergency.filters.completed": "Completed"

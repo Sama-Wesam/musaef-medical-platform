@@ -16,8 +16,13 @@ class DonorResponsesController extends Controller
      */
     public function index(Request $request, $requestId)
     {
-        $hospitalId = $request->user()->hospital->id;
-        
+        $hospital = $request->user()->hospital;
+        if (!$hospital) {
+            return $this->notFoundResponse('حساب المستخدم الحالي غير مرتبط بجهة طبية');
+        }
+
+        $hospitalId = $hospital->id;
+
         $responses = DonorResponse::with(['donor.user', 'donor.bloodType'])
             ->whereHas('bloodRequest', function($query) use ($hospitalId, $requestId) {
                 $query->where('hospital_id', $hospitalId)
@@ -28,5 +33,32 @@ class DonorResponsesController extends Controller
             ->get();
 
         return $this->successResponse($responses, 'تم جلب المتبرعين المستجيبين للطلب');
+    }
+
+    /**
+     * ⚡ دالة Polling حية لمراقبة استجابات المتبرعين الجدد لطلب دم معين
+     */
+    public function livePollResponses(Request $request, $requestId)
+    {
+        $hospital = $request->user()->hospital;
+        if (!$hospital) {
+            return $this->notFoundResponse('حساب المستخدم الحالي غير مرتبط بجهة طبية');
+        }
+
+        $hospitalId = $hospital->id;
+
+        $responses = DonorResponse::with(['donor.user:id,name', 'donor.bloodType:id,name'])
+            ->whereHas('bloodRequest', function($query) use ($hospitalId, $requestId) {
+                $query->where('hospital_id', $hospitalId)->where('id', $requestId);
+            })
+            ->where('status', 'accepted')
+            ->latest()
+            ->get();
+
+        return $this->successResponse([
+            'responses_count' => $responses->count(),
+            'responders'      => $responses,
+            'timestamp'       => now()->toDateTimeString()
+        ], 'تم جلب الاستجابات الحية بنجاح');
     }
 }

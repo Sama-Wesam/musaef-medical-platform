@@ -19,6 +19,19 @@ class MessageController extends Controller
         return $this->successResponse($messages, 'تم جلب رسائل التواصل بنجاح');
     }
 
+    /**
+     * ⚡ دالة Polling سريعة لعداد الرسائل غير المقروءة الواردة من نموذج التواصل
+     */
+    public function pollUnreadMessages()
+    {
+        $unreadCount = ContactMessage::where('is_read', false)->count();
+
+        return $this->successResponse([
+            'unread_count' => $unreadCount,
+            'timestamp'    => now()->toDateTimeString()
+        ], 'تم جلب عداد الرسائل غير المقروءة');
+    }
+
     public function show($id)
     {
         $message = ContactMessage::find($id);
@@ -52,8 +65,8 @@ class MessageController extends Controller
 
         $message->update([
             'reply_content' => $request->reply_content,
-            'replied_at' => now(),
-            'status' => 'replied'
+            'replied_at'    => now(),
+            'status'        => 'replied'
         ]);
 
         return $this->successResponse($message, 'تم إرسال الرد بنجاح');

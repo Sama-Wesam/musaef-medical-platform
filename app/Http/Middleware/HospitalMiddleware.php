@@ -14,7 +14,26 @@ class HospitalMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!auth()->check() || auth()->user()->role !== UserRole::HOSPITAL->value) {
+        if (!auth()->check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'يرجى تسجيل الدخول أولاً للوصول إلى هذه البيانات.'
+            ], 401);
+        }
+
+        $user = auth()->user();
+        $userRole = $user->role instanceof \BackedEnum ? $user->role->value : $user->role;
+        $roleValue = strtolower((string) $userRole);
+
+        // تنظيف مصفوفة الأدوار والاكتفاء بالقيم البرمجية القياسية الإنجليزية
+        $hospitalRoles = [
+            strtolower(UserRole::HOSPITAL->value ?? 'hospital'),
+            'hospital',
+            'hospital_admin',
+            'blood_bank'
+        ];
+
+        if (!in_array($roleValue, $hospitalRoles, true)) {
             return response()->json([
                 'success' => false,
                 'message' => 'عذراً، هذا المسار مخصص لحسابات المستشفيات وبنوك الدم فقط.'

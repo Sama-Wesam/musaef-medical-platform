@@ -12,5 +12,8 @@ export default {
   },
   logout() {
     return apiClient.post('/logout');
+  },
+  getCurrentUser() {
+    return apiClient.get('/user');
   }
 };

@@ -30,7 +30,7 @@
             </td>
 
             <!-- الفصيلة المطلوبة -->
-            <td class="py-3.5 fw-bold text-dark fs-8">
+            <td class="py-3.5 fw-bold text-danger fs-8">
               {{ req.bloodType }}
             </td>
 
@@ -76,7 +76,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 
 const currentLanguage = computed(() => localStorage.getItem('musaef_lang') || 'ar');
 
@@ -118,44 +118,42 @@ const t = (key) => dictionary[currentLanguage.value === 'en' ? 'en' : 'ar'][key]
 
 const translateUrgency = (raw) => {
   if (currentLanguage.value === 'en') {
-    if (raw === 'حرجة جداً' || raw === 'حرجة' || raw === 'critical') return 'Critical';
-    if (raw === 'عالية' || raw === 'high') return 'High';
-    if (raw === 'متوسطة' || raw === 'medium') return 'Medium';
+    if (['critical', 'حرجة', 'حرجة جداً'].includes(raw)) return 'Critical';
+    if (['high', 'عالية'].includes(raw)) return 'High';
+    if (['medium', 'متوسطة'].includes(raw)) return 'Medium';
     return 'Low';
   }
-  if (raw === 'critical' || raw === 'حرجة جداً') return 'حرج';
-  if (raw === 'high' || raw === 'عالية') return 'خطر';
-  if (raw === 'medium' || raw === 'متوسطة') return 'متوسط';
+  if (['critical', 'حرجة', 'حرجة جداً'].includes(raw)) return 'حرج';
+  if (['high', 'عالية'].includes(raw)) return 'خطر';
+  if (['medium', 'متوسطة'].includes(raw)) return 'متوسط';
   return 'منخفض';
 };
 
 const translateStatus = (raw, coverage) => {
   if (currentLanguage.value === 'en') {
-    if (coverage >= 100 || raw === 'مكتملة' || raw === 'completed') return 'Completed';
-    if (coverage > 40 || raw === 'قيد المعالجة' || raw === 'processing') return 'Processing';
-    if (raw === 'مرفوضة' || raw === 'rejected') return 'Rejected';
-    return 'Active';
+    if (coverage >= 100 || raw === 'completed') return 'Completed';
+    if (raw === 'rejected') return 'Rejected';
+    if (raw === 'searching' || raw === 'active') return 'Active';
+    return 'Processing';
   }
   if (coverage >= 100 || raw === 'completed') return 'مكتملة';
-  if (coverage > 40 || raw === 'processing') return 'قيد المعالجة';
   if (raw === 'rejected') return 'مرفوضة';
-  return 'نشط';
+  if (raw === 'searching' || raw === 'active') return 'نشط';
+  return 'قيد المعالجة';
 };
 
 const formattedRequests = computed(() => {
   return props.requests.map((item, idx) => {
-    let code = item.code || `ER-2024-${1840 + idx}`;
+    let code = item.code || `ER-2026-${1840 + idx}`;
     let urgencyRaw = item.urgency || 'critical';
     let urgencyCustomClass = 'urgency-critical';
 
-    if (urgencyRaw === 'حرجة جداً' || urgencyRaw === 'critical' || urgencyRaw === 'حرجة') {
+    if (['critical', 'حرجة', 'حرجة جداً'].includes(urgencyRaw)) {
       urgencyCustomClass = 'urgency-critical';
-    } else if (urgencyRaw === 'عالية' || urgencyRaw === 'high') {
+    } else if (['high', 'عالية'].includes(urgencyRaw)) {
       urgencyCustomClass = 'urgency-high';
-    } else if (urgencyRaw === 'متوسطة' || urgencyRaw === 'medium') {
-      urgencyCustomClass = 'urgency-medium';
     } else {
-      urgencyCustomClass = 'urgency-low';
+      urgencyCustomClass = 'urgency-medium';
     }
 
     let progressColorClass = 'bg-danger';
@@ -165,15 +163,15 @@ const formattedRequests = computed(() => {
       progressColorClass = 'bg-warning';
     }
 
-    let statusRaw = item.status || 'active';
+    let statusRaw = item.status || 'searching';
     let statusCustomClass = 'status-active';
 
-    if (item.coverage >= 100 || statusRaw === 'مكتملة' || statusRaw === 'completed') {
+    if (item.coverage >= 100 || statusRaw === 'completed') {
       statusCustomClass = 'status-completed';
-    } else if (item.coverage > 40 || statusRaw === 'processing') {
-      statusCustomClass = 'status-processing';
-    } else if (statusRaw === 'مرفوضة' || statusRaw === 'rejected') {
+    } else if (statusRaw === 'rejected') {
       statusCustomClass = 'urgency-high';
+    } else {
+      statusCustomClass = 'status-active';
     }
 
     return {
@@ -187,6 +185,18 @@ const formattedRequests = computed(() => {
     };
   });
 });
+
+// مزامنة النداءات الطارئة فورياً للوصول إليها في بنك الدم
+watch(() => props.requests, (newRequests) => {
+  if (newRequests && Array.isArray(newRequests)) {
+    try {
+      localStorage.setItem('musaef_emergency_requests', JSON.stringify(newRequests));
+      window.dispatchEvent(new Event('musaef_emergency_updated'));
+    } catch (e) {
+      console.error('Error syncing emergency requests:', e);
+    }
+  }
+}, { immediate: true, deep: true });
 </script>
 
 <style scoped>
@@ -236,13 +246,9 @@ const formattedRequests = computed(() => {
 .urgency-critical { background-color: #fff1f2; color: #e11d48; }
 .urgency-high { background-color: #fef2f2; color: #dc2626; }
 .urgency-medium { background-color: #fffbe6; color: #d97706; }
-.urgency-low { background-color: #f0fdf4; color: #16a34a; }
 
 .status-active { background-color: #fff1f2; color: #e11d48; }
-.status-processing { background-color: #fff7ed; color: #ea580c; }
 .status-completed { background-color: #f0fdf4; color: #16a34a; }
 
 .progress-bar-flat { background-color: #e2e8f0; border-radius: 4px; overflow: hidden; }
-.dir-rtl { direction: rtl; }
-.dir-ltr { direction: ltr; }
 </style>

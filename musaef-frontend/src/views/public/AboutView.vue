@@ -14,7 +14,8 @@
               <h1 class="fw-bold hero-title mb-3">
                 {{ $t('about.title') }}<span class="text-danger">...</span>
               </h1>
-              <p class="hero-description text-secondary" v-html="$t('about.descriptionHtml')"></p>
+              <!-- استخدام safeDescription المعالج عبر DOMPurify -->
+              <p class="hero-description text-secondary" v-html="safeDescription"></p>
             </div>
           </div>
 
@@ -25,6 +26,7 @@
                 :src="getImageUrl('about-doctor.png')"
                 :alt="$t('about.title')"
                 class="hero-about-img"
+                loading="lazy"
                 @error="handleImgFallback"
               />
             </div>
@@ -73,6 +75,7 @@
                   :src="getIconUrl('Frame 2147225414.png')"
                   :alt="$t('about.goalsTitle')"
                   class="goal-icon"
+                  loading="lazy"
                 />
               </div>
               <h4 class="fw-bold text-danger mb-3 fs-5 fs-md-4">{{ $t('about.goalsTitle') }}</h4>
@@ -122,6 +125,7 @@
                   :src="getImageUrl(review.avatar)"
                   class="rounded-circle avatar-img flex-shrink-0"
                   :alt="$t(review.nameKey)"
+                  loading="lazy"
                   @error="handleAvatarFallback"
                 />
                 <div class="min-w-0">
@@ -166,20 +170,28 @@
       </div>
     </section>
 
-    <!-- Footer -->
+    <!-- Footer Dynamic Loading -->
     <Footer />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, defineAsyncComponent } from 'vue';
 import { useI18n } from 'vue-i18n';
+import DOMPurify from 'dompurify';
 import apiClient from '@/api/axios';
 import Navbar from '@/components/common/Navbar.vue';
-import Footer from '@/components/common/Footer.vue';
+
+// التحميل الكسول لمكون الفوتر
+const Footer = defineAsyncComponent(() => import('@/components/common/Footer.vue'));
 
 const { locale, te, t } = useI18n();
 const currentLanguage = computed(() => locale.value || 'ar');
+
+// تنقية نص وصف الهيرو لحمايته من ثغرات XSS
+const safeDescription = computed(() => {
+  return DOMPurify.sanitize(t('about.descriptionHtml'));
+});
 
 const getImageUrl = (name) => {
   return new URL(`../../assets/images/${name}`, import.meta.url).href;
@@ -219,39 +231,65 @@ const reviews = ref([
   }
 ]);
 
+// قائمة المستشفيات كاملة بنفس بيانات الـ HospitalSeeder
 const defaultHospitalsKeys = [
-  { id: 1, name: 'مجمع الشفاء الطبي', address: 'غزة - الرمال' },
-  { id: 2, name: 'جمعية بنك الدم المركزي', address: 'غزة - الرمال شارع الوحدة' },
-  { id: 3, name: 'بنك الدم المركزي - وزارة الصحة', address: 'غزة - النصر' },
-  { id: 4, name: 'مستشفى الأهلي العربي (المعمداني)', address: 'غزة - الزيتون' },
-  { id: 5, name: 'مستشفى القدس - الهلال الأحمر', address: 'غزة - تل الهوى' },
-  { id: 6, name: 'مستشفى أصدقاء المريض الخيري', address: 'غزة - حي الرمال - شارع الشهداء' },
-  { id: 7, name: 'مستشفى كمال عدوان', address: 'شمال غزة - بيت لاهيا' },
-  { id: 8, name: 'المستشفى الإندونيسي', address: 'شمال غزة - بيت لاهيا' },
-  { id: 9, name: 'مستشفى العودة - النصيرات', address: 'المحافظة الوسطى - النصيرات' }
+  // شمال غزة
+  { id: 1, facility_name: 'المستشفى الإندونيسي – بيت لاهيا', address: 'شمال غزة - بيت لاهيا' },
+  { id: 2, facility_name: 'مستشفى كمال عدوان – بيت لاهيا', address: 'شمال غزة - بيت لاهيا' },
+  { id: 3, facility_name: 'مستشفى العودة – شمال غزة / جباليا', address: 'شمال غزة - تل الزعتر / جباليا' },
+
+  // مدينة غزة
+  { id: 4, facility_name: 'مجمع الشفاء الطبي – مدينة غزة', address: 'مدينة غزة - الرمال' },
+  { id: 5, facility_name: 'المستشفى الأهلي العربي (المعمداني) – مدينة غزة', address: 'مدينة غزة - الزيتون / الشجاعية' },
+  { id: 6, facility_name: 'مستشفى القدس – مدينة غزة', address: 'مدينة غزة - تل الهوى' },
+  { id: 7, facility_name: 'مستشفى أصدقاء المريض الخيري – مدينة غزة', address: 'مدينة غزة - حي الرمال - شارع الشهداء' },
+
+  // المحافظة الوسطى
+  { id: 8, facility_name: 'مستشفى شهداء الأقصى – دير البلح', address: 'المحافظة الوسطى - دير البلح' },
+  { id: 9, facility_name: 'مستشفى العودة – النصيرات', address: 'المحافظة الوسطى - النصيرات' },
+
+  // خان يونس
+  { id: 10, facility_name: 'مجمع ناصر الطبي – خان يونس', address: 'خان يونس - وسط المدينة' },
+  { id: 11, facility_name: 'المستشفى الأوروبي – خان يونس', address: 'خان يونس - الفخاري' },
+  { id: 12, facility_name: 'مستشفى الهلال الأحمر الفلسطيني – خان يونس', address: 'خان يونس - حي الأمل' },
+
+  // رفح
+  { id: 13, facility_name: 'مستشفى أبو يوسف النجار – رفح', address: 'رفح - حي الجنينة' },
+  { id: 14, facility_name: 'مستشفى الكويت التخصصي – رفح', address: 'رفح - وسط البلد' }
 ];
 
+// قاموس ترجمة أسماء وعناوين كافة مستشفيات السيدر للغة الإنجليزية
 const partnersDictionary = {
-  // Hospitals
-  'مجمع الشفاء الطبي': 'Al-Shifa Medical Complex',
-  'جمعية بنك الدم المركزي': 'Central Blood Bank Society',
-  'بنك الدم المركزي - وزارة الصحة': 'Central Blood Bank - Ministry of Health',
-  'مستشفى الأهلي العربي (المعمداني)': 'Ahli Arab Hospital (Al-Maamadani)',
-  'مستشفى القدس - الهلال الأحمر': 'Al-Quds Hospital - Red Crescent',
-  'مستشفى أصدقاء المريض الخيري': 'Patient\'s Friends Benevolent Society Hospital',
-  'مستشفى كمال عدوان': 'Kamal Adwan Hospital',
-  'المستشفى الإندونيسي': 'Indonesian Hospital',
-  'مستشفى العودة - النصيرات': 'Al-Awda Hospital - Nuseirat',
+  // الأسماء
+  'المستشفى الإندونيسي – بيت لاهيا': 'Indonesian Hospital – Beit Lahia',
+  'مستشفى كمال عدوان – بيت لاهيا': 'Kamal Adwan Hospital – Beit Lahia',
+  'مستشفى العودة – شمال غزة / جباليا': 'Al-Awda Hospital – Jabalia',
+  'مجمع الشفاء الطبي – مدينة غزة': 'Al-Shifa Medical Complex – Gaza City',
+  'المستشفى الأهلي العربي (المعمداني) – مدينة غزة': 'Al-Ahli Arab Hospital – Gaza City',
+  'مستشفى القدس – مدينة غزة': 'Al-Quds Hospital – Gaza City',
+  'مستشفى أصدقاء المريض الخيري – مدينة غزة': 'Patient\'s Friends Benevolent Hospital – Gaza City',
+  'مستشفى شهداء الأقصى – دير البلح': 'Al-Aqsa Martyrs Hospital – Deir al-Balah',
+  'مستشفى العودة – النصيرات': 'Al-Awda Hospital – Nuseirat',
+  'مجمع ناصر الطبي – خان يونس': 'Nasser Medical Complex – Khan Younis',
+  'المستشفى الأوروبي – خان يونس': 'European Gaza Hospital – Khan Younis',
+  'مستشفى الهلال الأحمر الفلسطيني – خان يونس': 'Palestine Red Crescent Hospital – Khan Younis',
+  'مستشفى أبو يوسف النجار – رفح': 'Abu Yousef Al-Najjar Hospital – Rafah',
+  'مستشفى الكويت التخصصي – رفح': 'Kuwaiti Specialty Hospital – Rafah',
 
-  // Locations
-  'غزة - الرمال': 'Gaza - Rimal',
-  'غزة - الرمال شارع الوحدة': 'Gaza - Rimal, Al-Wehda St.',
-  'غزة - النصر': 'Gaza - Al-Nasr',
-  'غزة - الزيتون': 'Gaza - Zeitoun',
-  'غزة - تل الهوى': 'Gaza - Tel Al-Hawa',
-  'غزة - حي الرمال - شارع الشهداء': 'Gaza - Rimal, Al-Shohada St.',
+  // العناوين
   'شمال غزة - بيت لاهيا': 'North Gaza - Beit Lahia',
-  'المحافظة الوسطى - النصيرات': 'Middle Area - Nuseirat'
+  'شمال غزة - تل الزعتر / جباليا': 'North Gaza - Tel al-Zaatar / Jabalia',
+  'مدينة غزة - الرمال': 'Gaza City - Rimal',
+  'مدينة غزة - الزيتون / الشجاعية': 'Gaza City - Zeitoun / Shuja\'iyya',
+  'مدينة غزة - تل الهوى': 'Gaza City - Tel Al-Hawa',
+  'مدينة غزة - حي الرمال - شارع الشهداء': 'Gaza City - Rimal, Al-Shohada St.',
+  'المحافظة الوسطى - دير البلح': 'Middle Governorate - Deir al-Balah',
+  'المحافظة الوسطى - النصيرات': 'Middle Governorate - Nuseirat',
+  'خان يونس - وسط المدينة': 'Khan Younis - City Center',
+  'خان يونس - الفخاري': 'Khan Younis - Al-Fukhari',
+  'خان يونس - حي الأمل': 'Khan Younis - Al-Amal District',
+  'رفح - حي الجنينة': 'Rafah - Al-Jnena District',
+  'رفح - وسط البلد': 'Rafah - Downtown'
 };
 
 const partners = ref([]);
@@ -479,7 +517,6 @@ const handleAvatarFallback = (e) => {
   height: 45px;
 }
 
-/* حل مشكلة طفح وتجاوز النص حدود البطاقة */
 .partner-name {
   white-space: normal;
   word-break: break-word;

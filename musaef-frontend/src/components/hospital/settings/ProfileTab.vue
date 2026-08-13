@@ -45,7 +45,7 @@
         <!-- مؤشر تحميل الخريطة -->
         <div v-if="isLoading" class="map-loader position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center bg-white bg-opacity-75">
           <div class="spinner-border text-danger spinner-border-sm" role="status">
-            <span class="visually-hidden">جاري تحميل الخريطة...</span>
+            <span class="visually-hidden">Loading map...</span>
           </div>
         </div>
       </div>
@@ -92,26 +92,137 @@ const dictionary = {
 };
 
 const facilityNameDict = {
+  'المستشفى الإندونيسي': 'Indonesian Hospital',
+  'مستشفى الإندونيسي': 'Indonesian Hospital',
+  'المستشفى الإندونيسي – بيت لاهيا': 'Indonesian Hospital – Beit Lahia',
+  'مستشفى كمال عدوان': 'Kamal Adwan Hospital',
+  'مستشفى كمال عدوان – بيت لاهيا': 'Kamal Adwan Hospital – Beit Lahia',
+  'مستشفى العودة - جباليا': 'Al-Awda Hospital - Jabalia',
+  'مستشفى العودة – شمال غزة / جباليا': 'Al-Awda Hospital – Jabalia',
+  'مستشفى العودة': 'Al-Awda Hospital',
+  'مجمع الشفاء الطبي': 'Al-Shifa Medical Complex',
+  'مجمع الشفاء الطبي – مدينة غزة': 'Al-Shifa Medical Complex – Gaza City',
+  'مستشفى الشفاء الطبي': 'Al-Shifa Medical Complex',
+  'المستشفى الأهلي العربي (المعمداني)': 'Ahli Arab Hospital (Al-Mamdani)',
+  'المستشفى الأهلي العربي (المعمداني) – مدينة غزة': 'Ahli Arab Hospital (Al-Mamdani) – Gaza City',
+  'مستشفى القدس': 'Al-Quds Medical Hospital',
+  'مستشفى القدس – مدينة غزة': 'Al-Quds Medical Hospital – Gaza City',
+  'مستشفى القدس الطبي': 'Al-Quds Medical Hospital',
+  'مستشفى أصدقاء المريض الخيري': 'Patient Friends Charitable Hospital',
+  'مستشفى أصدقاء المريض الخيري – مدينة غزة': 'Patient Friends Charitable Hospital – Gaza City',
+  'مستشفى أصدقاء المريض': 'Patient Friends Hospital',
+  'مستشفى شهداء الأقصى': 'Al-Aqsa Martyrs Hospital',
+  'مستشفى شهداء الأقصى – دير البلح': 'Al-Aqsa Martyrs Hospital – Deir Al-Balah',
+  'مستشفى العودة - النصيرات': 'Al-Awda Hospital - Nuseirat',
+  'مستشفى العودة – النصيرات': 'Al-Awda Hospital – Nuseirat',
+  'مجمع ناصر الطبي': 'Nasser Medical Complex',
+  'مجمع ناصر الطبي – خان يونس': 'Nasser Medical Complex – Khan Younis',
+  'المستشفى الأوروبي': 'European Gaza Hospital',
+  'المستشفى الأوروبي – خان يونس': 'European Gaza Hospital – Khan Younis',
+  'مستشفى الهلال الأحمر الفلسطيني': 'Palestine Red Crescent Hospital',
+  'مستشفى الهلال الأحمر الفلسطيني – خان يونس': 'Palestine Red Crescent Hospital – Khan Younis',
+  'مستشفى أبو يوسف النجار': 'Abu Yousuf Al-Najjar Hospital',
+  'مستشفى أبو يوسف النجار – رفح': 'Abu Yousuf Al-Najjar Hospital – Rafah',
+  'مستشفى الكويت التخصصي': 'Kuwaiti Specialty Hospital',
+  'مستشفى الكويت التخصصي – رفح': 'Kuwaiti Specialty Hospital – Rafah',
   'جمعية بنك الدم المركزي': 'Central Blood Bank Society',
-  'مجمع الشفاء الطبي': 'Al-Shifa Medical Complex'
+  'الجهة الطبية': 'Medical Facility'
 };
 
 const addressDict = {
+  'شمال غزة - بيت لاهيا': 'North Gaza - Beit Lahia',
+  'شمال غزة - تل الزعتر / جباليا': 'North Gaza - Jabalia',
+  'مدينة غزة - الرمال': 'Gaza City - Rimal',
+  'غزة - الرمال': 'Gaza - Rimal',
+  'غزة - الزيتون': 'Gaza - Al-Zaytoun',
+  'مدينة غزة - الزيتون / الشجاعية': 'Gaza City - Al-Zaytoun / Shuja\'iyya',
+  'مدينة غزة - تل الهوى': 'Gaza City - Tel Al-Hawa',
+  'غزة - تل الهوى': 'Gaza - Tel Al-Hawa',
+  'مدينة غزة - حي الرمال - شارع الشهداء': 'Gaza City - Rimal District - Al-Shuhada St',
   'غزة - الرمال شارع الوحدة': 'Gaza - Rimal, Al-Wehda St',
-  'غزة - الرمال': 'Gaza - Rimal'
+  'المحافظة الوسطى - دير البلح': 'Central Gaza - Deir Al-Balah',
+  'المحافظة الوسطى - النصيرات': 'Central Gaza - Nuseirat',
+  'خان يونس - وسط المدينة': 'Khan Younis - City Center',
+  'خان يونس - الفخاري': 'Khan Younis - Al-Fukhari',
+  'خان يونس - حي الأمل': 'Khan Younis - Al-Amal District',
+  'رفح - حي الجنينة': 'Rafah - Al-Jenena District',
+  'رفح - وسط البلد': 'Rafah - Downtown'
 };
 
 const t = (key) => dictionary[currentLanguage.value === 'en' ? 'en' : 'ar'][key] || key;
-const translateFacilityName = (name) => currentLanguage.value === 'en' ? (facilityNameDict[name] || name) : name;
-const translateAddress = (addr) => currentLanguage.value === 'en' ? (addressDict[addr] || addr) : (addr || 'غير محدد');
-const translateWorkingHours = (hours) => {
-  if (currentLanguage.value === 'en') {
-    if (hours === '24 ساعة 7 أيام في الأسبوع') return '24 Hours 7 Days a Week';
-  }
-  return hours;
+
+const translateFacilityName = (name) => {
+  if (!name) return currentLanguage.value === 'en' ? 'Medical Facility' : 'الجهة الطبية';
+  if (currentLanguage.value !== 'en') return name;
+
+  const trimmed = name.trim();
+  if (facilityNameDict[trimmed]) return facilityNameDict[trimmed];
+
+  return trimmed
+    .replace(/المستشفى الإندونيسي/g, 'Indonesian Hospital')
+    .replace(/مستشفى العودة/g, 'Al-Awda Hospital')
+    .replace(/مستشفى كمال عدوان/g, 'Kamal Adwan Hospital')
+    .replace(/مجمع الشفاء الطبي/g, 'Al-Shifa Medical Complex')
+    .replace(/المستشفى الأهلي العربي/g, 'Ahli Arab Hospital')
+    .replace(/المعمداني/g, 'Al-Mamdani')
+    .replace(/مستشفى القدس/g, 'Al-Quds Medical Hospital')
+    .replace(/أصدقاء المريض/g, 'Patient Friends')
+    .replace(/شهداء الأقصى/g, 'Al-Aqsa Martyrs')
+    .replace(/مجمع ناصر الطبي/g, 'Nasser Medical Complex')
+    .replace(/المستشفى الأوروبي/g, 'European Gaza Hospital')
+    .replace(/الهلال الأحمر/g, 'Red Crescent')
+    .replace(/أبو يوسف النجار/g, 'Abu Yousuf Al-Najjar')
+    .replace(/الكويت التخصصي/g, 'Kuwaiti Specialty')
+    .replace(/الإندونيسي/g, 'Indonesian')
+    .replace(/مستشفى/g, 'Hospital')
+    .replace(/الخيري/g, 'Charitable')
+    .replace(/مجمع/g, 'Complex')
+    .replace(/جمعية/g, 'Society')
+    .replace(/بنك الدم/g, 'Blood Bank')
+    .replace(/المركزي/g, 'Central')
+    .replace(/الطبي/g, 'Medical');
 };
 
-// تحميل سكربتات Leaflet ديناميكياً
+const translateAddress = (addr) => {
+  if (!addr) return currentLanguage.value === 'en' ? 'Gaza' : 'غزة';
+  if (currentLanguage.value !== 'en') return addr;
+
+  const trimmed = addr.trim();
+  if (addressDict[trimmed]) return addressDict[trimmed];
+
+  return trimmed
+    .replace(/مدينة غزة/g, 'Gaza City')
+    .replace(/غزة/g, 'Gaza')
+    .replace(/الزيتون/g, 'Al-Zaytoun')
+    .replace(/الشجاعية/g, 'Shuja\'iyya')
+    .replace(/الرمال/g, 'Rimal')
+    .replace(/تل الهوى/g, 'Tel Al-Hawa')
+    .replace(/شارع الشهداء/g, 'Al-Shuhada St')
+    .replace(/شارع/g, 'St')
+    .replace(/شمال/g, 'North')
+    .replace(/جباليا/g, 'Jabalia')
+    .replace(/بيت لاهيا/g, 'Beit Lahia')
+    .replace(/المحافظة الوسطى/g, 'Central Governorate')
+    .replace(/دير البلح/g, 'Deir Al-Balah')
+    .replace(/النصيرات/g, 'Nuseirat')
+    .replace(/خان يونس/g, 'Khan Younis')
+    .replace(/وسط المدينة/g, 'City Center')
+    .replace(/الفخاري/g, 'Al-Fukhari')
+    .replace(/حي الأمل/g, 'Al-Amal District')
+    .replace(/رفح/g, 'Rafah')
+    .replace(/حي الجنينة/g, 'Al-Jenena District')
+    .replace(/وسط البلد/g, 'Downtown');
+};
+
+const translateWorkingHours = (hours) => {
+  if (currentLanguage.value === 'en') {
+    if (!hours || hours.includes('24') || hours.includes('ساعة')) {
+      return '24 Hours 7 Days a Week';
+    }
+  }
+  return hours || '24 ساعة 7 أيام في الأسبوع';
+};
+
 const loadScript = (src) => {
   return new Promise((resolve, reject) => {
     if (document.querySelector(`script[src="${src}"]`)) {
@@ -135,7 +246,6 @@ const loadStyle = (href) => {
   }
 };
 
-// تهيئة الخريطة التفاعلية
 const initMap = async () => {
   try {
     loadStyle('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
@@ -166,11 +276,9 @@ const initMap = async () => {
   }
 };
 
-// تحديث العلامات الجغرافية والطبقة الحرارية
 const updateMapElements = (lat, lng) => {
   if (!mapInstance || !window.L) return;
 
-  // 1. تحديث العلامة الجغرافية
   if (markerInstance) {
     mapInstance.removeLayer(markerInstance);
   }
@@ -194,13 +302,11 @@ const updateMapElements = (lat, lng) => {
     </div>
   `).openPopup();
 
-  // 2. تحديث الخريطة الحرارية Overlay حول موقع المستشفى
   if (heatLayer) {
     mapInstance.removeLayer(heatLayer);
   }
 
   if (window.L.heatLayer) {
-    // توليد نقاط حول المستشفى لإعطاء تأثير الدائرة الحرارية الجذابة
     const heatPoints = [
       [lat, lng, 1.0],
       [lat + 0.002, lng + 0.002, 0.7],
@@ -227,6 +333,14 @@ const updateMapElements = (lat, lng) => {
 watch(() => [props.hospitalData.latitude, props.hospitalData.longitude], ([newLat, newLng]) => {
   if (newLat && newLng && mapInstance) {
     updateMapElements(parseFloat(newLat), parseFloat(newLng));
+  }
+});
+
+watch(currentLanguage, () => {
+  if (props.hospitalData && mapInstance) {
+    const lat = parseFloat(props.hospitalData.latitude) || 31.514;
+    const lng = parseFloat(props.hospitalData.longitude) || 34.448;
+    updateMapElements(lat, lng);
   }
 });
 
@@ -264,7 +378,6 @@ onUnmounted(() => {
 </style>
 
 <style>
-/* تخصيص شكل الدبوس التفاعلي للمستشفى */
 .hospital-pin {
   width: 32px;
   height: 32px;

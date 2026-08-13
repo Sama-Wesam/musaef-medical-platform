@@ -13,10 +13,19 @@ class EmergencyModeMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $hospital = $request->user()->hospital ?? null;
+        if (!auth()->check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'يرجى تسجيل الدخول أولاً لتنفيذ هذا الإجراء.'
+            ], 401);
+        }
 
-        // نفترض وجود حقل is_emergency_mode في جدول المستشفيات
-        if (!$hospital || !$hospital->is_emergency_mode) {
+        $user = $request->user();
+        $hospital = $user?->hospital;
+
+        $isEmergencyActive = $hospital ? (bool) $hospital->is_emergency_mode : false;
+
+        if (!$hospital || !$isEmergencyActive) {
             return response()->json([
                 'success' => false,
                 'message' => 'هذا الإجراء محظور. يتطلب تفعيل وضع "الطوارئ القصوى" أولاً.'

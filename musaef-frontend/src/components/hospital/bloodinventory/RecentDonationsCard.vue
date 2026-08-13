@@ -2,45 +2,28 @@
   <div class="card border-0 shadow-sm p-3 rounded-4 bg-white flex-grow-1" :class="currentLanguage === 'ar' ? 'dir-rtl text-end' : 'dir-ltr text-start'">
     <h6 class="fw-bold text-dark mb-3 fs-7">{{ t('title') }}</h6>
     <div class="d-flex flex-column gap-2 mb-3 fs-8">
-      <div class="d-flex align-items-center justify-content-between p-1 border-bottom-dashed">
-        <div class="d-flex align-items-center gap-2 min-w-0">
-          <span class="text-truncate">{{ translateName('أحمد خالد', 'Ahmed Khaled') }}</span>
-          <span class="badge bg-danger-subtle text-danger rounded-pill px-2 py-0.5 fs-9 flex-shrink-0">+O</span>
+      <template v-if="combinedDonations && combinedDonations.length > 0">
+        <div
+          v-for="(item, index) in combinedDonations"
+          :key="item.id || index"
+          class="d-flex align-items-center justify-content-between p-1"
+          :class="index < combinedDonations.length - 1 ? 'border-bottom-dashed' : ''"
+        >
+          <div class="d-flex align-items-center gap-2 min-w-0">
+            <span class="text-truncate">{{ item.donor_name || item.name }}</span>
+            <span class="badge bg-danger-subtle text-danger rounded-pill px-2 py-0.5 fs-9 flex-shrink-0" dir="ltr">
+              {{ item.blood_type }}
+            </span>
+          </div>
+          <small class="text-muted fs-9 flex-shrink-0">{{ item.formatted_time || item.created_at }}</small>
         </div>
-        <small class="text-muted fs-9 flex-shrink-0">{{ t('time1024') }}</small>
-      </div>
+      </template>
 
-      <div class="d-flex align-items-center justify-content-between p-1 border-bottom-dashed">
-        <div class="d-flex align-items-center gap-2 min-w-0">
-          <span class="text-truncate">{{ translateName('سارة القحطاني', 'Sara Al-Qahtani') }}</span>
-          <span class="badge bg-danger-subtle text-danger rounded-pill px-2 py-0.5 fs-9 flex-shrink-0">+A</span>
+      <template v-else>
+        <div class="text-center py-3 text-muted fs-8">
+          {{ currentLanguage === 'en' ? 'No recent donation activity' : 'لا توجد عمليات تبرع مسجلة مؤخراً' }}
         </div>
-        <small class="text-muted fs-9 flex-shrink-0">{{ t('time0958') }}</small>
-      </div>
-
-      <div class="d-flex align-items-center justify-content-between p-1 border-bottom-dashed">
-        <div class="d-flex align-items-center gap-2 min-w-0">
-          <span class="text-truncate">{{ translateName('فهد المطيري', 'Fahad Al-Mutairi') }}</span>
-          <span class="badge bg-danger-subtle text-danger rounded-pill px-2 py-0.5 fs-9 flex-shrink-0">+B</span>
-        </div>
-        <small class="text-muted fs-9 flex-shrink-0">{{ t('time0915') }}</small>
-      </div>
-
-      <div class="d-flex align-items-center justify-content-between p-1 border-bottom-dashed">
-        <div class="d-flex align-items-center gap-2 min-w-0">
-          <span class="text-truncate">{{ translateName('ريم الشمري', 'Reem Al-Shammari') }}</span>
-          <span class="badge bg-danger-subtle text-danger rounded-pill px-2 py-0.5 fs-9 flex-shrink-0">+AB</span>
-        </div>
-        <small class="text-muted fs-9 flex-shrink-0">{{ t('time0847') }}</small>
-      </div>
-
-      <div class="d-flex align-items-center justify-content-between p-1">
-        <div class="d-flex align-items-center gap-2 min-w-0">
-          <span class="text-truncate">{{ translateName('عبدالله القحطاني', 'Abdullah Al-Qahtani') }}</span>
-          <span class="badge bg-danger-subtle text-danger rounded-pill px-2 py-0.5 fs-9 flex-shrink-0">-O</span>
-        </div>
-        <small class="text-muted fs-9 flex-shrink-0">{{ t('time0830') }}</small>
-      </div>
+      </template>
     </div>
     <button class="btn btn-light bg-light text-secondary btn-sm w-100 rounded-pill fs-8 mt-auto fw-bold" @click="handleViewAllOperations">
       {{ t('viewAllBtn') }}
@@ -49,33 +32,73 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+
+const props = defineProps({
+  donations: {
+    type: Array,
+    default: () => []
+  }
+});
 
 const currentLanguage = computed(() => localStorage.getItem('musaef_lang') || 'ar');
+const localDonations = ref([]);
 
 const dictionary = {
   ar: {
     title: 'عمليات التبرع الأخيرة',
-    viewAllBtn: 'عرض جميع العمليات',
-    time1024: '10:24 ص',
-    time0958: '09:58 ص',
-    time0915: '09:15 ص',
-    time0847: '08:47 ص',
-    time0830: '08:30 ص'
+    viewAllBtn: 'عرض جميع العمليات'
   },
   en: {
     title: 'Recent Donation Operations',
-    viewAllBtn: 'View All Operations',
-    time1024: '10:24 AM',
-    time0958: '09:58 AM',
-    time0915: '09:15 AM',
-    time0847: '08:47 AM',
-    time0830: '08:30 AM'
+    viewAllBtn: 'View All Operations'
   }
 };
 
 const t = (key) => dictionary[currentLanguage.value === 'en' ? 'en' : 'ar'][key] || key;
-const translateName = (arName, enName) => currentLanguage.value === 'en' ? enName : arName;
+
+const loadLocalDonations = () => {
+  try {
+    const saved = localStorage.getItem('musaef_recent_donations');
+    if (saved) {
+      localDonations.value = JSON.parse(saved);
+    }
+  } catch (e) {
+    console.error('Error loading local donations:', e);
+  }
+};
+
+const combinedDonations = computed(() => {
+  const merged = [...localDonations.value, ...(props.donations || [])];
+  const uniqueMap = new Map();
+
+  merged.forEach(item => {
+    const name = item.donor_name || item.name;
+    const key = `${name}_${item.blood_type}`;
+    if (!uniqueMap.has(key)) {
+      uniqueMap.set(key, item);
+    }
+  });
+
+  return Array.from(uniqueMap.values());
+});
+
+const handleStorageChange = (e) => {
+  if (e.key === 'musaef_recent_donations' || !e.key) {
+    loadLocalDonations();
+  }
+};
+
+onMounted(() => {
+  loadLocalDonations();
+  window.addEventListener('musaef_responders_updated', loadLocalDonations);
+  window.addEventListener('storage', handleStorageChange);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('musaef_responders_updated', loadLocalDonations);
+  window.removeEventListener('storage', handleStorageChange);
+});
 
 const handleViewAllOperations = () => {
   alert(currentLanguage.value === 'en'

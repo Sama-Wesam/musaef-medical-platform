@@ -2,8 +2,8 @@ import apiClient from './axios';
 
 export default {
   // جلب المخزون اللحظي لبنك الدم الخاص بالمستشفى وإحصائياته
-  getBloodInventory() {
-    return apiClient.get('/hospital/inventory');
+  getBloodInventory(params = {}) {
+    return apiClient.get('/hospital/inventory', { params });
   },
 
   // تحديث كمية الوحدات (إضافة أو سحب)

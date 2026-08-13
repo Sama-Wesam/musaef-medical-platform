@@ -4,40 +4,21 @@ import apiClient from '@/api/axios';
 export const useAnalyticsStore = defineStore('analytics', {
   state: () => ({
     kpi: {
-      critical_cases: 236,
-      response_rate: '92.7%',
-      total_requests: '1,248',
-      total_donors: '8,765'
+      critical_cases: 0,
+      response_rate: '0%',
+      total_requests: '0',
+      total_donors: '0'
     },
-    bloodDemand: [
-      { type: 'O+', count: 452, color: '#D32F2F' },
-      { type: 'O-', count: 298, color: '#D32F2F' },
-      { type: 'A+', count: 215, color: '#F97316' },
-      { type: 'A-', count: 142, color: '#F97316' },
-      { type: 'B+', count: 98,  color: '#F59E0B' },
-      { type: 'B-', count: 69,  color: '#F59E0B' },
-      { type: 'AB+', count: 45, color: '#16A34A' },
-      { type: 'AB-', count: 29, color: '#16A34A' }
-    ],
-    neediestHospitals: [
-      { name: 'مستشفى ناصر', percent: 78, color: '#DC2626' },
-      { name: 'مستشفى القدس', percent: 62, color: '#F59E0B' },
-      { name: 'مستشفى الأوروبي', percent: 45, color: '#EA580C' },
-      { name: 'مستشفى الشفاء', percent: 30, color: '#16A34A' },
-      { name: 'مستشفى القدس', percent: 18, color: '#16A34A' }
-    ],
-    recentAlerts: [
-      { status: 'عاجل', statusBadge: 'bg-danger-subtle text-danger', type: 'A+', hospital: 'مستشفى ناصر', time: '10:30 ص' },
-      { status: 'متوسط', statusBadge: 'bg-warning-subtle text-warning-emphasis', type: 'B+', hospital: 'مستشفى القدس', time: '09:45 ص' },
-      { status: 'مستقر', statusBadge: 'bg-success-subtle text-success', type: 'O-', hospital: 'مستشفى الأوروبي', time: '08:30 ص' },
-      { status: 'مستقر', statusBadge: 'bg-success-subtle text-success', type: 'AB-', hospital: 'مستشفى الشفاء', time: '07:10 ص' }
-    ],
+    bloodDemand: [],
+    neediestHospitals: [],
+    recentAlerts: [],
     performance: {
-      avg_response_time: '18:24 دقيقة',
-      fulfillment_rate: '92.6%',
-      daily_donation_rate: '1,234 وحدة'
+      avg_response_time: '0:00 دقيقة',
+      fulfillment_rate: '0%',
+      daily_donation_rate: '0 وحدة'
     },
-    loading: false
+    loading: false,
+    pollingTimer: null
   }),
 
   actions: {
@@ -54,9 +35,40 @@ export const useAnalyticsStore = defineStore('analytics', {
           if (data.performance) this.performance = data.performance;
         }
       } catch (err) {
-        console.warn('استخدام البيانات الافتراضية لمركز التحليلات.');
+        console.error('خطأ في جلب بيانات مركز التحليلات المباشرة:', err);
       } finally {
         this.loading = false;
+      }
+    },
+
+    async fetchRecentAlerts() {
+      try {
+        const response = await apiClient.get('/admin/analytics/all-alerts');
+        const data = response.data?.data || response.data;
+        if (Array.isArray(data)) {
+          this.recentAlerts = data;
+        }
+      } catch (err) {
+        console.error('خطأ في تحديث التنبيهات الذكية:', err);
+      }
+    },
+
+    startPolling(intervalMs = 5000) {
+      this.fetchAnalyticsData();
+
+      if (this.pollingTimer) {
+        clearInterval(this.pollingTimer);
+      }
+
+      this.pollingTimer = setInterval(() => {
+        this.fetchAnalyticsData();
+      }, intervalMs);
+    },
+
+    stopPolling() {
+      if (this.pollingTimer) {
+        clearInterval(this.pollingTimer);
+        this.pollingTimer = null;
       }
     }
   }

@@ -72,7 +72,11 @@
                   <i :class="stat.icon"></i>
                 </div>
                 <div class="stat-content">
-                  <h2>{{ stat.number }}</h2>
+                  <!-- مؤشر تحميل خفيف في حال جاري جلب الأرقام الحقيقية لتجنب القيم الصفرية -->
+                  <h2 v-if="isLoadingStats" class="placeholder-glow">
+                    <span class="placeholder col-6 bg-white opacity-50 rounded"></span>
+                  </h2>
+                  <h2 v-else>{{ stat.number }}</h2>
                   <p>{{ $t(stat.titleKey) }}</p>
                 </div>
               </div>
@@ -211,27 +215,28 @@ const steps = [
 
 const statistics = ref([
   {
-    number: '120+',
+    number: '...',
     titleKey: 'home.statSupported',
     icon: 'bi bi-heart-pulse-fill'
   },
   {
-    number: '0',
+    number: '...',
     titleKey: 'home.statRequests',
     icon: 'bi bi-droplet-fill'
   },
   {
-    number: '0',
+    number: '...',
     titleKey: 'home.statHospitals',
     icon: 'bi bi-hospital-fill'
   },
   {
-    number: '0',
+    number: '...',
     titleKey: 'home.statDonors',
     icon: 'bi bi-people-fill'
   }
 ])
 
+const isLoadingStats = ref(true)
 const emergencyCases = ref([])
 
 const translationsDictionary = {
@@ -255,24 +260,38 @@ const translationsDictionary = {
 }
 
 const fetchHomeStats = async () => {
+  isLoadingStats.value = true
   try {
     const res = await apiClient.get('/public/home-stats')
-    const statsData = (res && res.data) ? res.data : res
+    const statsData = (res && res.data && res.data.data) ? res.data.data : ((res && res.data) ? res.data : res)
     if (statsData) {
-      statistics.value[0].number = (statsData.supported_cases || 120) + '+'
+      statistics.value[0].number = (statsData.supported_cases || 0) + '+'
       statistics.value[1].number = (statsData.total_requests || 0) + '+'
       statistics.value[2].number = (statsData.hospitals_count || 0) + '+'
       statistics.value[3].number = (statsData.donors_count || 0) + '+'
     }
   } catch (error) {
     console.error('Error fetching stats:', error)
+  } finally {
+    isLoadingStats.value = false
   }
 }
 
 const fetchUrgentRequests = async () => {
   try {
     const res = await apiClient.get('/public/urgent-requests')
-    const casesData = Array.isArray(res) ? res : ((res && res.data && Array.isArray(res.data)) ? res.data : [])
+
+    let casesData = []
+
+    if (Array.isArray(res)) {
+      casesData = res
+    } else if (res && res.data) {
+      if (Array.isArray(res.data)) {
+        casesData = res.data
+      } else if (res.data.data && Array.isArray(res.data.data)) {
+        casesData = res.data.data
+      }
+    }
 
     if (casesData.length > 0) {
       emergencyCases.value = casesData.map(req => ({
@@ -283,11 +302,11 @@ const fetchUrgentRequests = async () => {
         location: req.location || '',
         location_ar: req.location_ar || req.location || '',
         location_en: req.location_en || translationsDictionary[req.location] || req.location || '',
-        units: req.units_needed || 1,
+        units: req.units_needed || req.units_required || 1,
         severity: req.severity || 'Critical',
         urgency_label: req.condition_type || '',
-        time: req.created_at || '2026-08-01 17:26',
-        ai_priority_score: req.ai_priority_score || req.priority_score || 0 // 👈 حفظ درجة الأولوية
+        time: req.created_at || 'منذ قليل',
+        ai_priority_score: req.ai_priority_score || req.priority_score || 0
       }))
     }
   } catch (error) {
@@ -295,7 +314,6 @@ const fetchUrgentRequests = async () => {
   }
 }
 
-// 2. إنشاء Computed Property لفرز الحالات تنازلياً بحسب درجة الأولوية
 const sortedEmergencyCases = computed(() => {
   return [...emergencyCases.value].sort((a, b) => {
     return (b.ai_priority_score || 0) - (a.ai_priority_score || 0)
@@ -803,7 +821,7 @@ section {
   border-radius: 50%;
   border: 1px solid #ececec;
   background: #fff;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   transition: 0.3s;
@@ -812,6 +830,7 @@ section {
 
 @media (min-width: 768px) {
   .share-btn {
+    display: flex;
     width: 45px;
     height: 45px;
   }
@@ -819,13 +838,7 @@ section {
 
 .share-btn i {
   color: #dc2626;
-  font-size: 16px;
-}
-
-@media (min-width: 768px) {
-  .share-btn i {
-    font-size: 19px;
-  }
+  font-size: 19px;
 }
 
 .share-btn:hover {

@@ -12,9 +12,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('hospital_id')->constrained()->cascadeOnDelete();
             $table->foreignId('blood_type_id')->constrained()->cascadeOnDelete();
-            $table->integer('units_available')->default(0); // عدد الوحدات المتاحة
-            $table->timestamp('last_updated_at')->nullable();
-            $table->timestamps();
+            $table->integer('units_available')->default(0);
+            $table->integer('min_threshold')->default(5);
+            $table->timestamps(); // يقوم تلقائياً بإنشاء وتحديث updated_at عند أي تعديل للمخزون
         });
     }
 

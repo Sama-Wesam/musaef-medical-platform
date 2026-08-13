@@ -9,13 +9,23 @@ use App\Http\Controllers\Donor\NearbyHospitalsController;
 use App\Http\Controllers\Donor\RewardsController;
 use App\Http\Controllers\Donor\QRCardController;
 use App\Http\Controllers\Donor\NotificationsController;
+use App\Http\Controllers\API\DonationController;
 
-Route::middleware(['auth:sanctum', 'donor'])->prefix('donor')->group(function () {
+Route::prefix('donor')->group(function () {
+
+    // ⚡ مسار الـ Polling لتحديث نداءات الطوارئ العاجلة والإشعارات للمتبرع
+    Route::get('/polling/live-alerts', [DashboardController::class, 'livePollingAlerts']);
 
     Route::get('/dashboard', [DashboardController::class, 'index']);
     Route::get('/requests', [EmergencyNotificationsController::class, 'index']);
+
+    // طلبات الطوارئ العاجلة المطلوبة في Dashboard.vue
+    Route::get('/urgent-requests', [EmergencyNotificationsController::class, 'index']);
+
     Route::get('/ai-recommendations', [EmergencyNotificationsController::class, 'aiRecommendations']);
-    Route::post('/requests/{id}/accept', [EmergencyNotificationsController::class, 'accept']);
+
+    // توحيد متحكم قبول الطلب لحل ثغرة تضارب النقاط والأوسمة
+    Route::post('/requests/{id}/accept', [DonationController::class, 'acceptEmergency']);
 
     // 1. الملف الشخصي
     Route::get('/profile', [ProfileController::class, 'show']);

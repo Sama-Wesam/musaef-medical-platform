@@ -14,10 +14,8 @@ trait UploadTrait
     public function uploadFile(UploadedFile $file, string $folder = 'uploads', string $disk = 'public'): string
     {
         $fileName = Str::random(10) . '_' . time() . '.' . $file->getClientOriginalExtension();
-        
-        $path = $file->storeAs($folder, $fileName, $disk);
 
-        return $path;
+        return $file->storeAs($folder, $fileName, $disk);
     }
 
     /**

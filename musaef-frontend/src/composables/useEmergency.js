@@ -1,8 +1,9 @@
-import { computed } from 'vue';
+import { computed, ref, onUnmounted } from 'vue';
 import { useEmergencyStore } from '@/stores/emergencyRadarStore';
 
 export function useEmergency() {
   const emergencyStore = useEmergencyStore();
+  const pollingTimer = ref(null);
 
   const requests = computed(() => emergencyStore.emergencyRequests);
   const activeRequests = computed(() => emergencyStore.activeRequests);
@@ -21,6 +22,26 @@ export function useEmergency() {
     await emergencyStore.respondToRequest(id, donorInfo);
   };
 
+  // تفعيل آلية الاستطلاع التلقائي المباشر كل N ثانية
+  const startPolling = (intervalMs = 8000, params = {}) => {
+    stopPolling();
+    fetchActiveEmergencies(params);
+    pollingTimer.value = setInterval(() => {
+      fetchActiveEmergencies(params);
+    }, intervalMs);
+  };
+
+  const stopPolling = () => {
+    if (pollingTimer.value) {
+      clearInterval(pollingTimer.value);
+      pollingTimer.value = null;
+    }
+  };
+
+  onUnmounted(() => {
+    stopPolling();
+  });
+
   return {
     requests,
     activeRequests,
@@ -28,6 +49,8 @@ export function useEmergency() {
     loading,
     fetchActiveEmergencies,
     createEmergencyRequest,
-    respondToEmergency
+    respondToEmergency,
+    startPolling,
+    stopPolling
   };
 }

@@ -3,9 +3,10 @@
 namespace App\Repositories;
 
 use App\Models\Hospital;
+use App\Repositories\Contracts\HospitalRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 
-class HospitalRepository
+class HospitalRepository implements HospitalRepositoryInterface
 {
     public function getVerifiedHospitals(): Collection
     {

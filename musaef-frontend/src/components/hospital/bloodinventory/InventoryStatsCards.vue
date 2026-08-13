@@ -8,7 +8,7 @@
           <img src="@/assets/icons/Frame 2147225613.png" alt="Total units" class="stat-img" />
         </div>
         <div class="text-center">
-          <h2 class="fw-bold text-dark mb-0 fs-3">1,248</h2>
+          <h2 class="fw-bold text-dark mb-0 fs-3">{{ formattedStats.totalUnits }}</h2>
           <small class="text-muted fs-9">{{ t('bloodUnit') }}</small>
         </div>
       </div>
@@ -22,7 +22,7 @@
           <img src="@/assets/icons/Frame 2147225866.png" alt="Valid units" class="stat-img" />
         </div>
         <div class="text-center">
-          <h2 class="fw-bold text-dark mb-0 fs-3">856</h2>
+          <h2 class="fw-bold text-dark mb-0 fs-3">{{ formattedStats.validUnits }}</h2>
           <small class="text-muted fs-9">{{ t('bloodUnit') }}</small>
         </div>
       </div>
@@ -36,7 +36,7 @@
           <img src="@/assets/icons/Frame 2147225868.png" alt="Low stock" class="stat-img" />
         </div>
         <div class="text-center">
-          <h2 class="fw-bold text-dark mb-0 fs-3">254</h2>
+          <h2 class="fw-bold text-dark mb-0 fs-3">{{ formattedStats.lowStockUnits }}</h2>
           <small class="text-muted fs-9">{{ t('bloodUnit') }}</small>
         </div>
       </div>
@@ -50,7 +50,7 @@
           <img src="@/assets/icons/Frame 2147225871.png" alt="Critical cases" class="stat-img" />
         </div>
         <div class="text-center">
-          <h2 class="fw-bold text-danger mb-0 fs-3">3</h2>
+          <h2 class="fw-bold text-danger mb-0 fs-3">{{ formattedStats.criticalTypesCount }}</h2>
           <small class="text-muted fs-9">{{ t('typesCount') }}</small>
         </div>
       </div>
@@ -59,9 +59,17 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+
+const props = defineProps({
+  stats: {
+    type: Object,
+    default: () => ({})
+  }
+});
 
 const currentLanguage = computed(() => localStorage.getItem('musaef_lang') || 'ar');
+const localEmergencyCount = ref(0);
 
 const dictionary = {
   ar: {
@@ -70,7 +78,7 @@ const dictionary = {
     lowStock: 'مخزون منخفض',
     criticalCases: 'الحالات الحرجة',
     bloodUnit: 'وحدة دم',
-    typesCount: 'فصائل'
+    typesCount: 'حالات / فصائل'
   },
   en: {
     totalUnits: 'Total Units',
@@ -78,17 +86,55 @@ const dictionary = {
     lowStock: 'Low Stock',
     criticalCases: 'Critical Cases',
     bloodUnit: 'Blood Units',
-    typesCount: 'Types'
+    typesCount: 'Cases / Types'
   }
 };
 
 const t = (key) => dictionary[currentLanguage.value === 'en' ? 'en' : 'ar'][key] || key;
 
-defineProps({
-  stats: {
-    type: Object,
-    default: () => ({})
+const loadLocalEmergencyRequests = () => {
+  try {
+    const saved = localStorage.getItem('musaef_emergency_requests');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) {
+        // فلترة النداءات الطارئة القائمة والنشطة
+        const activeRequests = parsed.filter(req => req.status !== 'completed' && req.status !== 'مكتملة');
+        localEmergencyCount.value = activeRequests.length;
+      }
+    }
+  } catch (e) {
+    console.error('Error loading local emergency requests:', e);
   }
+};
+
+const handleStorageChange = (e) => {
+  if (e.key === 'musaef_emergency_requests' || !e.key) {
+    loadLocalEmergencyRequests();
+  }
+};
+
+onMounted(() => {
+  loadLocalEmergencyRequests();
+  window.addEventListener('musaef_emergency_updated', loadLocalEmergencyRequests);
+  window.addEventListener('storage', handleStorageChange);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('musaef_emergency_updated', loadLocalEmergencyRequests);
+  window.removeEventListener('storage', handleStorageChange);
+});
+
+const formattedStats = computed(() => {
+  const baseCritical = props.stats?.criticalTypesCount ?? 0;
+  const totalCritical = baseCritical + localEmergencyCount.value;
+
+  return {
+    totalUnits: (props.stats?.totalUnits ?? 0).toLocaleString(),
+    validUnits: (props.stats?.validUnits ?? 0).toLocaleString(),
+    lowStockUnits: (props.stats?.lowStockUnits ?? 0).toLocaleString(),
+    criticalTypesCount: totalCritical.toLocaleString()
+  };
 });
 </script>
 

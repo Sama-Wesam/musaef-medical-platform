@@ -8,6 +8,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Route;
 
 class PasswordResetMail extends Mailable implements ShouldQueue
 {
@@ -40,13 +41,15 @@ class PasswordResetMail extends Mailable implements ShouldQueue
      */
     public function content(): Content
     {
+        // توليد الرابط مع فحص أمان لوجود الـ Route لتفادي RouteNotFoundException
+        $resetUrl = Route::has('password.reset')
+            ? route('password.reset', ['token' => $this->token, 'email' => $this->email])
+            : url("/password/reset/{$this->token}?email=" . urlencode($this->email));
+
         return new Content(
-            view: 'emails.password_reset', // يجب إنشاء resources/views/emails/password_reset.blade.php
+            view: 'emails.password_reset',
             with: [
-                'resetUrl' => url(route('password.reset', [
-                    'token' => $this->token,
-                    'email' => $this->email,
-                ], false)),
+                'resetUrl' => $resetUrl,
             ],
         );
     }

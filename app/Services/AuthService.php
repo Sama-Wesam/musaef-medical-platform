@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\UserRole;
 use App\Models\User;
 use App\Models\Donor;
 use Illuminate\Support\Facades\DB;
@@ -10,21 +11,16 @@ use Illuminate\Validation\ValidationException;
 
 class AuthService
 {
-    /**
-     * تسجيل الدخول الموحد بأمان
-     */
-    public function login($email, $password)
+    public function login(string $email, string $password): array
     {
         $user = User::where('email', $email)->first();
 
-        // التحقق من وجود المستخدم وصحة كلمة المرور
         if (!$user || !Hash::check($password, $user->password)) {
             throw ValidationException::withMessages([
                 'email' => ['البريد الإلكتروني أو كلمة المرور غير صحيحة.'],
             ]);
         }
 
-        // إنشاء التوكن المعتمد للفرونت إند
         $token = $user->createToken('musaef_auth_token')->plainTextToken;
 
         return [
@@ -33,17 +29,16 @@ class AuthService
         ];
     }
 
-    /**
-     * تسجيل متبرع جديد مع ربطه بالمستخدم
-     */
-    public function registerDonor(array $data)
+    public function registerDonor(array $data): array
     {
         return DB::transaction(function () use ($data) {
+            $userRole = defined('App\Enums\UserRole::DONOR') ? UserRole::DONOR->value : 'donor';
+
             $user = User::create([
                 'name'     => $data['name'],
                 'email'    => $data['email'],
-                'password' => $data['password'], 
-                'role'     => 'donor',
+                'password' => Hash::make($data['password']),
+                'role'     => $userRole,
             ]);
 
             $donor = Donor::create([

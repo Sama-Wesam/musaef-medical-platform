@@ -3,9 +3,15 @@
     <div class="blood-bank-inventory container-fluid px-2 px-md-3" :class="currentLanguage === 'ar' ? 'dir-rtl text-end' : 'dir-ltr text-start'">
 
       <!-- الهيدر وعنوان الصفحة -->
-      <div class="mb-4" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
-        <h4 class="fw-bold text-dark mb-1 fs-5 fs-md-4">{{ t('pageTitle') }}</h4>
-        <p class="text-muted fs-8 mb-0">{{ t('pageSubtitle') }}</p>
+      <div class="mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2" :class="currentLanguage === 'ar' ? 'text-end' : 'text-start'">
+        <div>
+          <h4 class="fw-bold text-dark mb-1 fs-5 fs-md-4">{{ t('pageTitle') }}</h4>
+          <p class="text-muted fs-8 mb-0">{{ t('pageSubtitle') }}</p>
+        </div>
+        <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" @click="refreshInventoryData">
+          <i class="bi bi-arrow-clockwise me-1" :class="{ 'spin-icon': hospitalStore.loading }"></i>
+          {{ currentLanguage === 'en' ? 'Refresh' : 'تحديث المخزون' }}
+        </button>
       </div>
 
       <!-- 1. الكروت الإحصائية العلوية -->
@@ -18,20 +24,20 @@
         </div>
 
         <div class="col-12 col-lg-4 d-flex flex-column gap-3 gap-md-4">
-          <UrgentAlertsCard />
-          <RecentDonationsCard />
+          <UrgentAlertsCard :alerts="hospitalStore.urgentAlerts" />
+          <RecentDonationsCard :donations="hospitalStore.recentDonations" />
         </div>
       </div>
 
       <!-- 3. نماذج العمليات (إضافة/سحب وحدات) -->
-      <StockOperationsForm @refresh="hospitalStore.fetchInventory()" />
+      <StockOperationsForm @refresh="refreshInventoryData" />
 
     </div>
   </HospitalLayout>
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
 import HospitalLayout from '@/layouts/HospitalLayout.vue';
 import { useHospitalStore } from '@/stores/hospitalStore';
 
@@ -43,6 +49,7 @@ import StockOperationsForm from '@/components/hospital/bloodinventory/StockOpera
 
 const hospitalStore = useHospitalStore();
 const currentLanguage = computed(() => localStorage.getItem('musaef_lang') || 'ar');
+let autoRefreshTimer = null;
 
 const dictionary = {
   ar: {
@@ -57,8 +64,19 @@ const dictionary = {
 
 const t = (key) => dictionary[currentLanguage.value === 'en' ? 'en' : 'ar'][key] || key;
 
+const refreshInventoryData = async () => {
+  if (hospitalStore.fetchInventory) {
+    await hospitalStore.fetchInventory();
+  }
+};
+
 onMounted(() => {
-  hospitalStore.fetchInventory();
+  refreshInventoryData();
+  autoRefreshTimer = setInterval(refreshInventoryData, 5000);
+});
+
+onUnmounted(() => {
+  if (autoRefreshTimer) clearInterval(autoRefreshTimer);
 });
 </script>
 
@@ -70,4 +88,12 @@ onMounted(() => {
 .dir-rtl { direction: rtl; }
 .dir-ltr { direction: ltr; }
 .fs-8 { font-size: 0.82rem; }
+
+.spin-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
 </style>

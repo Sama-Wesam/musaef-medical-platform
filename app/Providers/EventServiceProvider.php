@@ -3,10 +3,16 @@
 namespace App\Providers;
 
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+
+// الأحداث (Events)
 use App\Events\UserRegistered;
 use App\Events\EmergencyCreated;
 use App\Events\DonationAccepted;
+use App\Events\DonationRejected;
 use App\Events\EmergencyResolved;
+use App\Events\EmergencyStatusUpdated;
+
+// المستمعون (Listeners)
 use App\Listeners\SendWelcomeNotification;
 use App\Listeners\AssignDefaultBadges;
 use App\Listeners\NotifyNearbyDonors;
@@ -22,34 +28,45 @@ class EventServiceProvider extends ServiceProvider
      * @var array<class-string, array<int, class-string>>
      */
     protected $listen = [
+        // 1. عند تسجيل مستخدم جديد
         UserRegistered::class => [
             SendWelcomeNotification::class,
             AssignDefaultBadges::class,
         ],
+
+        // 2. عند إنشاء طلب طوارئ جديد
         EmergencyCreated::class => [
             NotifyNearbyDonors::class,
             SendEmergencyNotification::class,
         ],
+
+        // 3. عند قبول التبرع من قبل متبرع
         DonationAccepted::class => [
             UpdateDonationStats::class,
             GenerateRewardPoints::class,
         ],
+
+        // 4. عند رفض أو اعتذار المتبرع
+        DonationRejected::class => [
+            // مستمعون مستقبليون لإعادة التوجيه تلقائياً
+        ],
+
+        // 5. عند تحديث حالة الطوارئ
+        EmergencyStatusUpdated::class => [
+            // مستمعون لتحديث حالة الاستجابة
+        ],
+
+        // 6. عند اكتمال وحل حالة الطوارئ
         EmergencyResolved::class => [
-            // إضافة مستمعين لأرشفة الحالات المنتهية إن لزم
+            // مستمعون لأرشفة الحالات المنتهية
         ],
     ];
 
-    /**
-     * تسجيل أي خدمات للأحداث
-     */
     public function boot(): void
     {
         parent::boot();
     }
 
-    /**
-     * تحديد ما إذا كان يجب اكتشاف الأحداث تلقائياً
-     */
     public function shouldDiscoverEvents(): bool
     {
         return false;

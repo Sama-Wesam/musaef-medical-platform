@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
+use App\Enums\ResponseStatus;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class DonorResponse extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'blood_request_id',
         'donor_id',
@@ -13,13 +17,16 @@ class DonorResponse extends Model
         'eta_minutes',
     ];
 
-    // الطلب المرتبط بالاستجابة
+    protected $casts = [
+        'eta_minutes' => 'integer',
+        'status'      => ResponseStatus::class,
+    ];
+
     public function bloodRequest()
     {
         return $this->belongsTo(BloodRequest::class);
     }
 
-    // المتبرع صاحب الاستجابة
     public function donor()
     {
         return $this->belongsTo(Donor::class);

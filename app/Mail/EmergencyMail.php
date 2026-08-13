@@ -23,8 +23,11 @@ class EmergencyMail extends Mailable implements ShouldQueue
      */
     public function __construct(BloodRequest $bloodRequest, User $donorUser)
     {
+        // Eager Loading للعلاقات الهامة
+        $bloodRequest->loadMissing(['hospital.user', 'bloodType']);
+
         $this->bloodRequest = $bloodRequest;
-        $this->donorUser = $donorUser; // لمعرفة اسم المتبرع المرسل إليه
+        $this->donorUser = $donorUser;
     }
 
     /**
@@ -32,8 +35,12 @@ class EmergencyMail extends Mailable implements ShouldQueue
      */
     public function envelope(): Envelope
     {
+        $hospitalName = $this->bloodRequest->hospital->facility_name
+            ?? $this->bloodRequest->hospital->user->name
+            ?? 'مسعف';
+
         return new Envelope(
-            subject: '🚨 نداء طوارئ عاجل من مستشفى: ' . ($this->bloodRequest->hospital->user->name ?? 'مسعف'),
+            subject: '🚨 نداء طوارئ عاجل من: ' . $hospitalName,
         );
     }
 
@@ -42,15 +49,38 @@ class EmergencyMail extends Mailable implements ShouldQueue
      */
     public function content(): Content
     {
+        $hospitalName = $this->bloodRequest->hospital->facility_name
+            ?? $this->bloodRequest->hospital->user->name
+            ?? 'المستشفى';
+
+        $lat = $this->bloodRequest->hospital->latitude ?? $this->bloodRequest->latitude;
+        $lng = $this->bloodRequest->hospital->longitude ?? $this->bloodRequest->longitude;
+
+        // رابط الخريطة والملاحة المباشر نحو المستشفى (Deep Linking)
+        $googleMapsUrl = ($lat && $lng)
+            ? "https://www.google.com/maps/dir/?api=1&destination={$lat},{$lng}"
+            : url('/emergency/' . $this->bloodRequest->id);
+
+        $emergencyLevelRaw = is_object($this->bloodRequest->emergency_level) && method_exists($this->bloodRequest->emergency_level, 'value')
+            ? $this->bloodRequest->emergency_level->value
+            : (string) $this->bloodRequest->emergency_level;
+
+        $levelText = match(strtolower($emergencyLevelRaw)) {
+            'critical', 'حرج' => 'حرج جداً (طارئ للغاية)',
+            'high', 'عالي'     => 'عالي الخطورة',
+            default           => 'متوسط / عادي',
+        };
+
         return new Content(
-            view: 'emails.emergency', // يجب إنشاء resources/views/emails/emergency.blade.php
+            view: 'emails.emergency',
             with: [
-                'donorName' => $this->donorUser->name,
-                'bloodType' => $this->bloodRequest->bloodType->name ?? 'غير محدد',
-                'hospitalName' => $this->bloodRequest->hospital->user->name ?? '',
-                'units' => $this->bloodRequest->units_required,
-                'level' => $this->bloodRequest->emergency_level,
-                'url' => url('/emergency/' . $this->bloodRequest->id),
+                'donorName'     => $this->donorUser->name ?? 'أخي/أختي المتبرع/ة',
+                'bloodType'     => $this->bloodRequest->bloodType->name ?? $this->bloodRequest->blood_type ?? 'غير محدد',
+                'hospitalName'  => $hospitalName,
+                'units'         => $this->bloodRequest->units_required ?? $this->bloodRequest->units_needed ?? 1,
+                'level'         => $levelText,
+                'url'           => url('/emergency/' . $this->bloodRequest->id),
+                'googleMapsUrl' => $googleMapsUrl,
             ],
         );
     }

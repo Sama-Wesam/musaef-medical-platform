@@ -7,6 +7,8 @@ use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use App\Models\BloodRequest;
+use App\Models\Donation;
+use App\Models\Notification;
 
 class DonorController extends Controller
 {
@@ -27,7 +29,6 @@ class DonorController extends Controller
             return $this->notFoundResponse('بيانات المتبرع غير مكتملة');
         }
 
-        // جلب العلاقات دفعة واحدة بكفاءة
         $donor->load(['bloodType', 'healthInfo', 'user']);
 
         return $this->successResponse($donor, 'تم جلب الملف الشخصي للمتبرع بنجاح');
@@ -46,31 +47,39 @@ class DonorController extends Controller
 
     public function homeStats(Request $request)
     {
-        // استخدام count المباشر بدون جلب السجلات للذاكرة
-        $nearbyCount = BloodRequest::where('status', 'pending')->count();
+        $user = $request->user();
+        $donor = $user->donor ?? null;
 
-        // تحديد الحقول المطلوبة فقط لتخفيف الحمل من الداتا بيز
-        $suggestedRequests = BloodRequest::select(['id', 'hospital_id', 'blood_type_id', 'status', 'created_at'])
+        $donationsCount = $donor ? Donation::where('donor_id', $donor->id)->where('status', 'successful')->count() : 0;
+        $points = $donor->points ?? ($donationsCount * 50);
+
+        $nearbyCount = BloodRequest::where('status', 'active')->count();
+
+        $suggestedRequests = BloodRequest::select(['id', 'hospital_id', 'blood_type_id', 'status', 'urgency_level', 'created_at'])
             ->with([
                 'hospital:id,facility_name,address',
                 'bloodType:id,name'
             ])
-            ->where('status', 'pending')
+            ->where('status', 'active')
             ->latest()
             ->take(3)
             ->get();
 
+        $unreadNotifications = Notification::where('user_id', $user->id)
+            ->where('is_read', false)
+            ->get();
+
         $data = [
-            'donations_count' => 8,
-            'points' => 230,
-            'badges_count' => 3,
-            'days_until_next_donation' => 45,
-            'is_eligible' => true,
-            'last_donation_text' => 'آخر تبرع منذ 45 يوم',
-            'level' => 'متقدم',
-            'nearby_requests_count' => $nearbyCount,
-            'notifications' => [],
-            'suggested_requests' => $suggestedRequests
+            'donations_count'          => $donationsCount,
+            'points'                   => $points,
+            'badges_count'             => floor($donationsCount / 2),
+            'days_until_next_donation' => $donor->days_until_next_donation ?? 0,
+            'is_eligible'              => $donor->is_eligible ?? true,
+            'last_donation_text'       => $donationsCount > 0 ? 'مسجل في النظام' : 'لم تقم بتم تقديم تبرعات بعد',
+            'level'                    => $points > 200 ? 'متبرع ذهبي' : 'متبرع نشط',
+            'nearby_requests_count'    => $nearbyCount,
+            'notifications'            => $unreadNotifications,
+            'suggested_requests'      => $suggestedRequests
         ];
 
         return $this->successResponse($data, 'تم جلب إحصائيات الصفحة الرئيسية بنجاح');
@@ -78,13 +87,13 @@ class DonorController extends Controller
 
     public function urgentRequests(Request $request)
     {
-        $urgentRequests = BloodRequest::select(['id', 'hospital_id', 'blood_type_id', 'emergency_level', 'status', 'created_at'])
+        $urgentRequests = BloodRequest::select(['id', 'hospital_id', 'blood_type_id', 'urgency_level', 'status', 'created_at'])
             ->with([
                 'hospital:id,facility_name,address',
                 'bloodType:id,name'
             ])
-            ->whereIn('emergency_level', ['high', 'critical'])
-            ->where('status', 'pending')
+            ->whereIn('urgency_level', ['high', 'critical', 'urgent'])
+            ->where('status', 'active')
             ->latest()
             ->take(5)
             ->get();
@@ -94,24 +103,25 @@ class DonorController extends Controller
 
     public function rewardsAndCard(Request $request)
     {
-        $donor = $request->user()->donor ?? null;
+        $user = $request->user();
+        $donor = $user->donor ?? null;
+
+        $donationsCount = $donor ? Donation::where('donor_id', $donor->id)->where('status', 'successful')->count() : 0;
+        $points = $donor->points ?? ($donationsCount * 50);
 
         $data = [
-            'donor_code' => 'BD' . ($donor->id ?? 123456789),
-            'level' => 'متبرع متقدم',
-            'location' => 'غزة - فلسطين',
-            'status_text' => 'متبرع نشط',
-            'units_donated' => 8,
-            'cases_supported' => 12,
-            'points' => 350,
-            'points_progress' => 70,
-            'points_needed' => 150,
-            'target_points' => 500,
-            'badges' => [
-                ['id' => 1, 'title' => 'منقذ حياة', 'desc' => 'تم إنقاذ أكثر من 10 حالات', 'date' => '1 يونيو 2024', 'image' => 'badge-hero.png'],
-                ['id' => 2, 'title' => '10 تبرعات', 'desc' => 'تم إنجاز 10 تبرعات', 'date' => '20 مايو 2025', 'image' => 'badge-10.png'],
-                ['id' => 3, 'title' => '5 تبرعات', 'desc' => 'تم إنجاز 5 تبرعات', 'date' => '10 أبريل 2024', 'image' => 'badge-5.png'],
-                ['id' => 4, 'title' => 'أول تبرع', 'desc' => 'تم إنجاز أول تبرع', 'date' => '15 مارس 2024', 'image' => 'badge-1.png']
+            'donor_code'     => 'BD' . ($donor->id ?? $user->id),
+            'level'          => $points >= 300 ? 'متبرع الماسي' : 'متبرع نشط',
+            'location'       => $donor->address ?? 'غزة - فلسطين',
+            'status_text'    => 'متبرع نشط',
+            'units_donated'  => $donationsCount,
+            'cases_supported'=> $donationsCount,
+            'points'         => $points,
+            'points_progress'=> min(100, floor(($points / 500) * 100)),
+            'points_needed'  => max(0, 500 - $points),
+            'target_points'  => 500,
+            'badges'         => [
+                ['id' => 1, 'title' => 'منقذ حياة', 'desc' => 'تجاوز التبرعات الفعالة', 'date' => now()->format('Y-m-d'), 'image' => 'badge-hero.png'],
             ]
         ];
 
@@ -120,62 +130,57 @@ class DonorController extends Controller
 
     public function donationHistory(Request $request)
     {
-        $history = [
-            [
-                'date' => '10 مايو 2024',
-                'hospital_name' => 'مجمع الشفاء الطبي - مدينة غزة',
-                'blood_type' => '+A',
-                'units' => 2,
-                'status' => 'مكتمل',
-                'points_earned' => '+100'
-            ],
-            [
-                'date' => '15 يناير 2024',
-                'hospital_name' => 'مستشفى شهداء الاقصى - دير البلح',
-                'blood_type' => '+B',
-                'units' => 1,
-                'status' => 'مكتمل',
-                'points_earned' => '+90'
-            ]
-        ];
+        $donor = $request->user()->donor ?? null;
 
-        return $this->successResponse($history, 'تم جلب سجل التبرعات بنجاح');
+        if (!$donor) {
+            return $this->successResponse([], 'لا يوجد سجل تبرعات');
+        }
+
+        $donations = Donation::with('hospital')
+            ->where('donor_id', $donor->id)
+            ->latest()
+            ->get()
+            ->map(function($d) {
+                return [
+                    'date'          => $d->created_at->format('Y-m-d'),
+                    'hospital_name' => $d->hospital->facility_name ?? 'مستشفى مسعف',
+                    'blood_type'    => $d->blood_type ?? 'غير محدد',
+                    'units'         => $d->units_donated ?? 1,
+                    'status'        => $d->status == 'successful' ? 'مكتمل' : 'قيد المعالجة',
+                    'points_earned' => '+50'
+                ];
+            });
+
+        return $this->successResponse($donations, 'تم جلب سجل التبرعات بنجاح');
     }
 
     public function notifications(Request $request)
     {
-        $notifications = [
-            [
-                'id' => 1,
-                'title' => 'حالة طارئة عاجلة - مستشفى الشفاء',
-                'message' => 'مطلوب تبرع عاجل بفصيلة الدم O+ بشكل فورى.',
-                'time' => 'منذ 10 دقائق',
-                'read' => false
-            ],
-            [
-                'id' => 2,
-                'title' => 'تذكير موعد التبرع القادم',
-                'message' => 'بقيت 5 أيام على اكتمال فترة التعافي لتتمكن من التبرع مجدداً.',
-                'time' => 'منذ ساعتين',
-                'read' => false
-            ],
-            [
-                'id' => 3,
-                'title' => 'تم استبدال النقاط بنجاح',
-                'message' => 'حصلت على مكافأة شارة منقذ حياة!',
-                'time' => 'أمس',
-                'read' => true
-            ]
-        ];
+        $userId = $request->user()->id;
+
+        $notifications = Notification::where('user_id', $userId)
+            ->latest()
+            ->take(15)
+            ->get()
+            ->map(function($n) {
+                return [
+                    'id'      => $n->id,
+                    'title'   => $n->title ?? 'تنبيه طوارئ',
+                    'message' => $n->message ?? $n->content,
+                    'time'    => $n->created_at->diffForHumans(),
+                    'read'    => (bool) $n->is_read
+                ];
+            });
 
         return $this->successResponse([
             'notifications' => $notifications,
-            'unread_count' => collect($notifications)->where('read', false)->count()
+            'unread_count'  => Notification::where('user_id', $userId)->where('is_read', false)->count()
         ], 'تم جلب الإشعارات بنجاح');
     }
 
     public function markNotificationsAsRead(Request $request)
     {
+        Notification::where('user_id', $request->user()->id)->update(['is_read' => true]);
         return $this->successResponse(null, 'تم تحديث جميع الإشعارات كمقروءة بنجاح');
     }
 }

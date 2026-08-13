@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\LocationTrait;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -26,6 +27,10 @@ class Donor extends Model
         'last_donation_date',
     ];
 
+    protected $hidden = [
+        'created_at', // تم إخفاؤها لتسريع استجابة الـ API وتقليل حجم الـ JSON أثناء الـ Polling
+    ];
+
     protected $casts = [
         'is_available'       => 'boolean',
         'birth_date'         => 'date',
@@ -33,21 +38,24 @@ class Donor extends Model
         'last_donation_date' => 'date',
     ];
 
-    // -----------------------------------------------------------------
-    // Accessors (المُعاملات المحسوبة)
-    // -----------------------------------------------------------------
+    public function scopeAvailableForDonation(Builder $query): Builder
+    {
+        return $query->where('is_available', true)
+                     ->where('eligibility_status', 'eligible');
+    }
 
-    /**
-     * حساب عمر المتبرع تلقائياً من تاريخ الميلاد
-     */
-    public function getAgeAttribute()
+    public function getAgeAttribute(): ?int
     {
         return $this->birth_date ? $this->birth_date->age : null;
     }
 
-    // -----------------------------------------------------------------
-    // العلاقات (Relationships)
-    // -----------------------------------------------------------------
+    public function getNetPointsAttribute(): int
+    {
+        $earned = $this->rewardTransactions()->where('type', 'earned')->sum('points');
+        $redeemed = $this->rewardTransactions()->where('type', 'redeemed')->sum('points');
+
+        return max(0, $earned - $redeemed);
+    }
 
     public function user()
     {
@@ -77,5 +85,10 @@ class Donor extends Model
     public function matchingResults()
     {
         return $this->hasMany(MatchingResult::class);
+    }
+
+    public function rewardTransactions()
+    {
+        return $this->hasMany(RewardTransaction::class);
     }
 }

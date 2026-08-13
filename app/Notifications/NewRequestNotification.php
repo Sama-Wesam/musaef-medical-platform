@@ -11,37 +11,37 @@ class NewRequestNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public $bloodRequest;
+    public BloodRequest $bloodRequest;
 
-    /**
-     * Create a new notification instance.
-     */
     public function __construct(BloodRequest $bloodRequest)
     {
-        $this->bloodRequest = $bloodRequest;
+        // ضمان تحميل العلاقات قبل إرسال الكائن للطابور
+        $this->bloodRequest = $bloodRequest->loadMissing(['hospital.user', 'bloodType']);
     }
 
-    /**
-     * Get the notification's delivery channels.
-     */
     public function via(object $notifiable): array
     {
         return ['database'];
     }
 
-    /**
-     * Get the array representation of the notification.
-     */
     public function toArray(object $notifiable): array
     {
-        $hospitalName = $this->bloodRequest->hospital->user->name ?? 'مستشفى غير معروف';
+        $hospitalName = $this->bloodRequest->hospital->facility_name
+            ?? $this->bloodRequest->hospital->user->name
+            ?? 'مستشفى غير معروف';
+
         $bloodType = $this->bloodRequest->bloodType->name ?? '';
 
         return [
-            'title' => '🔔 طلب توفير دم جديد',
-            'body' => "قام مستشفى {$hospitalName} بإنشاء طلب جديد لعدد {$this->bloodRequest->units_required} وحدات من فصيلة {$bloodType}.",
-            'type' => 'system',
-            'related_id' => $this->bloodRequest->id,
+            'title_key'    => 'notifications.new_request_title',
+            'body_key'     => 'notifications.new_request_body',
+            'body_params'  => [
+                'hospital_name'  => $hospitalName,
+                'units_required' => $this->bloodRequest->units_required ?? 1,
+                'blood_type'     => $bloodType
+            ],
+            'type'         => 'system',
+            'related_id'   => $this->bloodRequest->id,
             'related_type' => get_class($this->bloodRequest),
         ];
     }

@@ -31,4 +31,24 @@ enum UserRole: string
             self::HOSPITAL => 'primary',
         };
     }
+
+    /**
+     * قائمة بجميع القيم للتحقق (Validation)
+     */
+    public static function values(): array
+    {
+        return array_column(self::cases(), 'value');
+    }
+
+    /**
+     * إرجاع تفاصيل الـ Enum على هيئة مصفوفة مناسبة لـ API Resources و Vue.js
+     */
+    public function toArray(): array
+    {
+        return [
+            'value' => $this->value,
+            'label' => $this->label(),
+            'badge_color' => $this->badgeColor(),
+        ];
+    }
 }

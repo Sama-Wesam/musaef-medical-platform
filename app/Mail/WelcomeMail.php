@@ -30,7 +30,7 @@ class WelcomeMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'مرحباً بك في منصة مسعف - معاً لإنقاذ الأرواح',
+            subject: 'مرحباً بك في منصة مسعف الطبية - معاً لتسهيل التبرع بالدم ونبضٍ ممتد',
         );
     }
 
@@ -39,11 +39,22 @@ class WelcomeMail extends Mailable implements ShouldQueue
      */
     public function content(): Content
     {
+        $roleName = is_object($this->user->role) && method_exists($this->user->role, 'value')
+            ? $this->user->role->value
+            : (string) $this->user->role;
+
+        $translatedRole = match(strtolower($roleName)) {
+            'donor'    => 'متبرع/ة بطل',
+            'hospital' => 'كادر طبي / مستشفى',
+            'admin'    => 'مدير النظام',
+            default    => 'عضو فعال',
+        };
+
         return new Content(
-            view: 'emails.welcome', // يجب إنشاء ملف resources/views/emails/welcome.blade.php
+            view: 'emails.welcome',
             with: [
-                'userName' => $this->user->name,
-                'role' => $this->user->role,
+                'userName' => $this->user->name ?? 'عضو منصة مسعف',
+                'role'     => $translatedRole,
             ],
         );
     }

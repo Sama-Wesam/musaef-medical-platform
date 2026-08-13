@@ -3,67 +3,14 @@ import apiClient from '@/api/axios';
 
 export const useEmergencyRadarStore = defineStore('emergencyRadar', {
   state: () => ({
-    cases: [
-      {
-        id: 1,
-        name: 'مستشفى الكويتي',
-        location: 'الجنوب - رفح',
-        remaining_seconds: 332,
-        timeLeft: '00:05:32',
-        responseTime: '6 دقائق',
-        urgency: 'critical',
-        icon: 'Group 1000002306.png',
-        is_activating: false
-      },
-      {
-        id: 2,
-        name: 'مستشفى العودة',
-        location: 'وسطى - النصيرات',
-        remaining_seconds: 272,
-        timeLeft: '00:04:32',
-        responseTime: '6 دقائق',
-        urgency: 'critical',
-        icon: 'Group 1000002306 (1).png',
-        is_activating: false
-      },
-      {
-        id: 3,
-        name: 'مستشفى ناصر',
-        location: 'جنوب - خانيونس',
-        remaining_seconds: 572,
-        timeLeft: '00:09:32',
-        responseTime: '6 دقائق',
-        urgency: 'medium',
-        icon: 'Group 1000002306 (2).png',
-        is_activating: false
-      }
-    ],
-    emergencyRequests: [
-      {
-        id: 101,
-        patient_name: 'أحمد محمود',
-        hospital_name: 'مستشفى الشفاء',
-        blood_type: 'O+',
-        units_needed: 3,
-        status: 'قيد التغطية',
-        urgency_level: 'حرج جدًا',
-        created_at: '10:30 ص'
-      },
-      {
-        id: 102,
-        patient_name: 'سارة يوسف',
-        hospital_name: 'مستشفى القدس',
-        blood_type: 'A-',
-        units_needed: 2,
-        status: 'مكتملة',
-        urgency_level: 'متوسط',
-        created_at: '09:15 ص'
-      }
-    ],
+    cases: [],
+    emergencyRequests: [],
     selectedRequest: null,
     responders: [],
     filter: 'all',
-    loading: false
+    loading: false,
+    pollingTimer: null,
+    countdownTimer: null
   }),
 
   getters: {
@@ -72,7 +19,7 @@ export const useEmergencyRadarStore = defineStore('emergencyRadar', {
       return state.cases.filter(item => item.urgency === state.filter);
     },
     activeRequests: (state) => {
-      return state.emergencyRequests.filter(r => r.status === 'قيد التغطية' || r.status === 'active');
+      return state.emergencyRequests.filter(r => r.status === 'قيد التغطية' || r.status === 'active' || r.status === 'pending');
     },
     criticalRequests: (state) => {
       return state.emergencyRequests.filter(r => r.urgency_level === 'حرج جدًا' || r.urgency_level === 'critical');
@@ -81,10 +28,10 @@ export const useEmergencyRadarStore = defineStore('emergencyRadar', {
 
   actions: {
     formatTime(totalSeconds) {
-      if (totalSeconds <= 0) return '00:00:00';
+      if (!totalSeconds || totalSeconds <= 0) return '00:00:00';
       const hrs = Math.floor(totalSeconds / 3600);
       const mins = Math.floor((totalSeconds % 3600) / 60);
-      const secs = totalSeconds % 60;
+      const secs = Math.floor(totalSeconds % 60);
       return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
     },
 
@@ -104,11 +51,13 @@ export const useEmergencyRadarStore = defineStore('emergencyRadar', {
           params: { urgency: this.filter }
         });
         const data = response.data?.data || response.data;
-        if (Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data)) {
           this.cases = data.map(item => ({
             id: item.id,
             name: item.hospital?.facility_name || item.name || 'مستشفى معتمد',
             location: item.hospital?.address || item.location || 'قطاع غزة',
+            lat: parseFloat(item.hospital?.latitude || item.lat || 31.35),
+            lng: parseFloat(item.hospital?.longitude || item.lng || 34.32),
             remaining_seconds: item.remaining_seconds || 300,
             timeLeft: this.formatTime(item.remaining_seconds || 300),
             responseTime: item.expected_response_time || '6 دقائق',
@@ -118,7 +67,7 @@ export const useEmergencyRadarStore = defineStore('emergencyRadar', {
           }));
         }
       } catch (err) {
-        console.warn('جاري استخدام البيانات الافتراضية لرادار الطوارئ.');
+        console.error('خطأ في جلب بيانات رادار الطوارئ:', err);
       } finally {
         this.loading = false;
       }
@@ -130,9 +79,9 @@ export const useEmergencyRadarStore = defineStore('emergencyRadar', {
 
       try {
         await apiClient.post(`/admin/emergency-radar/${hospitalId}/trigger-response`);
-        alert(`تم تفعيل الاستجابة الفورية وتنبيه المتبرعين لـ ${targetCase?.name} بنجاح!`);
+        await this.fetchRadarData();
       } catch (err) {
-        alert(`تم إرسال إشعار التفعيل لـ ${targetCase?.name || 'المستشفى'}`);
+        console.error('خطأ في تفعيل الاستجابة الفورية:', err);
       } finally {
         if (targetCase) targetCase.is_activating = false;
       }
@@ -143,22 +92,45 @@ export const useEmergencyRadarStore = defineStore('emergencyRadar', {
       try {
         const response = await apiClient.get('/hospital/requests', { params });
         const data = response.data?.data || response.data;
-        if (Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data)) {
           this.emergencyRequests = data;
         }
       } catch (err) {
-        console.warn('جاري استخدام الحالات الحالية للطلبات الطارئة.');
+        console.error('خطأ في جلب طلبات الطوارئ:', err);
       } finally {
         this.loading = false;
       }
     },
 
+    startPolling(intervalMs = 5000) {
+      this.fetchRadarData();
+      this.fetchActiveEmergencies();
+
+      if (this.pollingTimer) clearInterval(this.pollingTimer);
+      this.pollingTimer = setInterval(() => {
+        this.fetchRadarData();
+        this.fetchActiveEmergencies();
+      }, intervalMs);
+
+      if (this.countdownTimer) clearInterval(this.countdownTimer);
+      this.countdownTimer = setInterval(() => {
+        this.decrementCountdowns();
+      }, 1000);
+    },
+
+    stopPolling() {
+      if (this.pollingTimer) {
+        clearInterval(this.pollingTimer);
+        this.pollingTimer = null;
+      }
+      if (this.countdownTimer) {
+        clearInterval(this.countdownTimer);
+        this.countdownTimer = null;
+      }
+    },
+
     selectRequest(request) {
       this.selectedRequest = request;
-      this.responders = [
-        { id: 1, name: 'محمد علي', phone: '0599123456', blood_type: request.blood_type, status: 'في الطريق' },
-        { id: 2, name: 'خالد عبدالله', phone: '0598765432', blood_type: request.blood_type, status: 'تم الوصول' }
-      ];
     },
 
     async acceptSelectedRequest() {
@@ -175,5 +147,4 @@ export const useEmergencyRadarStore = defineStore('emergencyRadar', {
   }
 });
 
-// إضافة التصدير التوافقي لحل مشكلة أي مكون يستدعي المتجر بالاسم القديم useEmergencyStore
 export const useEmergencyStore = useEmergencyRadarStore;

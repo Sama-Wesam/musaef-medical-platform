@@ -23,9 +23,14 @@ class ReportsController extends Controller
      */
     public function index(Request $request)
     {
-        $hospitalId = $request->user()->hospital->id;
+        $hospital = $request->user()->hospital;
+        if (!$hospital) {
+            return $this->notFoundResponse('حساب المستخدم الحالي غير مرتبط بجهة طبية');
+        }
+
+        $hospitalId = $hospital->id;
         $donations = $this->donationRepo->getDonationsByHospital($hospitalId);
-        
+
         return $this->successResponse($donations, 'تم جلب تقارير التبرع الخاصة بالمستشفى');
     }
 }

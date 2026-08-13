@@ -4,7 +4,6 @@ namespace App\Events;
 
 use App\Models\BloodRequest;
 use App\Models\Donor;
-use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
@@ -23,8 +22,8 @@ class DonationAccepted implements ShouldBroadcast
      */
     public function __construct(Donor $donor, BloodRequest $bloodRequest)
     {
-        $this->donor = $donor; 
-        $this->bloodRequest = $bloodRequest;
+        $this->donor = $donor->loadMissing(['user', 'bloodType']);
+        $this->bloodRequest = $bloodRequest->loadMissing(['hospital.user', 'bloodType']);
     }
 
     /**
@@ -32,8 +31,8 @@ class DonationAccepted implements ShouldBroadcast
      */
     public function broadcastOn(): array
     {
-        // بث على قناة خاصة بالمستشفى لتحديث لوحة التحكم (Dashboard) لديهم فوراً
-        $hospitalUserId = $this->bloodRequest->hospital->user_id;
+        $hospitalUserId = $this->bloodRequest->hospital->user_id
+            ?? $this->bloodRequest->hospital_id;
 
         return [
             new PrivateChannel('hospital.' . $hospitalUserId),
@@ -43,5 +42,20 @@ class DonationAccepted implements ShouldBroadcast
     public function broadcastAs(): string
     {
         return 'donation.accepted';
+    }
+
+    /**
+     * تخصيص حزمة البيانات المرسلة للواجهة الأمامية
+     */
+    public function broadcastWith(): array
+    {
+        return [
+            'request_id'   => $this->bloodRequest->id,
+            'donor_id'     => $this->donor->id,
+            'donor_name'   => $this->donor->user->name ?? 'متبرع',
+            'donor_phone'  => $this->donor->user->phone ?? null,
+            'blood_type'   => $this->donor->bloodType->name ?? $this->donor->blood_type ?? '',
+            'accepted_at'  => now()->toIso8601String(),
+        ];
     }
 }

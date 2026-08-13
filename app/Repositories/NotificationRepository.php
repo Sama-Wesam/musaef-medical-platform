@@ -3,9 +3,10 @@
 namespace App\Repositories;
 
 use App\Models\Notification;
+use App\Repositories\Contracts\NotificationRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 
-class NotificationRepository
+class NotificationRepository implements NotificationRepositoryInterface
 {
     public function getUnreadNotificationsForUser(int $userId): Collection
     {
@@ -29,7 +30,7 @@ class NotificationRepository
         if ($notification) {
             return $notification->update([
                 'is_read' => true,
-                'read_at' => now()
+                'read_at' => now(),
             ]);
         }
         return false;
@@ -41,7 +42,7 @@ class NotificationRepository
             ->where('is_read', false)
             ->update([
                 'is_read' => true,
-                'read_at' => now()
+                'read_at' => now(),
             ]);
     }
 }

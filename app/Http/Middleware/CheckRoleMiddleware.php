@@ -14,7 +14,21 @@ class CheckRoleMiddleware
      */
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
-        if (!auth()->check() || !in_array(auth()->user()->role, $roles)) {
+        if (!auth()->check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'يرجى تسجيل الدخول أولاً للوصول إلى هذه البيانات.'
+            ], 401);
+        }
+
+        $userRole = auth()->user()->role;
+        $roleValue = $userRole instanceof \BackedEnum ? $userRole->value : $userRole;
+        $roleValue = strtolower((string) $roleValue);
+
+        // تحويل الأدوار الممررة للـ Middleware إلى حروف صغيرة للمطابقة المرنة
+        $allowedRoles = array_map(fn($r) => strtolower(trim($r)), $roles);
+
+        if (!in_array($roleValue, $allowedRoles, true)) {
             return response()->json([
                 'success' => false,
                 'message' => 'لا تملك الصلاحيات الكافية لتنفيذ هذا الإجراء.'

@@ -5,7 +5,7 @@
   >
     <div class="container-fluid d-flex align-items-center justify-content-between flex-wrap gap-2 gap-md-3">
 
-      <!-- جهة اليمين/اليسار حسب الاتجاه: صورة المتبرع واسمه والقائمة المنسدلة -->
+      <!-- جهة اليمين/اليسار: صورة المتبرع واسمه والقائمة المنسدلة -->
       <div class="dropdown order-1">
         <div
           class="d-flex align-items-center gap-2 gap-sm-3 cursor-pointer dropdown-toggle no-chevron"
@@ -64,7 +64,7 @@
         </ul>
       </div>
 
-      <!-- الجزء الأوسط: حقل البحث، الإشعارات المباشرة، ومحول اللغة -->
+      <!-- الجزء الأوسط: حقل البحث والإشعارات الفورية -->
       <div class="d-flex align-items-center gap-2 gap-md-3 flex-grow-1 justify-content-center max-w-600 order-3 order-md-2 w-100 w-md-auto mt-2 mt-md-0">
         <div class="search-input-wrapper position-relative flex-grow-1">
           <input
@@ -94,20 +94,19 @@
           <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-4 p-3 mt-2 fs-8 text-end notifications-dropdown-menu" aria-labelledby="notificationsDropdown">
             <li class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom">
               <span class="fw-bold text-dark">{{ currentLanguage === 'ar' ? 'الإشعارات الفورية (AI)' : 'Live Notifications (AI)' }}</span>
-              <span class="badge bg-danger-subtle text-danger rounded-pill px-2 py-0.5 fs-9">
+              <span class="badge bg-danger-subtle text-danger rounded-pill px-2.5 py-0.5 fs-9">
                 {{ unreadCount }} {{ currentLanguage === 'ar' ? 'جديدة' : 'New' }}
               </span>
             </li>
 
-            <!-- قائمة الإشعارات في القائمة المنسدلة -->
             <div class="notifications-list-scroll" style="max-height: 260px; overflow-y: auto;">
-              <li v-for="notif in notificationsList" :key="notif.id" class="py-2.5 border-bottom cursor-pointer notification-item" @click="handleNotificationClick(notif)">
+              <li v-for="notif in notificationsList" :key="notif.id || notif._id" class="py-2.5 border-bottom cursor-pointer notification-item" @click="handleNotificationClick(notif)">
                 <div class="d-flex justify-content-between align-items-center mb-1">
-                  <span class="fw-bold text-danger fs-9">{{ translateNotifTitle(notif.title) }}</span>
-                  <small class="text-muted fs-10">{{ translateNotifTime(notif.time) }}</small>
+                  <span class="fw-bold text-danger fs-9">{{ getNotifTitle(notif) }}</span>
+                  <small class="text-muted fs-10">{{ formatTime(notif.created_at || notif.time) }}</small>
                 </div>
                 <div class="text-dark fs-9 text-truncate" style="max-width: 230px;">
-                  {{ translateNotifMessage(notif.message || notif.desc) }}
+                  {{ getNotifMessage(notif) }}
                 </div>
               </li>
 
@@ -152,43 +151,35 @@
         </div>
       </div>
 
-      <!-- جهة اليسار/اليمين: شعار "مسعف" -->
+      <!-- جهة اليسار/اليمين: شعار منصة "مسعف" -->
       <div class="d-flex align-items-center order-2 order-md-3">
         <router-link to="/donor/dashboard" class="d-flex align-items-center text-decoration-none">
-          <img :src="logoImg" alt="مسعف" class="navbar-logo-img-large" @error="handleLogoFallback" />
+          <img :src="logoImg" :alt="currentLanguage === 'ar' ? 'مسعف' : 'Musaef'" class="navbar-logo-img-large" @error="handleLogoFallback" />
         </router-link>
       </div>
 
     </div>
 
-    <!-- النافذة المنبثقة التفاعلية لعرض جميع إشعارات النظام -->
+    <!-- النافذة المنبثقة التفاعلية لعرض الإشعارات -->
     <Teleport to="body">
       <div v-if="showNotificationsModal" class="notifications-modal-overlay d-flex align-items-center justify-content-center" @click.self="showNotificationsModal = false">
         <div class="modal-card bg-white rounded-4 shadow-lg p-4 position-relative text-center border-0" style="width: 90%; max-width: 480px; z-index: 2050;">
-          <!-- زر الإغلاق علامة X -->
           <button type="button" class="btn-close position-absolute top-0 start-0 m-3" @click="showNotificationsModal = false" aria-label="Close"></button>
 
-          <!-- عنوان النافذة -->
           <div class="d-flex align-items-center justify-content-center gap-2 text-danger mb-2">
             <i class="bi bi-bell-fill fs-4"></i>
             <h5 class="fw-bold mb-0">
-              {{ currentLanguage === 'ar' ? 'إشعارات النظام الذكية التفاعلية' : 'Interactive System Notifications' }}
+              {{ currentLanguage === 'ar' ? 'إشعارات النظام الذكية' : 'System Notifications' }}
             </h5>
           </div>
 
-          <!-- النص التفاعلي الفرعي -->
-          <div class="text-danger-emphasis fs-9 fw-semibold my-2">
-            🔔 {{ currentLanguage === 'ar' ? 'جاري فتح جميع إشعارات النظام بشكل تفاعلي' : 'Opening all system notifications interactively...' }}
-          </div>
-
-          <!-- قائمة الإشعارات داخل النافذة -->
           <div class="mt-3 text-start pe-1" style="max-height: 280px; overflow-y: auto;" :dir="currentLanguage === 'ar' ? 'rtl' : 'ltr'">
-            <div v-for="notif in notificationsList" :key="notif.id" class="p-3 mb-2 rounded-3 bg-light border border-light-subtle">
+            <div v-for="notif in notificationsList" :key="notif.id || notif._id" class="p-3 mb-2 rounded-3 bg-light border border-light-subtle cursor-pointer" @click="handleNotificationClick(notif)">
               <div class="d-flex align-items-center justify-content-between mb-1">
-                <span class="fw-bold text-danger fs-8">{{ translateNotifTitle(notif.title) }}</span>
-                <small class="text-muted fs-10">{{ translateNotifTime(notif.time) }}</small>
+                <span class="fw-bold text-danger fs-8">{{ getNotifTitle(notif) }}</span>
+                <small class="text-muted fs-10">{{ formatTime(notif.created_at || notif.time) }}</small>
               </div>
-              <p class="text-dark fs-8 mb-0">{{ translateNotifMessage(notif.message || notif.desc) }}</p>
+              <p class="text-dark fs-8 mb-0">{{ getNotifMessage(notif) }}</p>
             </div>
 
             <div v-if="notificationsList.length === 0" class="text-center text-muted py-3 fs-8">
@@ -196,7 +187,6 @@
             </div>
           </div>
 
-          <!-- زر الإغلاق السفلي -->
           <div class="mt-3 pt-2 text-center">
             <button class="btn btn-secondary rounded-pill px-4 py-1.5 fs-8 fw-bold" @click="showNotificationsModal = false">
               {{ currentLanguage === 'ar' ? 'إغلاق' : 'Close' }}
@@ -214,7 +204,6 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
 import { useNotificationStore } from '@/stores/notificationStore';
 import apiClient from '@/api/axios';
-import echo from '@/utils/echo';
 
 import logoImg from '@/assets/images/logo.png';
 import defaultAvatarImg from '@/assets/images/pngtree-whatsapp-default-profile-photo-vector-png-image_17034397.webp';
@@ -225,64 +214,168 @@ const notificationStore = useNotificationStore();
 
 const currentLanguage = ref(localStorage.getItem('musaef_lang') || 'ar');
 const searchQuery = ref('');
-
-// التحكم في ظهور نافذة الإشعارات التفاعلية
 const showNotificationsModal = ref(false);
+const serverUnreadCount = ref(0);
+let pollingInterval = null;
+
+const hospitalDictionary = {
+  'مستشفى شهداء الأقصى': 'Al-Aqsa Martyrs Hospital',
+  'شهداء الأقصى': 'Al-Aqsa Martyrs Hospital',
+  'مستشفى أصدقاء المريض الخيري': "Patients' Friends Society Hospital",
+  'مستشفى أصدقاء المريض': "Patients' Friends Hospital",
+  'جمعية بنك الدم المركزي': 'Central Blood Bank Society',
+  'بنك الدم المركزي': 'Central Blood Bank',
+  'بنك الدم المركزي - وزارة الصحة': 'Central Blood Bank - Ministry of Health',
+  'مجمع الشفاء الطبي': 'Al-Shifa Medical Complex',
+  'المستشفى الإندونيسي': 'Indonesian Hospital',
+  'مستشفى الأهلي العربي (المعمداني)': 'Al-Ahli Arab Hospital (Baptist)',
+  'مستشفى القدس الطبي': 'Al-Quds Medical Hospital',
+  'مستشفى العودة': 'Al-Awda Hospital'
+};
+
+const locationDictionary = {
+  'دير البلح': 'Deir al-Balah',
+  'مدينة غزة': 'Gaza City',
+  'غزة': 'Gaza',
+  'شمال غزة / جباليا': 'North Gaza / Jabalia',
+  'شمال غزة': 'North Gaza',
+  'جباليا': 'Jabalia',
+  'خانيونس': 'Khan Younis',
+  'رفح': 'Rafah',
+  'غزة - الرمال شارع الوحدة': 'Gaza - Rimal, Wehda St.',
+  'غزة - الرمال': 'Gaza - Rimal',
+  'غزة - فلسطين': 'Gaza - Palestine',
+  'غزة - النصر': 'Gaza - An-Naser',
+  'شمال غزة - بيت لاهيا': 'North Gaza - Beit Lahia',
+  'غزة - الزيتون': 'Gaza - Zaytoun',
+  'غزة - تل الهوى': 'Gaza - Tel Al-Hawa'
+};
+
+const translateHospitalName = (name) => {
+  if (!name || typeof name !== 'string') return '';
+  if (currentLanguage.value === 'en') {
+    if (hospitalDictionary[name]) return hospitalDictionary[name];
+    for (const [arKey, enValue] of Object.entries(hospitalDictionary)) {
+      if (name.includes(arKey)) {
+        return name.replace(arKey, enValue);
+      }
+    }
+  }
+  return name;
+};
+
+const translateLocationName = (loc) => {
+  if (!loc || typeof loc !== 'string') return '';
+  if (currentLanguage.value === 'en') {
+    if (locationDictionary[loc]) return locationDictionary[loc];
+    for (const [arKey, enValue] of Object.entries(locationDictionary)) {
+      if (loc.includes(arKey)) {
+        return loc.replace(arKey, enValue);
+      }
+    }
+  }
+  return loc;
+};
 
 const changeLanguage = (lang) => {
   currentLanguage.value = lang;
   localStorage.setItem('musaef_lang', lang);
-
-  const dir = lang === 'ar' ? 'rtl' : 'ltr';
-  document.documentElement.setAttribute('dir', dir);
+  document.documentElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
   document.documentElement.setAttribute('lang', lang);
-
   window.location.reload();
 };
 
-const notificationsList = ref([
-  {
-    id: 1,
-    title: 'تنبيه نقص حرج - O-',
-    message: 'تجاوز مخزون فصيلة O- الحد الآمن في مستشفيات القطاع.',
-    time: 'منذ 5 دقائق',
-    read: false
-  },
-  {
-    id: 2,
-    title: 'تقرير الذكاء الاصطناعي',
-    message: 'تم تحديث خوارزمية التنبؤ بالطلب المستقبلي بنجاح.',
-    time: 'منذ ساعة',
-    read: false
+const notificationsList = ref([]);
+
+const parseValue = (val) => {
+  if (!val) return '';
+  if (typeof val === 'string') return val;
+  if (typeof val === 'object') {
+    return val.name || val.title || val.hospital_name || val.blood_type || val.type || '';
   }
-]);
-
-const notifTitleDict = {
-  'تنبيه نقص حرج - O-': 'Critical Shortage Alert - O-',
-  'تقرير الذكاء الاصطناعي': 'AI Report',
-  'مستشفى الشفاء - O+': 'Al-Shifa Hospital - O+',
-  'تذكير التبرع': 'Donation Reminder'
+  return String(val);
 };
 
-const notifMessageDict = {
-  'تجاوز مخزون فصيلة O- الحد الآمن في مستشفيات القطاع.': 'O- blood stock exceeded safe limits in sector hospitals.',
-  'تم تحديث خوارزمية التنبؤ بالطلب المستقبلي بنجاح.': 'Future demand forecast algorithm updated successfully.',
-  'مطلوب تبرع بالدم بشكل عاجل عبر Smart Matching AI.': 'Urgent blood donation required via Smart Matching AI.'
+const formatTime = (val) => {
+  if (!val) return currentLanguage.value === 'en' ? 'Just now' : 'منذ قليل';
+  try {
+    const date = new Date(val);
+    if (isNaN(date.getTime())) return String(val);
+
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+
+    if (diffInSeconds < 60) return currentLanguage.value === 'en' ? 'Just now' : 'منذ قليل';
+
+    const minutes = Math.floor(diffInSeconds / 60);
+    if (minutes < 60) return currentLanguage.value === 'en' ? `${minutes}m ago` : `منذ ${minutes} دقيقة`;
+
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return currentLanguage.value === 'en' ? `${hours}h ago` : `منذ ${hours} ساعة`;
+
+    const days = Math.floor(hours / 24);
+    if (days < 30) return currentLanguage.value === 'en' ? `${days}d ago` : `منذ ${days} يوم`;
+
+    return date.toLocaleDateString(currentLanguage.value === 'en' ? 'en-US' : 'ar-EG');
+  } catch (e) {
+    return currentLanguage.value === 'en' ? 'Just now' : 'منذ قليل';
+  }
 };
 
-const notifTimeDict = {
-  'منذ 5 دقائق': '5 mins ago',
-  'منذ ساعة': '1 hour ago',
-  'منذ 10 دقائق': '10 mins ago',
-  'الآن': 'Just now'
+const getNotifTitle = (notif) => {
+  if (!notif) return '';
+
+  const rawHospital = notif.hospital || notif.hospital_name || notif.facility_name;
+  const hospital = translateHospitalName(parseValue(rawHospital));
+
+  const rawLocation = notif.location || notif.address || notif.city;
+  const location = translateLocationName(parseValue(rawLocation));
+
+  if (notif.title && typeof notif.title === 'string' && currentLanguage.value !== 'en') {
+    return notif.title;
+  }
+
+  if (currentLanguage.value === 'en') {
+    let titleStr = hospital ? `Urgent: ${hospital}` : 'Urgent Call!';
+    if (location) {
+      titleStr += ` – ${location}`;
+    }
+    return titleStr;
+  }
+
+  let titleStr = hospital ? `نداء طوارئ: ${hospital}` : 'نداء طوارئ جديد!';
+  if (location) {
+    titleStr += ` – ${location}`;
+  }
+  return titleStr;
 };
 
-const translateNotifTitle = (title) => title ? (currentLanguage.value === 'en' ? (notifTitleDict[title] || title) : title) : '';
-const translateNotifMessage = (msg) => msg ? (currentLanguage.value === 'en' ? (notifMessageDict[msg] || msg) : msg) : '';
-const translateNotifTime = (time) => time ? (currentLanguage.value === 'en' ? (notifTimeDict[time] || time) : time) : '';
+const getNotifMessage = (notif) => {
+  if (!notif) return '';
+
+  const rawBlood = notif.blood || notif.blood_type || notif.blood_type_name;
+  const rawHospital = notif.hospital || notif.hospital_name || notif.facility_name;
+
+  const blood = parseValue(rawBlood) || 'O+';
+  const hospital = translateHospitalName(parseValue(rawHospital));
+
+  if (currentLanguage.value === 'en') {
+    return hospital
+      ? `Emergency case needs urgent donation for blood type ${blood} at ${hospital}`
+      : `Emergency case needs urgent donation for blood type ${blood}`;
+  }
+
+  if (notif.message && typeof notif.message === 'string') return notif.message;
+  if (notif.desc && typeof notif.desc === 'string') return notif.desc;
+
+  return hospital
+    ? `حالة طارئة عاجلة بحاجة للتبرع بفصيلة ${blood} في ${hospital}`
+    : `حالة طارئة عاجلة بحاجة للتبرع بفصيلة ${blood}`;
+};
 
 const unreadCount = computed(() => {
-  return notificationStore.unreadCount || notificationsList.value.filter(n => !n.read).length;
+  const unreadItems = notificationsList.value.filter(n => !n.read && !n.is_read).length;
+  return Math.max(unreadItems, serverUnreadCount.value, notificationStore.unreadCount || 0);
 });
 
 const openInteractiveNotificationsModal = () => {
@@ -291,109 +384,118 @@ const openInteractiveNotificationsModal = () => {
 };
 
 const markAsRead = () => {
-  notificationStore.markAllAsRead();
-  notificationsList.value.forEach(n => n.read = true);
+  serverUnreadCount.value = 0;
+  if (notificationStore.markAllAsRead) {
+    notificationStore.markAllAsRead();
+  }
+  notificationsList.value.forEach(n => {
+    n.read = true;
+    n.is_read = true;
+  });
 };
 
 const handleNotificationClick = (notif) => {
   notif.read = true;
-  showNotificationsModal.value = true;
+  notif.is_read = true;
+  showNotificationsModal.value = false;
+  router.push('/donor/donation-center');
 };
 
-const fetchLiveNotifications = async () => {
+const fetchLiveNotifications = async (isBackground = false) => {
   try {
-    localStorage.setItem('user_role', 'donor');
-    await notificationStore.fetchNotifications();
-    const res = await apiClient.get('/donor/notifications');
+    const res = await apiClient.get('/donor/urgent-requests');
     const data = res?.data?.data || res?.data;
-    if (Array.isArray(data) && data.length > 0) {
+    if (Array.isArray(data)) {
       notificationsList.value = data;
+      const unread = data.filter(n => !n.read && !n.is_read).length;
+      serverUnreadCount.value = unread > 0 ? unread : data.length;
     }
   } catch (err) {
-    console.warn('استخدام الإشعارات الافتراضية.');
+    try {
+      const fallbackRes = await apiClient.get('/donor/notifications');
+      const fallbackData = fallbackRes?.data?.data || fallbackRes?.data;
+      if (Array.isArray(fallbackData)) {
+        notificationsList.value = fallbackData;
+        serverUnreadCount.value = fallbackData.filter(n => !n.read && !n.is_read).length;
+      }
+    } catch (e) {
+      if (!isBackground) notificationsList.value = [];
+    }
   }
 };
 
 onMounted(() => {
   fetchLiveNotifications();
+
+  pollingInterval = setInterval(() => {
+    fetchLiveNotifications(true);
+  }, 3000);
+
   const savedLang = localStorage.getItem('musaef_lang') || 'ar';
   document.documentElement.setAttribute('dir', savedLang === 'ar' ? 'rtl' : 'ltr');
   document.documentElement.setAttribute('lang', savedLang);
 });
 
-const userName = computed(() => authStore.userName || authStore.user?.name || (currentLanguage.value === 'ar' ? 'متبرع' : 'Donor'));
+onUnmounted(() => {
+  if (pollingInterval) clearInterval(pollingInterval);
+});
+
+const userName = computed(() => authStore.userName || authStore.user?.name || (currentLanguage.value === 'en' ? 'Donor' : 'متبرع'));
 
 const userAvatar = computed(() => {
-  const avatar = authStore.userAvatar || authStore.user?.avatar;
-  if (!avatar) return defaultAvatarImg;
-  if (avatar.startsWith('http') || avatar.startsWith('blob:')) return avatar;
-  return `http://localhost:8000/storage/${avatar}`;
+  const rawAvatar = authStore.userAvatar
+                 || authStore.user?.avatar_url
+                 || authStore.user?.avatar
+                 || authStore.user?.image
+                 || authStore.user?.profile_photo_path
+                 || authStore.user?.donor?.user?.avatar_url
+                 || authStore.user?.donor?.user?.avatar
+                 || authStore.user?.donor?.user?.image;
+
+  if (!rawAvatar || typeof rawAvatar !== 'string') return defaultAvatarImg;
+
+  let clean = rawAvatar.trim().replace(/\\/g, '/');
+  if (!clean) return defaultAvatarImg;
+
+  if (clean.startsWith('http://') || clean.startsWith('https://') || clean.startsWith('blob:') || clean.startsWith('data:')) {
+    return clean;
+  }
+
+  clean = clean.replace(/^\/?storage\//, '').replace(/^\//, '');
+  return `http://localhost:8000/storage/${clean}`;
 });
 
 const handleLogout = async () => {
   if (authStore.logout) await authStore.logout();
-  else authStore.setUser(null, null);
   router.push('/login');
 };
 
 const handleLogoFallback = (e) => { e.target.src = logoImg; };
-const handleAvatarFallback = (e) => { e.target.src = defaultAvatarImg; };
+const handleAvatarFallback = (e) => {
+  if (e.target.src !== defaultAvatarImg) {
+    e.target.src = defaultAvatarImg;
+  }
+};
 </script>
 
 <style scoped>
-.navbar-logo-img-large {
-  height: 42px;
-  width: auto;
-  object-fit: contain;
-}
+.navbar-logo-img-large { height: 42px; width: auto; object-fit: contain; }
+@media (min-width: 768px) { .navbar-logo-img-large { height: 58px; } }
 
-@media (min-width: 768px) {
-  .navbar-logo-img-large { height: 58px; }
-}
+.donor-avatar-img { width: 38px; height: 38px; object-fit: cover; }
+@media (min-width: 768px) { .donor-avatar-img { width: 46px; height: 46px; } }
 
-.donor-avatar-img {
-  width: 38px;
-  height: 38px;
-  object-fit: cover;
-}
-
-@media (min-width: 768px) {
-  .donor-avatar-img { width: 46px; height: 46px; }
-}
-
-.active-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: #22c55e;
-  display: inline-block;
-}
-
+.active-dot { width: 8px; height: 8px; border-radius: 50%; background-color: #22c55e; display: inline-block; }
 .max-w-600 { max-width: 600px; }
-
-.notification-badge {
-  font-size: 0.65rem;
-  padding: 3px 6px;
-}
-
+.notification-badge { font-size: 0.65rem; padding: 3px 6px; }
 .notifications-dropdown-menu { width: 290px; }
-
-.notification-item {
-  transition: background-color 0.2s ease;
-  padding: 8px 10px;
-  border-radius: 8px;
-}
-
+.notification-item { transition: background-color 0.2s ease; padding: 8px 10px; border-radius: 8px; }
 .notification-item:hover { background-color: #f8fafc; }
-
 .bg-danger-subtle { background-color: #fee2e2 !important; }
-
 .no-chevron::after { display: none !important; }
-
 .dropdown-item { transition: all 0.2s ease; }
 .dropdown-item:hover { background-color: #fdecec; }
 .dropdown-item:hover span { color: #dc2626 !important; }
-
 .fs-7 { font-size: 0.92rem; }
 .fs-8 { font-size: 0.82rem; }
 .fs-9 { font-size: 0.72rem; }
@@ -401,7 +503,6 @@ const handleAvatarFallback = (e) => { e.target.src = defaultAvatarImg; };
 .cursor-pointer { cursor: pointer; }
 .shadow-2xs { box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
 
-/* خلفية التراكب للنافذة المنبثقة التفاعلية */
 .notifications-modal-overlay {
   position: fixed;
   top: 0;

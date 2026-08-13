@@ -13,8 +13,10 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->string('phone')->unique()->nullable(); // رقم الهاتف مهم جداً للطوارئ
+            $table->string('image')->nullable(); // عمود صورة المستخدم في قاعدة البيانات
             $table->enum('role', ['guest', 'donor', 'hospital', 'admin'])->default('donor'); // الأدوار الأربعة المحجوزة
             $table->boolean('is_active')->default(true); // لتعطيل الحسابات الوهمية
+            $table->string('fcm_token')->nullable(); // تم إضافته لدعم إشعارات الهواتف والويب
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();

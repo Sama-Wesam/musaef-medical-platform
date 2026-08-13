@@ -3,29 +3,39 @@
 namespace App\Services;
 
 use App\Models\Donor;
+use Illuminate\Database\Eloquent\Collection;
 
 class DonorService
 {
-    /**
-     * جلب جميع المتبرعين.
-     */
-    public function getAllDonors()
+    public function getAllDonors(): Collection
     {
-        return Donor::with(['user', 'bloodType'])->get();
+        return Donor::with(['user', 'bloodType', 'healthInfo'])
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
 
-    /**
-     * جلب متبرع بواسطة الـ ID.
-     */
-    public function getDonorById($id)
+    public function getDonorById(int $id): ?Donor
     {
-        return Donor::with(['user', 'bloodType'])->find($id);
+        // استخدام withCount و withSum لرفع الأداء الفائق في استعلام واحد بدلاً من الاستعلامات المنفصلة
+        $donor = Donor::with(['user', 'bloodType', 'healthInfo'])
+            ->withCount(['donations as total_donations_count' => function ($query) {
+                $query->where('status', 'completed');
+            }])
+            ->withSum(['donations as total_units_donated' => function ($query) {
+                $query->where('status', 'completed');
+            }], 'units_donated')
+            ->find($id);
+
+        if (!$donor) {
+            return null;
+        }
+
+        $donor->total_units_donated = (int) ($donor->total_units_donated ?? 0);
+
+        return $donor;
     }
 
-    /**
-     * حذف متبرع.
-     */
-    public function deleteDonor($id)
+    public function deleteDonor(int $id): bool
     {
         $donor = Donor::find($id);
 
@@ -33,6 +43,6 @@ class DonorService
             return false;
         }
 
-        return $donor->delete();
+        return (bool) $donor->delete();
     }
 }
