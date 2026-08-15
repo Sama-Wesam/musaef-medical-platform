@@ -1,7 +1,6 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  // الاعتماد على متغير البيئة VITE_API_BASE_URL أو توجيه الطلبات مباشرة إلى السيرفر المباشر على Render
   baseURL: import.meta.env.VITE_API_BASE_URL || 'https://musaef-medical-platform.onrender.com/api',
   headers: {
     'Accept': 'application/json'
@@ -14,7 +13,6 @@ apiClient.interceptors.request.use(
     const currentLang = localStorage.getItem('musaef_lang') || 'ar';
     config.headers['Accept-Language'] = currentLang;
 
-    // معالجة وإزالة التكرار في مسارات /api لمنع أخطاء 404 الناتج عن /api/api
     if (config.url) {
       if (config.baseURL?.endsWith('/api') && config.url.startsWith('/api/')) {
         config.url = config.url.replace(/^\/api/, '');
@@ -31,7 +29,6 @@ apiClient.interceptors.request.use(
       config.headers['Content-Type'] = 'application/json';
     }
 
-    // ⚡ تعزيز دورات الـ Polling والطلبات الفورية بمنع التخزين المؤقت (Cache Busting) عبر طابع زمني خفيف
     if (config.method === 'get') {
       config.params = {
         _t: Date.now(),
