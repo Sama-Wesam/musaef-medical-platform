@@ -15,6 +15,15 @@ use App\Http\Controllers\Donor\DonationHistoryController;
 |--------------------------------------------------------------------------
 */
 
+// ⚡ مسار الجذر للـ API لمنع خطأ 404 عند فتح /api وإرجاع حالة السيرفر
+Route::get('/', function () {
+    return response()->json([
+        'status' => 'online',
+        'message' => 'Musaef Medical Platform API is running successfully',
+        'version' => '1.0.0'
+    ], 200);
+});
+
 // 1. المسارات العامة (Public Routes)
 Route::prefix('public')->group(function () {
     Route::get('/home-stats', [PublicController::class, 'getHomeStats']);
