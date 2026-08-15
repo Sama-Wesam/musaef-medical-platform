@@ -12,8 +12,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('blood_type_id')->nullable()->constrained()->nullOnDelete();
-            $table->date('birth_date');
-            $table->enum('gender', ['male', 'female']);
+
+            // ⚡ جعل الحقول قابلة للاستقبال null لتفادي خطأ Not null violation أثناء الـ Seed
+            $table->date('birth_date')->nullable();
+            $table->enum('gender', ['male', 'female'])->nullable();
+
             $table->string('city')->nullable();
             $table->decimal('latitude', 10, 8)->nullable();
             $table->decimal('longitude', 11, 8)->nullable();
