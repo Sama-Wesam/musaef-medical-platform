@@ -1,6 +1,5 @@
 <template>
   <div class="home-view" :dir="currentLanguage === 'ar' ? 'rtl' : 'ltr'">
-
     <!-- Navbar -->
     <Navbar />
 
@@ -12,7 +11,7 @@
       <div class="container px-3 px-md-4">
         <!-- Section Title -->
         <div class="text-center mb-4 mb-md-5">
-          <h2 class="section-title">{{ $t('home.howItWorksTitle') }}</h2>
+          <h2 class="section-title">{{ $t("home.howItWorksTitle") }}</h2>
           <div class="title-underline"></div>
         </div>
 
@@ -46,11 +45,14 @@
             </div>
 
             <!-- Arrow -->
-            <div
-              v-if="index < steps.length - 1"
-              class="step-arrow d-none d-xl-flex"
-            >
-              <i :class="currentLanguage === 'ar' ? 'bi bi-arrow-left-short' : 'bi bi-arrow-right-short'"></i>
+            <div v-if="index < steps.length - 1" class="step-arrow d-none d-xl-flex">
+              <i
+                :class="
+                  currentLanguage === 'ar'
+                    ? 'bi bi-arrow-left-short'
+                    : 'bi bi-arrow-right-short'
+                "
+              ></i>
             </div>
           </div>
         </div>
@@ -90,16 +92,25 @@
     <section class="latest-cases emergency-section py-4 py-md-5">
       <div class="container px-3 px-md-4">
         <!-- Header -->
-        <div class="d-flex justify-content-between align-items-center mb-4 mb-md-5 flex-wrap gap-2 gap-md-3">
+        <div
+          class="d-flex justify-content-between align-items-center mb-4 mb-md-5 flex-wrap gap-2 gap-md-3"
+        >
           <div class="text-start-dir">
-            <h2 class="section-title mb-1">{{ $t('home.urgentTitle') }}</h2>
-            <div class="title-underline ms-0 me-auto" v-if="currentLanguage === 'en'"></div>
+            <h2 class="section-title mb-1">{{ $t("home.urgentTitle") }}</h2>
+            <div
+              class="title-underline ms-0 me-auto"
+              v-if="currentLanguage === 'en'"
+            ></div>
             <div class="title-underline me-0 ms-auto" v-else></div>
           </div>
 
           <router-link to="/register" class="view-all fs-8 fs-md-7">
-            {{ $t('home.viewAll') }}
-            <i :class="currentLanguage === 'ar' ? 'bi bi-chevron-left' : 'bi bi-chevron-right'"></i>
+            {{ $t("home.viewAll") }}
+            <i
+              :class="
+                currentLanguage === 'ar' ? 'bi bi-chevron-left' : 'bi bi-chevron-right'
+              "
+            ></i>
           </router-link>
         </div>
 
@@ -124,17 +135,19 @@
               <!-- Card Body -->
               <div class="card-body-custom text-start-dir">
                 <h5 class="hospital-name text-truncate">
-                  {{ getLocalizedField(item, 'hospital') }}
+                  {{ getLocalizedField(item, "hospital") }}
                 </h5>
 
                 <div class="case-info">
                   <i class="bi bi-geo-alt-fill me-1 text-danger"></i>
-                  <span class="text-truncate">{{ getLocalizedField(item, 'location') }}</span>
+                  <span class="text-truncate">{{
+                    getLocalizedField(item, "location")
+                  }}</span>
                 </div>
 
                 <div class="case-info">
                   <i class="bi bi-droplet-fill me-1 text-danger"></i>
-                  <span>{{ $t('home.requiredUnits', { count: item.units }) }}</span>
+                  <span>{{ $t("home.requiredUnits", { count: item.units }) }}</span>
                 </div>
 
                 <div class="case-info">
@@ -145,11 +158,18 @@
 
               <!-- Card Footer / Buttons -->
               <div class="card-footer-custom">
-                <router-link to="/register" class="btn donate-btn flex-grow-1 text-center">
-                  {{ $t('home.donate') }}
+                <router-link
+                  to="/register"
+                  class="btn donate-btn flex-grow-1 text-center"
+                >
+                  {{ $t("home.donate") }}
                 </router-link>
 
-                <button class="btn share-btn" @click="shareCase(item)" :aria-label="$t('home.share')">
+                <button
+                  class="btn share-btn"
+                  @click="shareCase(item)"
+                  :aria-label="$t('home.share')"
+                >
                   <i class="bi bi-share-fill"></i>
                 </button>
               </div>
@@ -158,223 +178,231 @@
         </div>
 
         <div v-else class="text-center py-5 text-muted fs-6 bg-white rounded-4 shadow-sm">
-          {{ $t('home.noCases') }}
+          {{ $t("home.noCases") }}
         </div>
       </div>
     </section>
 
     <!-- Footer -->
     <Footer />
-
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useI18n } from 'vue-i18n'
-import apiClient from '@/api/axios'
-import Navbar from '@/components/common/Navbar.vue'
-import HeroSection from '@/components/common/HeroSection.vue'
-import Footer from '@/components/common/Footer.vue'
+import { ref, computed, onMounted } from "vue";
+import { useI18n } from "vue-i18n";
+import apiClient from "@/api/axios";
+import Navbar from "@/components/common/Navbar.vue";
+import HeroSection from "@/components/common/HeroSection.vue";
+import Footer from "@/components/common/Footer.vue";
 
-const { locale, t } = useI18n()
-const currentLanguage = computed(() => locale.value || 'ar')
+const { locale, t } = useI18n();
+const currentLanguage = computed(() => locale.value || "ar");
 
 const steps = [
   {
     number: 1,
-    icon: 'bi bi-person-plus',
-    titleKey: 'home.step1Title',
-    descKey: 'home.step1Desc'
+    icon: "bi bi-person-plus",
+    titleKey: "home.step1Title",
+    descKey: "home.step1Desc",
   },
   {
     number: 2,
-    icon: 'bi bi-clipboard2-pulse',
-    titleKey: 'home.step2Title',
-    descKey: 'home.step2Desc'
+    icon: "bi bi-clipboard2-pulse",
+    titleKey: "home.step2Title",
+    descKey: "home.step2Desc",
   },
   {
     number: 3,
-    icon: 'bi bi-megaphone',
-    titleKey: 'home.step3Title',
-    descKey: 'home.step3Desc'
+    icon: "bi bi-megaphone",
+    titleKey: "home.step3Title",
+    descKey: "home.step3Desc",
   },
   {
     number: 4,
-    icon: 'bi bi-shield-check',
-    titleKey: 'home.step4Title',
-    descKey: 'home.step4Desc'
+    icon: "bi bi-shield-check",
+    titleKey: "home.step4Title",
+    descKey: "home.step4Desc",
   },
   {
     number: 5,
-    icon: 'bi bi-geo-alt-fill',
-    titleKey: 'home.step5Title',
-    descKey: 'home.step5Desc'
-  }
-]
+    icon: "bi bi-geo-alt-fill",
+    titleKey: "home.step5Title",
+    descKey: "home.step5Desc",
+  },
+];
 
 const statistics = ref([
   {
-    number: '...',
-    titleKey: 'home.statSupported',
-    icon: 'bi bi-heart-pulse-fill'
+    number: "...",
+    titleKey: "home.statSupported",
+    icon: "bi bi-heart-pulse-fill",
   },
   {
-    number: '...',
-    titleKey: 'home.statRequests',
-    icon: 'bi bi-droplet-fill'
+    number: "...",
+    titleKey: "home.statRequests",
+    icon: "bi bi-droplet-fill",
   },
   {
-    number: '...',
-    titleKey: 'home.statHospitals',
-    icon: 'bi bi-hospital-fill'
+    number: "...",
+    titleKey: "home.statHospitals",
+    icon: "bi bi-hospital-fill",
   },
   {
-    number: '...',
-    titleKey: 'home.statDonors',
-    icon: 'bi bi-people-fill'
-  }
-])
+    number: "...",
+    titleKey: "home.statDonors",
+    icon: "bi bi-people-fill",
+  },
+]);
 
-const isLoadingStats = ref(true)
-const emergencyCases = ref([])
+const isLoadingStats = ref(true);
+const emergencyCases = ref([]);
 
 const translationsDictionary = {
   // Hospitals
-  'مجمع الشفاء الطبي': 'Al-Shifa Medical Complex',
-  'مستشفى الأهلي العربي (المعمداني)': 'Ahli Arab Hospital (Al-Maamadani)',
-  'المستشفى الإندونيسي': 'Indonesian Hospital',
-  'بنك الدم المركزي - وزارة الصحة': 'Central Blood Bank - Ministry of Health',
-  'مستشفى أصدقاء المريض الخيري': 'Patient\'s Friends Benevolent Society Hospital',
-  'جمعية بنك الدم المركزي': 'Central Blood Bank Society',
+  "مجمع الشفاء الطبي": "Al-Shifa Medical Complex",
+  "مستشفى الأهلي العربي (المعمداني)": "Ahli Arab Hospital (Al-Maamadani)",
+  "المستشفى الإندونيسي": "Indonesian Hospital",
+  "بنك الدم المركزي - وزارة الصحة": "Central Blood Bank - Ministry of Health",
+  "مستشفى أصدقاء المريض الخيري": "Patient's Friends Benevolent Society Hospital",
+  "جمعية بنك الدم المركزي": "Central Blood Bank Society",
 
   // Locations
-  'غزة - الرمال': 'Gaza - Rimal',
-  'غزة - الزيتون': 'Gaza - Zeitoun',
-  'شمال غزة - بيت لاهيا': 'North Gaza - Beit Lahia',
-  'غزة - النصر': 'Gaza - Al-Nasr',
-  'غزه - فلسطين': 'Gaza - Palestine',
-  'غزة - فلسطين': 'Gaza - Palestine',
-  'غزه - الرمال شارع الوحده': 'Gaza - Rimal, Al-Wehda St.',
-  'غزة - الرمال شارع الوحدة': 'Gaza - Rimal, Al-Wehda St.'
-}
+  "غزة - الرمال": "Gaza - Rimal",
+  "غزة - الزيتون": "Gaza - Zeitoun",
+  "شمال غزة - بيت لاهيا": "North Gaza - Beit Lahia",
+  "غزة - النصر": "Gaza - Al-Nasr",
+  "غزه - فلسطين": "Gaza - Palestine",
+  "غزة - فلسطين": "Gaza - Palestine",
+  "غزه - الرمال شارع الوحده": "Gaza - Rimal, Al-Wehda St.",
+  "غزة - الرمال شارع الوحدة": "Gaza - Rimal, Al-Wehda St.",
+};
 
 const fetchHomeStats = async () => {
-  isLoadingStats.value = true
+  isLoadingStats.value = true;
   try {
-    const res = await apiClient.get('/public/home-stats')
-    const statsData = (res && res.data && res.data.data) ? res.data.data : ((res && res.data) ? res.data : res)
+    const res = await apiClient.get("/public/home-stats");
+    const statsData =
+      res && res.data && res.data.data ? res.data.data : res && res.data ? res.data : res;
     if (statsData) {
-      statistics.value[0].number = (statsData.supported_cases || 0) + '+'
-      statistics.value[1].number = (statsData.total_requests || 0) + '+'
-      statistics.value[2].number = (statsData.hospitals_count || 0) + '+'
-      statistics.value[3].number = (statsData.donors_count || 0) + '+'
+      statistics.value[0].number = (statsData.supported_cases || 0) + "+";
+      statistics.value[1].number = (statsData.total_requests || 0) + "+";
+      statistics.value[2].number = (statsData.hospitals_count || 0) + "+";
+      statistics.value[3].number = (statsData.donors_count || 0) + "+";
     }
   } catch (error) {
-    console.error('Error fetching stats:', error)
+    console.error("Error fetching stats:", error);
   } finally {
-    isLoadingStats.value = false
+    isLoadingStats.value = false;
   }
-}
+};
 
 const fetchUrgentRequests = async () => {
   try {
-    const res = await apiClient.get('/public/urgent-requests')
+    const res = await apiClient.get("/public/urgent-requests");
 
-    let casesData = []
+    let casesData = [];
 
     if (Array.isArray(res)) {
-      casesData = res
+      casesData = res;
     } else if (res && res.data) {
       if (Array.isArray(res.data)) {
-        casesData = res.data
+        casesData = res.data;
       } else if (res.data.data && Array.isArray(res.data.data)) {
-        casesData = res.data.data
+        casesData = res.data.data;
       }
     }
 
     if (casesData.length > 0) {
-      emergencyCases.value = casesData.map(req => ({
-        blood: req.blood || 'O+',
-        hospital: req.hospital || '',
-        hospital_ar: req.hospital_ar || req.hospital || '',
-        hospital_en: req.hospital_en || translationsDictionary[req.hospital] || req.hospital || '',
-        location: req.location || '',
-        location_ar: req.location_ar || req.location || '',
-        location_en: req.location_en || translationsDictionary[req.location] || req.location || '',
+      emergencyCases.value = casesData.map((req) => ({
+        blood: req.blood || "O+",
+        hospital: req.hospital || "",
+        hospital_ar: req.hospital_ar || req.hospital || "",
+        hospital_en:
+          req.hospital_en || translationsDictionary[req.hospital] || req.hospital || "",
+        location: req.location || "",
+        location_ar: req.location_ar || req.location || "",
+        location_en:
+          req.location_en || translationsDictionary[req.location] || req.location || "",
         units: req.units_needed || req.units_required || 1,
-        severity: req.severity || 'Critical',
-        urgency_label: req.condition_type || '',
-        time: req.created_at || 'منذ قليل',
-        ai_priority_score: req.ai_priority_score || req.priority_score || 0
-      }))
+        severity: req.severity || "Critical",
+        urgency_label: req.condition_type || "",
+        time: req.created_at || "منذ قليل",
+        ai_priority_score: req.ai_priority_score || req.priority_score || 0,
+      }));
     }
   } catch (error) {
-    console.error('Error fetching urgent requests:', error)
+    console.error("Error fetching urgent requests:", error);
   }
-}
+};
 
 const sortedEmergencyCases = computed(() => {
   return [...emergencyCases.value].sort((a, b) => {
-    return (b.ai_priority_score || 0) - (a.ai_priority_score || 0)
-  })
-})
+    return (b.ai_priority_score || 0) - (a.ai_priority_score || 0);
+  });
+});
 
 const getSeverityText = (severity, fallback) => {
-  if (severity === 'Critical') return t('home.veryCritical')
-  if (severity === 'High') return t('home.urgent')
-  return fallback || t('home.urgent')
-}
+  if (severity === "Critical") return t("home.veryCritical");
+  if (severity === "High") return t("home.urgent");
+  return fallback || t("home.urgent");
+};
 
 const getLocalizedField = (item, fieldName) => {
-  if (currentLanguage.value === 'en') {
-    const rawVal = item[fieldName] || ''
-    return item[`${fieldName}_en`] || translationsDictionary[rawVal] || rawVal
+  if (currentLanguage.value === "en") {
+    const rawVal = item[fieldName] || "";
+    return item[`${fieldName}_en`] || translationsDictionary[rawVal] || rawVal;
   }
-  return item[`${fieldName}_ar`] || item[fieldName] || ''
-}
+  return item[`${fieldName}_ar`] || item[fieldName] || "";
+};
 
 const getSeverityClass = (severity) => {
-  if (severity === 'Critical') return 'severity-critical'
-  if (severity === 'High') return 'severity-high'
-  return 'severity-normal'
-}
+  if (severity === "Critical") return "severity-critical";
+  if (severity === "High") return "severity-high";
+  return "severity-normal";
+};
 
 const shareCase = (item) => {
-  const hospital = getLocalizedField(item, 'hospital')
+  const hospital = getLocalizedField(item, "hospital");
   if (navigator.share) {
-    navigator.share({
-      title: `Emergency Case: ${item.blood}`,
-      text: `Blood donation required for ${item.blood} at ${hospital}`,
-      url: window.location.href
-    }).catch(() => {})
+    navigator
+      .share({
+        title: `Emergency Case: ${item.blood}`,
+        text: `Blood donation required for ${item.blood} at ${hospital}`,
+        url: window.location.href,
+      })
+      .catch(() => {});
   } else {
-    navigator.clipboard.writeText(window.location.href)
-    alert(t('home.shareSuccess'))
+    navigator.clipboard.writeText(window.location.href);
+    alert(t("home.shareSuccess"));
   }
-}
+};
 
 onMounted(() => {
-  fetchHomeStats()
-  fetchUrgentRequests()
-})
+  fetchHomeStats();
+  fetchUrgentRequests();
+});
 </script>
 
 <style scoped>
 .home-view,
 .home-view * {
   font-family: Arial, sans-serif !important;
+  box-sizing: border-box;
 }
 
 .home-view {
   background: #ffffff;
   color: #1f2937;
   width: 100%;
+  max-width: 100vw;
   overflow-x: hidden;
+  position: relative;
 }
 
 section {
   overflow: hidden;
+  width: 100%;
 }
 
 .container {
@@ -849,8 +877,12 @@ section {
   color: #fff;
 }
 
-.fs-8 { font-size: 0.85rem; }
-.fs-7 { font-size: 0.95rem; }
+.fs-8 {
+  font-size: 0.85rem;
+}
+.fs-7 {
+  font-size: 0.95rem;
+}
 
 .step-card:hover .step-icon i {
   transform: scale(1.15);
