@@ -18,6 +18,7 @@ class Donor extends Model
         'blood_type_id',
         'birth_date',
         'gender',
+        'city', // ⚡ تم إضافة عمود المدينة هنا لحل مشكلة Mass Assignment أثناء الـ Seeding
         'latitude',
         'longitude',
         'address',

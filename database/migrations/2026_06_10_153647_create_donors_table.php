@@ -14,6 +14,7 @@ return new class extends Migration
             $table->foreignId('blood_type_id')->nullable()->constrained()->nullOnDelete();
             $table->date('birth_date');
             $table->enum('gender', ['male', 'female']);
+            $table->string('city')->nullable();
             $table->decimal('latitude', 10, 8)->nullable();
             $table->decimal('longitude', 11, 8)->nullable();
             $table->string('address')->nullable();
