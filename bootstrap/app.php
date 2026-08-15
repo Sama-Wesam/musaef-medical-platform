@@ -27,6 +27,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // $schedule->command('musaef:ai-predict-demand')->hourly();
     })
     ->withMiddleware(function (Middleware $middleware): void {
+        // تفعيل CORS أولاً لضمان عدم حظر أي طلبات صادرة من الفرونت إند
+        $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
+
         // 1. تفعيل Sanctum Stateful API للتعامل مع الجلسات و SPA
         $middleware->statefulApi();
 
