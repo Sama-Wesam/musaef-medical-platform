@@ -7,21 +7,24 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// ⚡ مسار مؤقت آمن لتنفيذ التهيئة (Migrations, Seeders, Clear Cache) بدون الحاجة للـ Shell في Render
+// ⚡ مسار مؤقت لإعادة إنشاء كافة الجداول من الصفر وتنفيذ الـ Seeders وإزالة الكاش في Render
 Route::get('/run-setup-musaef', function () {
     try {
-        Artisan::call('migrate', ['--force' => true]);
+        // إعادة بناء الهيكلية بالكامل من الصفر لحل تعارض الأعمدة المفقودة
+        Artisan::call('migrate:fresh', ['--force' => true]);
         $migrateOutput = Artisan::output();
 
+        // إدخال البيانات الأولية والاختبارية
         Artisan::call('db:seed', ['--force' => true]);
         $seedOutput = Artisan::output();
 
+        // تنظيف الكاش كلياً
         Artisan::call('config:clear');
         Artisan::call('cache:clear');
 
         return response()->json([
             'status' => 'success',
-            'message' => 'تم تنفيذ الجداول والبيانات وإزالة الكاش بنجاح!',
+            'message' => 'تم إعادة بناء الجداول بالكامل وإدخال البيانات وإزالة الكاش بنجاح!',
             'migrate' => trim($migrateOutput),
             'seed' => trim($seedOutput)
         ], 200);
