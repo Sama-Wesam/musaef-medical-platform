@@ -1,12 +1,12 @@
 # 1. بيئة PHP الأساسية مع Apache
 FROM php:8.2-apache
 
-# 2. تثبيت الحزم الأساسية، Node.js (لبناء Vue/Vite)، وPython3 للذكاء الاصطناعي
+# 2. تثبيت الحزم الأساسية، Node.js 20 (لبناء Vue/Vite)، وPython3 للذكاء الاصطناعي
 RUN apt-get update && apt-get install -y \
     git zip unzip libpng-dev libonig-dev libxml2-dev libzip-dev \
     python3 python3-pip python3-venv \
     curl \
-    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
 
