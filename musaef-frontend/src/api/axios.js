@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  // ضمان توجيه الطلبات إلى سيرفر الباك إند المباشر (Port 8000) أو الاعتماد على المسار المحلي المقترح
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
+  // الاعتماد على متغير البيئة VITE_API_BASE_URL أو توجيه الطلبات مباشرة إلى السيرفر المباشر على Render
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://musaef-medical-platform.onrender.com/api',
   headers: {
     'Accept': 'application/json'
   },
@@ -14,12 +14,14 @@ apiClient.interceptors.request.use(
     const currentLang = localStorage.getItem('musaef_lang') || 'ar';
     config.headers['Accept-Language'] = currentLang;
 
-    // معالجة المسارات المكررة تلقائياً لضمان عدم وجود خلل مثل /api/api
+    // معالجة وإزالة التكرار في مسارات /api لمنع أخطاء 404 الناتج عن /api/api
     if (config.url) {
-      if (config.baseURL === 'http://localhost:8000' && !config.url.startsWith('/api') && !config.url.startsWith('http')) {
-        config.url = `/api${config.url.startsWith('/') ? '' : '/'}${config.url}`;
+      if (config.baseURL?.endsWith('/api') && config.url.startsWith('/api/')) {
+        config.url = config.url.replace(/^\/api/, '');
       } else if (config.url.startsWith('/api/api/')) {
         config.url = config.url.replace('/api/api/', '/api/');
+      } else if (!config.baseURL?.endsWith('/api') && !config.url.startsWith('/api') && !config.url.startsWith('http')) {
+        config.url = `/api${config.url.startsWith('/') ? '' : '/'}${config.url}`;
       }
     }
 
