@@ -1,11 +1,11 @@
 # 1. بيئة PHP الأساسية مع Apache
 FROM php:8.2-apache
 
-# 2. تثبيت الحزم الأساسية و Python3
+# 2. تثبيت الحزم الأساسية و Python3 ودعم drivers لـ MySQL و PostgreSQL
 RUN apt-get update && apt-get install -y \
-    git zip unzip libpng-dev libonig-dev libxml2-dev libzip-dev \
+    git zip unzip libpng-dev libonig-dev libxml2-dev libzip-dev libpq-dev \
     python3 python3-pip python3-venv \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
+    && docker-php-ext-install pdo_mysql pdo_pgsql mbstring exif pcntl bcmath gd zip
 
 # 3. إعداد خادم Apache
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
