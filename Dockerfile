@@ -28,8 +28,8 @@ RUN pip3 install --no-cache-dir --break-system-packages -r requirements.txt
 # 7. تثبيت حزم PHP وتنظيف الاعتمادات
 RUN composer install --no-dev --optimize-autoloader
 
-# 8. تثبيت حزم Node.js وبناء الواجهة الأمامية Vue 3 / Vite
-RUN npm install && npm run build
+# 8. تثبيت حزم Node.js وبناء الواجهة الأمامية Vue 3 / Vite داخل مجلد musaef-frontend
+RUN cd musaef-frontend && npm install && npm run build
 
 # 9. ضبط صلاحيات مجلدات التخزين والتخزين المؤقت
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
