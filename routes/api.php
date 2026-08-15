@@ -25,31 +25,35 @@ Route::get('/', function () {
     ], 200);
 });
 
-// ⚡ مسار تهيئة البيانات وقواعد البيانات عبر الـ API مباشرة
-Route::get('/run-setup-musaef', function () {
-    try {
-        Artisan::call('migrate', ['--force' => true]);
-        $migrateOutput = Artisan::output();
-
-        Artisan::call('db:seed', ['--force' => true]);
-        $seedOutput = Artisan::output();
-
-        Artisan::call('config:clear');
-        Artisan::call('cache:clear');
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'تم تنفيذ الجداول والبيانات وإزالة الكاش بنجاح عبر الـ API!',
-            'migrate' => trim($migrateOutput),
-            'seed' => trim($seedOutput)
-        ], 200);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'حدث خطأ أثناء تنفيذ التهيئة: ' . $e->getMessage()
-        ], 500);
-    }
-});
+/*
+|--------------------------------------------------------------------------
+| ⚡ تم تعطيل مسار التهيئة المؤقت لحماية قاعدة البيانات
+|--------------------------------------------------------------------------
+| Route::get('/run-setup-musaef', function () {
+|     try {
+|         Artisan::call('migrate', ['--force' => true]);
+|         $migrateOutput = Artisan::output();
+|
+|         Artisan::call('db:seed', ['--force' => true]);
+|         $seedOutput = Artisan::output();
+|
+|         Artisan::call('config:clear');
+|         Artisan::call('cache:clear');
+|
+|         return response()->json([
+|             'status' => 'success',
+|             'message' => 'تم تنفيذ الجداول والبيانات وإزالة الكاش بنجاح عبر الـ API!',
+|             'migrate' => trim($migrateOutput),
+|             'seed' => trim($seedOutput)
+|         ], 200);
+|     } catch (\Exception $e) {
+|         return response()->json([
+|             'status' => 'error',
+|             'message' => 'حدث خطأ أثناء تنفيذ التهيئة: ' . $e->getMessage()
+|         ], 500);
+|     }
+| });
+*/
 
 // 1. المسارات العامة (Public Routes)
 Route::prefix('public')->group(function () {
